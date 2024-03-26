@@ -12,9 +12,10 @@ export default function SignUpUserSteps() {
             className="font-bold text-foreground/80 hover:underline"
           >
             Login
-          </Link>{" "}
-          page and sign up your first user. It's okay if this is just you for
-          now. Your awesome idea will have plenty of users later!
+          </Link>
+          {
+            " page and sign up your first user. It's okay if this is just you for now. Your awesome idea will have plenty of users later!"
+          }
         </p>
       </Step>
     </ol>

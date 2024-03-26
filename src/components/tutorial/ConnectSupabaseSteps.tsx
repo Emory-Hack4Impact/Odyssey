@@ -35,7 +35,7 @@ export default function ConnectSupabaseSteps() {
             className="font-bold text-foreground/80 hover:underline"
             rel="noreferrer"
           >
-            your Supabase project's API Settings
+            {"your Supabase project's API Settings"}
           </a>
           .
         </p>

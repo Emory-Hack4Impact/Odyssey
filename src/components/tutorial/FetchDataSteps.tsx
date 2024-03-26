@@ -60,10 +60,10 @@ export default function FetchDataSteps() {
             rel="noreferrer"
           >
             Table Editor
-          </a>{" "}
-          for your Supabase project to create a table and insert some example
-          data. If you're stuck for creativity, you can copy and paste the
-          following into the{" "}
+          </a>
+          {
+            " for your Supabase project to create a table and insert some example data. If you're stuck for creativity, you can copy and paste the following into the "
+          }
           <a
             href="https://supabase.com/dashboard/project/_/sql/new"
             className="font-bold text-foreground/80 hover:underline"
@@ -92,7 +92,7 @@ export default function FetchDataSteps() {
       </Step>
 
       <Step title="Build in a weekend and scale to millions!">
-        <p>You're ready to launch your product to the world! 🚀</p>
+        <p>{"You're ready to launch your product to the world! 🚀"}</p>
       </Step>
     </ol>
   );
