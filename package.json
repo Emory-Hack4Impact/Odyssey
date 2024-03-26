@@ -3,14 +3,16 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "lint": "next lint",
     "build": "next build",
+    "dev": "next dev",
+    "start": "next start",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
-    "dev": "next dev",
     "postinstall": "prisma generate",
-    "lint": "next lint",
-    "start": "next start"
+    "format:check": "prettier --check .",
+    "format": "prettier --write . --list-different"
   },
   "dependencies": {
     "@prisma/client": "^5.11.0",
