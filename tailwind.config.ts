@@ -9,9 +9,13 @@ const config = {
   ],
   theme: {
     extend: {
+      fontFamily:{
+        'playfair': ['Playfair Display', 'serif'],
+      },
       colors: {
-        maroon: '#800000',
-        'light-maroon': '#A0522D',
+        maroon: '#4d0000',
+        'light-maroon': '#a40235',
+        'odyssey-yellow': '#ffcc02',
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         btn: {
