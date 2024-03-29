@@ -10,6 +10,8 @@ const config = {
   theme: {
     extend: {
       colors: {
+        maroon: '#800000',
+        'light-maroon': '#A0522D',
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         btn: {
