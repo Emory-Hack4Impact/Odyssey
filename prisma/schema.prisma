@@ -13,6 +13,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-	id		String	@id @default(cuid())
+model UserMetadata {
+  id       String  @id
+  is_admin Boolean @default(false)
+  is_hr    Boolean @default(false)
 }
