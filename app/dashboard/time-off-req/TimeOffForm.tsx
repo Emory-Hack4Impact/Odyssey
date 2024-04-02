@@ -1,3 +1,4 @@
+'use client'
 import React, { useState } from 'react';
 
 interface FormData {
@@ -30,48 +31,53 @@ const TimeOffForm: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="max-w-md mx-auto mt-10 p-6 bg-gray-100 rounded-lg shadow-md">
       <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="leaveType">Type of Leave:</label>
+        <div className="mb-4">
+          <label htmlFor="leaveType" className="block text-gray-700">Type of Leave:</label>
           <input
             type="text"
             id="leaveType"
             name="leaveType"
             value={formData.leaveType}
             onChange={handleChange}
+            className="form-input mt-1 block w-full rounded-md border-gray-300"
           />
         </div>
-        <div>
-          <label htmlFor="startDate">Start Date:</label>
+        <div className="mb-4">
+          <label htmlFor="startDate" className="block text-gray-700">Start Date:</label>
           <input
             type="date"
             id="startDate"
             name="startDate"
             value={formData.startDate}
             onChange={handleChange}
+            className="form-input mt-1 block w-full rounded-md border-gray-300"
           />
         </div>
-        <div>
-          <label htmlFor="endDate">End Date:</label>
+        <div className="mb-4">
+          <label htmlFor="endDate" className="block text-gray-700">End Date:</label>
           <input
             type="date"
             id="endDate"
             name="endDate"
             value={formData.endDate}
             onChange={handleChange}
+            className="form-input mt-1 block w-full rounded-md border-gray-300"
           />
         </div>
-        <div>
-          <label htmlFor="comments">Comments:</label>
+        <div className="mb-4">
+          <label htmlFor="comments" className="block text-gray-700">Comments:</label>
           <textarea
             id="comments"
             name="comments"
             value={formData.comments}
             onChange={handleChange}
+            className="form-textarea mt-1 block w-full rounded-md border-gray-300"
+            rows={4}
           />
         </div>
-        <button type="submit">Submit</button>
+        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Submit</button>
       </form>
     </div>
   );
