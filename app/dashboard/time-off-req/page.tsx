@@ -1,3 +1,4 @@
+'use client';
 import TimeOffForm from './TimeOffForm';
 
 const Home: React.FC = () => {
