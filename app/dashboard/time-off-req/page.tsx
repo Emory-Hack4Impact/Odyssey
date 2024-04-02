@@ -1,10 +1,11 @@
 'use client';
+import React from 'react';
 import TimeOffForm from './TimeOffForm';
 
 const Home: React.FC = () => {
   return (
-    <div>
-      <h1>Contact Us</h1>
+    <div className="flex flex-col items-center justify-center h-screen">
+      <h1 className="text-2xl font-bold">Request Time Off</h1>
       <TimeOffForm />
     </div>
   );

@@ -1,4 +1,3 @@
-'use client'
 import React, { useState } from 'react';
 
 interface FormData {
@@ -33,7 +32,7 @@ const TimeOffForm: React.FC = () => {
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-gray-100 rounded-lg shadow-md">
       <form onSubmit={handleSubmit}>
-        <div className="mb-4">
+        <div className="mb-4 pl-1">
           <label htmlFor="leaveType" className="block text-gray-700">Type of Leave:</label>
           <input
             type="text"
@@ -41,7 +40,7 @@ const TimeOffForm: React.FC = () => {
             name="leaveType"
             value={formData.leaveType}
             onChange={handleChange}
-            className="form-input mt-1 block w-full rounded-md border-gray-300"
+            className="form-input mt-1 block w-full rounded-md border-gray-300 text-gray-700 pl-1"
           />
         </div>
         <div className="mb-4">
@@ -52,7 +51,7 @@ const TimeOffForm: React.FC = () => {
             name="startDate"
             value={formData.startDate}
             onChange={handleChange}
-            className="form-input mt-1 block w-full rounded-md border-gray-300"
+            className="form-input mt-1 block w-full rounded-md border-gray-300 text-gray-700"
           />
         </div>
         <div className="mb-4">
@@ -63,17 +62,17 @@ const TimeOffForm: React.FC = () => {
             name="endDate"
             value={formData.endDate}
             onChange={handleChange}
-            className="form-input mt-1 block w-full rounded-md border-gray-300"
+            className="form-input mt-1 block w-full rounded-md border-gray-300 text-gray-700"
           />
         </div>
-        <div className="mb-4">
+        <div className="mb-4 pl-1">
           <label htmlFor="comments" className="block text-gray-700">Comments:</label>
           <textarea
             id="comments"
             name="comments"
             value={formData.comments}
             onChange={handleChange}
-            className="form-textarea mt-1 block w-full rounded-md border-gray-300"
+            className="form-textarea mt-1 block w-full rounded-md border-gray-300 text-gray-700 pl-1"
             rows={4}
           />
         </div>
