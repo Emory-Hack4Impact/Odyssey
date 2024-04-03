@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { SearchSVG } from "./svg";
 
+interface SubNavBarProps {
+    selected: string;
+}
+
 // todo: select active link with bg-gray-700 and text-gray-100
 export default function NavBar() {
     return (
@@ -40,5 +44,27 @@ export default function NavBar() {
             </div>
             
         </nav>
+    );
+}
+
+export function SubNavBar(props: SubNavBarProps) {
+    return (
+        <div className="flex w-full space items-center justify-between">
+            <div>
+                {props.selected}
+            </div>
+            <ul className="flex">
+                <li>
+                    <Link href="/" className="bg-white px-5 py-3 rounded-full transition-all font-semibold hover:bg-gray-100">
+                        Time Off
+                    </Link>
+                </li>
+                <li>
+                    <Link href="/performance-evaluation" className="bg-white px-5 py-3 rounded-full transition-all font-semibold hover:bg-gray-100">
+                        Performance Evaluations
+                    </Link>
+                </li>
+            </ul>
+        </div>
     );
 }
