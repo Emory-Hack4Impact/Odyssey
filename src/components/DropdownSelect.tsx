@@ -16,9 +16,10 @@ export default function DropdownSelect(props: Props) {
         id={props.id}
         className={`text-black ${props.className}`}
         required={required}
+        defaultValue={""}
         onChange={props.onChange}
       >
-        <option key={-1} value="" selected hidden>
+        <option key={-1} value="" className="hidden">
           {props.placeholder}
         </option>
         {props.options.map((option, index) => {
