@@ -2,7 +2,7 @@ import { useState } from "react";
 import DropdownSelect from "@/components/DropdownSelect";
 
 interface FormData {
-  time: number;
+  year: number;
   a: string; // objective a
   b: string; // objective b
   c: string; // objective c
@@ -14,12 +14,12 @@ export default function PerfEvalForm() {
   const rating = ["not met", "met", "exceed"];
   const placeholder = "Select rating";
   // form variables
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     year: new Date().getFullYear(),
-    a: null,
-    b: null,
-    c: null,
-    d: null,
+    a: "",
+    b: "",
+    c: "",
+    d: "",
   });
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { id, value } = e.target;
