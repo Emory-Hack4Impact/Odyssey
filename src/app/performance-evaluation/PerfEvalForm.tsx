@@ -60,6 +60,7 @@ export default function PerfEvalForm() {
             placeholder={placeholder}
             required={true}
             onChange={handleChange}
+            className="rounded-lg p-2"
           />
         </div>
         <div className="mb-4">
@@ -72,6 +73,7 @@ export default function PerfEvalForm() {
             placeholder={placeholder}
             required={true}
             onChange={handleChange}
+            className="rounded-lg p-2"
           />
         </div>
         <div className="mb-4">
@@ -86,6 +88,7 @@ export default function PerfEvalForm() {
             placeholder={placeholder}
             required={true}
             onChange={handleChange}
+            className="rounded-lg p-2"
           />
         </div>
         <div className="mb-4">
@@ -99,6 +102,7 @@ export default function PerfEvalForm() {
             placeholder={placeholder}
             required={true}
             onChange={handleChange}
+            className="rounded-lg p-2"
           />
         </div>
         <button type="submit">Submit</button>
