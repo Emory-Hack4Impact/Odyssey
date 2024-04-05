@@ -2,6 +2,7 @@ interface Props {
   options: string[];
   placeholder: string;
   id: string;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   required?: boolean;
   className?: string;
 }
@@ -11,7 +12,12 @@ export default function DropdownSelect(props: Props) {
 
   return (
     <div>
-      <select id={props.id} className={`text-black ${props.className}`} required={required}>
+      <select
+        id={props.id}
+        className={`text-black ${props.className}`}
+        required={required}
+        onChange={props.onChange}
+      >
         <option key={-1} value="" selected hidden>
           {props.placeholder}
         </option>

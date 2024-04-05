@@ -11,7 +11,7 @@ interface FormData {
 
 export default function PerfEvalForm() {
   // dropdown variables
-  const rating = ["met", "partially met", "unmet"];
+  const rating = ["not met", "met", "exceed"];
   const placeholder = "Select rating";
   // form variables
   const [formData, setFormData] = useState({
@@ -21,10 +21,17 @@ export default function PerfEvalForm() {
     c: null,
     d: null,
   });
-
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { id, value } = e.target;
+    setFormData({ ...formData, [id]: value });
+  };
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log(formData);
+  };
   return (
     <div>
-      <form>
+      <form onSubmit={onSubmit}>
         <div className="mb-4">
           <label htmlFor="a">
             A. Employee contributes to the success of Odyssey’s mission and
@@ -35,6 +42,7 @@ export default function PerfEvalForm() {
             options={rating}
             placeholder={placeholder}
             required={true}
+            onChange={handleChange}
           />
         </div>
         <div className="mb-4">
@@ -46,6 +54,7 @@ export default function PerfEvalForm() {
             options={rating}
             placeholder={placeholder}
             required={true}
+            onChange={handleChange}
           />
         </div>
         <div className="mb-4">
@@ -59,6 +68,7 @@ export default function PerfEvalForm() {
             options={rating}
             placeholder={placeholder}
             required={true}
+            onChange={handleChange}
           />
         </div>
         <div className="mb-4">
@@ -71,6 +81,7 @@ export default function PerfEvalForm() {
             options={rating}
             placeholder={placeholder}
             required={true}
+            onChange={handleChange}
           />
         </div>
         <button type="submit">Submit</button>
