@@ -1,12 +1,13 @@
 interface Props {
   options: string[];
   placeholder: string;
+  id: string;
 }
 
 export default function DropdownSelect(props: Props) {
   return (
     <div>
-      <select className="text-black">
+      <select id={props.id} className="text-black">
         <option key={-1} value="" selected hidden>
           {props.placeholder}
         </option>
