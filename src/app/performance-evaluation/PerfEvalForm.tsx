@@ -44,8 +44,7 @@ export default function PerfEvalForm() {
             type="number"
             id="year"
             defaultValue={formData.year}
-            size={4}
-            maxLength={4}
+            max="9999"
             onChange={handleChange}
             className="block w-24 rounded-lg p-2 text-black"
           />
