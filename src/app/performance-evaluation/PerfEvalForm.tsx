@@ -21,7 +21,11 @@ export default function PerfEvalForm() {
     c: "",
     d: "",
   });
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleChange = (
+    e:
+      | React.ChangeEvent<HTMLSelectElement>
+      | React.ChangeEvent<HTMLInputElement>
+  ) => {
     const { id, value } = e.target;
     setFormData({ ...formData, [id]: value });
   };
@@ -30,8 +34,22 @@ export default function PerfEvalForm() {
     console.log(formData);
   };
   return (
-    <div>
+    <div className="m-6">
       <form onSubmit={onSubmit}>
+        <div className="mb-4">
+          <label htmlFor="year" className="block">
+            Year
+          </label>
+          <input
+            type="number"
+            id="year"
+            defaultValue={formData.year}
+            size={4}
+            maxLength={4}
+            onChange={handleChange}
+            className="block w-24 rounded-lg p-2 text-black"
+          />
+        </div>
         <div className="mb-4">
           <label htmlFor="a">
             A. Employee contributes to the success of Odyssey’s mission and
