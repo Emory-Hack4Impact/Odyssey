@@ -148,7 +148,7 @@ export default function PerfEvalForm() {
             className="mt-2 block w-full rounded-lg p-2 text-black"
           />
         </div>
-        <button type="submit">Submit</button>
+        <button type="submit" className="hover:text-gray-300">Submit</button>
       </form>
     </div>
   );
