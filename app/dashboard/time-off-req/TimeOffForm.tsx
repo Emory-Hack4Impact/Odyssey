@@ -64,9 +64,9 @@ const TimeOffForm: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-gray-100 rounded-lg shadow-md">
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4 pl-1">
+    <div className="mx-auto mt-10 p-6 bg-gray-100 rounded-lg shadow-md">
+      <form onSubmit={handleSubmit} className="flex">
+        <div className="w-full md:w-1/2 pr-2 mb-4">
           <label htmlFor="leaveType" className="block text-gray-700">Leave Type:</label>
           <select
             id="leaveType"
@@ -87,7 +87,7 @@ const TimeOffForm: React.FC = () => {
           {formErrors.leaveType && <p className="text-red-500 text-sm">{formErrors.leaveType}</p>}
         </div>
         {showOtherLeaveTypeField && (
-          <div className="mb-4 pl-1">
+          <div className="w-full md:w-1/2 pl-2 mb-4">
             <label htmlFor="otherLeaveType" className="block text-gray-700">Other Leave Type:</label>
             <input
               type="text"
@@ -99,7 +99,7 @@ const TimeOffForm: React.FC = () => {
             />
           </div>
         )}
-        <div className="mb-4">
+        <div className="w-full md:w-1/2 pr-2 mb-4">
           <label htmlFor="startDate" className="block text-gray-700">Start Date:</label>
           <input
             type="date"
@@ -111,7 +111,7 @@ const TimeOffForm: React.FC = () => {
           />
           {formErrors.startDate && <p className="text-red-500 text-sm">{formErrors.startDate}</p>}
         </div>
-        <div className="mb-4">
+        <div className="w-full md:w-1/2 pl-2 mb-4">
           <label htmlFor="endDate" className="block text-gray-700">End Date:</label>
           <input
             type="date"
@@ -123,7 +123,7 @@ const TimeOffForm: React.FC = () => {
           />
           {formErrors.endDate && <p className="text-red-500 text-sm">{formErrors.endDate}</p>}
         </div>
-        <div className="mb-4 pl-1">
+        <div className="w-full pl-1">
           <label htmlFor="comments" className="block text-gray-700">Additional Information:</label>
           <textarea
             id="comments"
@@ -134,7 +134,7 @@ const TimeOffForm: React.FC = () => {
             rows={4}
           />
         </div>
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Submit</button>
+        <button type="submit" className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 block w-full mt-4">Submit</button>
       </form>
     </div>
   );
