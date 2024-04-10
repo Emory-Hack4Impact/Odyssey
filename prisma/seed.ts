@@ -11,7 +11,7 @@ async function main() {
       is_admin: true,
       is_hr: false,
       position: "Manager",
-    }
+    },
   });
 
   await prisma.userMetadata.upsert({
@@ -22,7 +22,7 @@ async function main() {
       is_admin: false,
       is_hr: false,
       position: "Employee",
-    }
+    },
   });
 
   await prisma.userMetadata.upsert({
@@ -33,7 +33,7 @@ async function main() {
       is_admin: false,
       is_hr: false,
       position: "Employee",
-    }
+    },
   });
 
   await prisma.userMetadata.upsert({
@@ -44,7 +44,7 @@ async function main() {
       is_admin: true,
       is_hr: true,
       position: "HR",
-    }
+    },
   });
 }
 
