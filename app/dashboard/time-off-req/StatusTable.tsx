@@ -2,29 +2,28 @@ import React from 'react';
 
 const StatusTable: React.FC = () => {
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md text-black">
-      <h2 className="text-xl font-semibold mb-4">Status Table</h2>
-      <table className="w-full">
-        <thead>
-          <tr>
-            <th className="py-2 px-4 bg-gray-100 border-b">Leave Type</th>
-            <th className="py-2 px-4 bg-gray-100 border-b">Dates</th>
-            <th className="py-2 px-4 bg-gray-100 border-b">Additional Info</th>
-            <th className="py-2 px-4 bg-gray-100 border-b">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {/* Sample row */}
-          <tr>
-            <td className="py-2 px-4 border-b">Annual Leave</td>
-            <td className="py-2 px-4 border-b">01/01/2024 - 01/05/2024</td>
-            <td className="py-2 px-4 border-b">Family vacation</td>
-            <td className="py-2 px-4 border-b">Approved</td>
-          </tr>
-          {/* Add more rows here */}
-        </tbody>
-      </table>
-    </div>
+    <table className="mx-auto mt-10 p-6 rounded-lg shadow-lg text-black border-collapse border border-gray-200">
+      <thead>
+        <tr>
+          <th className="py-2 px-4 bg-gray-100 border-b border-gray-200">Leave Type</th>
+          <th className="py-2 px-4 bg-gray-100 border-b border-gray-200">Date From</th>
+          <th className="py-2 px-4 bg-gray-100 border-b border-gray-200">Date To</th>
+          <th className="py-2 px-4 bg-gray-100 border-b border-gray-200">Additional Info</th>
+          <th className="py-2 px-4 bg-gray-100 border-b border-gray-200">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {/* Sample row */}
+        <tr>
+          <td className="py-2 px-4 border-b border-gray-200">Annual Leave</td>
+          <td className="py-2 px-4 border-b border-gray-200">01/01/2024</td>
+          <td className="py-2 px-4 border-b border-gray-200">01/05/2024</td>
+          <td className="py-2 px-4 border-b border-gray-200">Family vacation</td>
+          <td className="py-2 px-4 border-b border-gray-200">Approved</td>
+        </tr>
+        {/* Add more rows here */}
+      </tbody>
+    </table>
   );
 };
 
