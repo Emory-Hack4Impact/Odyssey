@@ -29,11 +29,33 @@ INSERT INTO
   current_timestamp, current_timestamp,
   '', '', '', ''),
 
-  -- Regular user
+  -- Regular user #1
   ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001',
   'authenticated',
   'authenticated',
   'user1@example.com',
+  crypt ('password123', gen_salt ('bf')),
+  current_timestamp, current_timestamp, current_timestamp,
+  '{"provider":"email","providers":["email"]}', '{}',
+  current_timestamp, current_timestamp,
+  '', '', '', ''),
+  
+  -- Regular user #2
+  ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002',
+  'authenticated',
+  'authenticated',
+  'user2@example.com',
+  crypt ('password123', gen_salt ('bf')),
+  current_timestamp, current_timestamp, current_timestamp,
+  '{"provider":"email","providers":["email"]}', '{}',
+  current_timestamp, current_timestamp,
+  '', '', '', ''),
+  
+  -- HR user
+  ('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000003',
+  'authenticated',
+  'authenticated',
+  'hr@example.com',
   crypt ('password123', gen_salt ('bf')),
   current_timestamp, current_timestamp, current_timestamp,
   '{"provider":"email","providers":["email"]}', '{}',
