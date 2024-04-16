@@ -13,7 +13,7 @@ export interface TimeOffRequest {
 export async function submitFormData(formData: TimeOffRequest) {
   return await prisma.timeOffRequest.create({
     data: {
-      id: "00000000-0000-0000-0000-000000000001",
+      employeeId: "00000000-0000-0000-0000-000000000001", // hard coded for now, need to fetch from session in practice
       leaveType: formData.leaveType,
       otherLeaveType: formData.otherLeaveType,
       startDate: formData.startDate,

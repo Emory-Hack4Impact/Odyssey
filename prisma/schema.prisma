@@ -21,7 +21,8 @@ model UserMetadata {
 }
 
 model TimeOffRequest {
-  id              String  @id
+  id              Int     @id @default(autoincrement())
+  employeeId      String
   leaveType       String
   otherLeaveType  String  @default("")
   startDate       String
