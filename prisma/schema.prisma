@@ -19,3 +19,12 @@ model UserMetadata {
   is_hr    Boolean @default(false)
   position String  @default("")
 }
+
+model TimeOffRequest {
+  id              String  @id
+  leaveType       String
+  otherLeaveType  String  @default("")
+  startDate       String
+  endDate         String
+  comments        String  @default("")
+}
