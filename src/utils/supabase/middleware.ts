@@ -1,4 +1,5 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { type RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { type NextRequest, NextResponse } from "next/server";
 
 export const updateSession = async (request: NextRequest) => {
@@ -26,7 +27,7 @@ export const updateSession = async (request: NextRequest) => {
               name,
               value,
               ...options,
-            });
+            } as RequestCookie);
             response = NextResponse.next({
               request: {
                 headers: request.headers,
@@ -36,7 +37,7 @@ export const updateSession = async (request: NextRequest) => {
               name,
               value,
               ...options,
-            });
+            } as RequestCookie);
           },
           remove(name: string, options: CookieOptions) {
             // If the cookie is removed, update the cookies for the request and response
@@ -44,7 +45,7 @@ export const updateSession = async (request: NextRequest) => {
               name,
               value: "",
               ...options,
-            });
+            } as RequestCookie);
             response = NextResponse.next({
               request: {
                 headers: request.headers,
@@ -54,7 +55,7 @@ export const updateSession = async (request: NextRequest) => {
               name,
               value: "",
               ...options,
-            });
+            } as RequestCookie);
           },
         },
       },
