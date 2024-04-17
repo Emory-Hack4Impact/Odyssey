@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-interface FormData {
+export interface FormData {
   leaveType: string;
   otherLeaveType: string;
   startDate: string;
@@ -39,7 +39,7 @@ const TimeOffForm: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const errors: Partial<FormData> = {};
 
@@ -57,9 +57,29 @@ const TimeOffForm: React.FC = () => {
 
     setFormErrors(errors);
 
+    // TODO: returns 404 atm, routing is incorrect in /api/time-off-req/
     if (Object.keys(errors).length === 0) {
       console.log(formData);
       // Add submission logic here
+      try {
+        const response = await fetch('/api/time-off-req', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+          console.log(response.status);
+          throw new Error('Error submitting time off request');
+        }
+
+        const data = await response.json();
+        console.log(data);
+      } catch (error) {
+        console.error('Error submitting time off request', error);
+      }
     }
   };
 
