@@ -9,7 +9,7 @@ export default function PerformanceEvaluation() {
           <h1>
             <b>MAJOR JOB OBJECTIVES</b>
           </h1>
-          <ol style={{ listStyleType: "upper-alpha" }} className="ml-6 mb-2">
+          <ol style={{ listStyleType: "upper-alpha" }} className="mb-2 ml-6">
             <li key="A">
               Contributes to the success of Odyssey’s mission and demonstrates
               core values
