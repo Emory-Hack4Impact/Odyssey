@@ -23,7 +23,7 @@ export default async function Index() {
 
   return (
     <div className="flex w-full flex-1 flex-col items-center gap-20">
-      <NavBar/>
+      <NavBar />
       {/* restrict to width of content */}
       <SubNavBar selected="HR Services for Jane" />
       {/* <nav className="flex h-16 w-full justify-center border-b border-b-foreground/10">
