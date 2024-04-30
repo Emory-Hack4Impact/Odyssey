@@ -158,7 +158,7 @@ export default function PerfEvalForm() {
             required
           />
         </div>
-        <button type="submit" className="hover:text-light-maroon mt-2 p-2">
+        <button type="submit" className="mt-2 p-2 hover:text-light-maroon">
           Submit
         </button>
       </form>
