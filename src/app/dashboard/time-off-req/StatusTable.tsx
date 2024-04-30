@@ -1,25 +1,37 @@
-import React from 'react';
+import React from "react";
 
 const StatusTable: React.FC = () => {
   return (
-    <table className="mx-auto mt-10 p-6 rounded-lg shadow-lg text-black border-collapse border border-gray-200">
+    <table className="mx-auto mt-10 border-collapse rounded-lg border border-gray-200 p-6 text-black shadow-lg">
       <thead>
         <tr>
-          <th className="py-2 px-4 bg-gray-100 border-b border-gray-200">Leave Type</th>
-          <th className="py-2 px-4 bg-gray-100 border-b border-gray-200">Date From</th>
-          <th className="py-2 px-4 bg-gray-100 border-b border-gray-200">Date To</th>
-          <th className="py-2 px-4 bg-gray-100 border-b border-gray-200">Additional Info</th>
-          <th className="py-2 px-4 bg-gray-100 border-b border-gray-200">Status</th>
+          <th className="border-b border-gray-200 bg-gray-100 px-4 py-2">
+            Leave Type
+          </th>
+          <th className="border-b border-gray-200 bg-gray-100 px-4 py-2">
+            Date From
+          </th>
+          <th className="border-b border-gray-200 bg-gray-100 px-4 py-2">
+            Date To
+          </th>
+          <th className="border-b border-gray-200 bg-gray-100 px-4 py-2">
+            Additional Info
+          </th>
+          <th className="border-b border-gray-200 bg-gray-100 px-4 py-2">
+            Status
+          </th>
         </tr>
       </thead>
       <tbody>
         {/* Sample row */}
         <tr>
-          <td className="py-2 px-4 border-b border-gray-200">Annual Leave</td>
-          <td className="py-2 px-4 border-b border-gray-200">01/01/2024</td>
-          <td className="py-2 px-4 border-b border-gray-200">01/05/2024</td>
-          <td className="py-2 px-4 border-b border-gray-200">Family vacation</td>
-          <td className="py-2 px-4 border-b border-gray-200">Approved</td>
+          <td className="border-b border-gray-200 px-4 py-2">Annual Leave</td>
+          <td className="border-b border-gray-200 px-4 py-2">01/01/2024</td>
+          <td className="border-b border-gray-200 px-4 py-2">01/05/2024</td>
+          <td className="border-b border-gray-200 px-4 py-2">
+            Family vacation
+          </td>
+          <td className="border-b border-gray-200 px-4 py-2">Approved</td>
         </tr>
         {/* Add more rows here */}
       </tbody>
