@@ -46,7 +46,7 @@ export default function PerfEvalForm() {
   };
 
   return (
-    <div className="m-6">
+    <div className="m-6 rounded-lg border border-light-maroon bg-white p-6 shadow-lg">
       <form onSubmit={onSubmit}>
         <div className="mb-4">
           <label htmlFor="year">Year</label>
@@ -56,7 +56,7 @@ export default function PerfEvalForm() {
             defaultValue={formData.year}
             max="9999"
             onChange={handleChange}
-            className="block w-24 rounded-lg p-2 text-black"
+            className="block w-24 rounded-lg border border-gray-200 p-2 text-black"
             required
           />
         </div>
@@ -71,7 +71,7 @@ export default function PerfEvalForm() {
             placeholder={placeholder}
             required={true}
             onChange={handleChange}
-            className="my-2 rounded-lg p-2"
+            className="my-2 rounded-lg border border-gray-200 p-2"
           />
           <label htmlFor="aComm">Comments:</label>
           <textarea
@@ -79,7 +79,7 @@ export default function PerfEvalForm() {
             placeholder="Add comments..."
             rows={4}
             onChange={handleChange}
-            className="mt-2 block w-full rounded-lg p-2 text-black"
+            className="mt-2 block w-full rounded-lg border border-gray-200 p-2 text-black"
           />
         </div>
         <div className="mb-4">
@@ -92,7 +92,7 @@ export default function PerfEvalForm() {
             placeholder={placeholder}
             required={true}
             onChange={handleChange}
-            className="my-2 rounded-lg p-2"
+            className="my-2 rounded-lg border border-gray-200 p-2"
           />
           <label htmlFor="bComm">Comments:</label>
           <textarea
@@ -100,7 +100,7 @@ export default function PerfEvalForm() {
             placeholder="Add comments..."
             rows={4}
             onChange={handleChange}
-            className="mt-2 block w-full rounded-lg p-2 text-black"
+            className="mt-2 block w-full rounded-lg border border-gray-200 p-2 text-black"
           />
         </div>
         <div className="mb-4">
@@ -115,7 +115,7 @@ export default function PerfEvalForm() {
             placeholder={placeholder}
             required={true}
             onChange={handleChange}
-            className="my-2 rounded-lg p-2"
+            className="my-2 rounded-lg border border-gray-200 p-2"
           />
           <label htmlFor="cComm">Comments:</label>
           <textarea
@@ -123,7 +123,7 @@ export default function PerfEvalForm() {
             placeholder="Add comments..."
             rows={4}
             onChange={handleChange}
-            className="mt-2 block w-full rounded-lg p-2 text-black"
+            className="mt-2 block w-full rounded-lg border border-gray-200 p-2 text-black"
           />
         </div>
         <div className="mb-4">
@@ -137,7 +137,7 @@ export default function PerfEvalForm() {
             placeholder={placeholder}
             required={true}
             onChange={handleChange}
-            className="my-2 rounded-lg p-2"
+            className="my-2 rounded-lg border border-gray-200 p-2"
           />
           <label htmlFor="dComm">Comments:</label>
           <textarea
@@ -145,7 +145,7 @@ export default function PerfEvalForm() {
             placeholder="Add comments..."
             rows={4}
             onChange={handleChange}
-            className="mt-2 block w-full rounded-lg p-2 text-black"
+            className="mt-2 block w-full rounded-lg border border-gray-200 p-2 text-black"
           />
         </div>
         <div className="mb-4">
@@ -154,11 +154,11 @@ export default function PerfEvalForm() {
             type="text"
             id="signature"
             placeholder="Full Name"
-            className="block rounded-lg p-2 text-black"
+            className="block rounded-lg border border-gray-200 p-2 text-black"
             required
           />
         </div>
-        <button type="submit" className="hover:text-gray-300">
+        <button type="submit" className="hover:text-light-maroon mt-2 p-2">
           Submit
         </button>
       </form>
