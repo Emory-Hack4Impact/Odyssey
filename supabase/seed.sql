@@ -17,30 +17,25 @@ INSERT INTO
   email_change,
   email_change_token_new,
   recovery_token
-  ) values
-  -- Manager
+  ) VALUES
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000',
   'authenticated',
   'authenticated',
   'manager1@example.com',
-  crypt ('password123', gen_salt ('bf')),
+  crypt ('password1', gen_salt ('bf')),
   current_timestamp, current_timestamp, current_timestamp,
   '{"provider":"email","providers":["email"]}', '{}',
   current_timestamp, current_timestamp,
   '', '', '', ''),
-
-  -- Regular user #1
   ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001',
   'authenticated',
   'authenticated',
   'user1@example.com',
-  crypt ('password123', gen_salt ('bf')),
+  crypt ('password12', gen_salt ('bf')),
   current_timestamp, current_timestamp, current_timestamp,
   '{"provider":"email","providers":["email"]}', '{}',
   current_timestamp, current_timestamp,
   '', '', '', ''),
-  
-  -- Regular user #2
   ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002',
   'authenticated',
   'authenticated',
@@ -50,13 +45,11 @@ INSERT INTO
   '{"provider":"email","providers":["email"]}', '{}',
   current_timestamp, current_timestamp,
   '', '', '', ''),
-  
-  -- HR user
   ('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000003',
   'authenticated',
   'authenticated',
   'hr@example.com',
-  crypt ('password123', gen_salt ('bf')),
+  crypt ('password1234', gen_salt ('bf')),
   current_timestamp, current_timestamp, current_timestamp,
   '{"provider":"email","providers":["email"]}', '{}',
   current_timestamp, current_timestamp,

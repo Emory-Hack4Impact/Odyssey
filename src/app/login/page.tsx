@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { SubmitButton } from "./submit-button";
@@ -21,6 +20,7 @@ export default function Login({
     });
 
     if (error) {
+      console.error(error);
       return redirect("/login?message=Could not authenticate user");
     }
 
