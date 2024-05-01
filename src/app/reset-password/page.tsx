@@ -1,22 +1,14 @@
-"use client";
-
 import Link from "next/link";
-import { SubmitButton } from "./submit-button";
-import signIn from "./signin";
-import { useEffect, useState } from "react";
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
+import { SubmitButton } from "../login/submit-button";
+import updatePassword from "./updatePassword";
 
-export default function Login({
+export default function ResetPassword({
   searchParams,
 }: {
   searchParams: { message: string };
 }) {
-
-  const [redirect, setRedirect] = useState('');
-
-  useEffect(() => {
-    console.log(window.location.origin)
-    setRedirect(window.location.origin + '/reset-password');
-  }, []);
 
   return (
     <div className="flex w-full flex-1 flex-col justify-center gap-2 bg-maroon px-8">
@@ -31,37 +23,29 @@ export default function Login({
       <div className="mx-auto mt-20 rounded-2xl bg-white p-8 shadow sm:max-w-md">
         <form className="animate-in flex w-full flex-1 flex-col justify-center gap-2 text-foreground">
           <label className="text-md text-gray-800" htmlFor="email">
-            Email
+            Update Password
           </label>
           <input
             className="mb-6 rounded-md border border-gray-300 bg-inherit px-4 py-2 text-gray-800"
-            name="email"
-            placeholder="you@example.com"
+            name="newPassword"
+            type="password"
+            placeholder="New Password"
             required
           />
-          <label className="text-md text-gray-800" htmlFor="password">
-            Password
-          </label>
           <input
             className="mb-6 rounded-md border border-gray-300 bg-inherit px-4 py-2 text-gray-800"
+            name="confirmPassword"
             type="password"
-            name="password"
-            placeholder="••••••••"
+            placeholder="Confirm Password"
             required
           />
           <SubmitButton
-            formAction={signIn}
+            formAction={updatePassword}
             className="mb-2 rounded-md bg-light-maroon px-4 py-2 text-foreground"
             pendingText="Signing In..."
           >
-            Sign In
+            Reset Password
           </SubmitButton>
-          <Link
-            className="m-auto"
-            href={`/forgot-password?redirectUrl=${redirect}`}
-          >
-            Forgot password?
-          </Link>
           {searchParams?.message && (
             <p className="mt-4 bg-foreground/10 p-4 text-center text-foreground">
               {searchParams.message}
