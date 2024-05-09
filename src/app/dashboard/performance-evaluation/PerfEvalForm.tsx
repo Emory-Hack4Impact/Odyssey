@@ -2,6 +2,7 @@ import { useState } from "react";
 import DropdownSelect from "@/components/DropdownSelect";
 
 interface FormData {
+  id: string; //pulled from logged in user
   year: number; // year of evaluation
   a: string; // objective a
   aComm: string; // comments for objective a
