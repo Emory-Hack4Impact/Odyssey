@@ -1,8 +1,9 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { SubmitButton } from "./submit-button";
+import { revalidatePath } from "next/cache";
 
-export default function Login({
+export default async function Login({
   searchParams,
 }: {
   searchParams: { message: string };
@@ -21,10 +22,11 @@ export default function Login({
 
     if (error) {
       console.error(error);
-      return redirect("/login?message=Could not authenticate user");
+      return;
     }
 
-    return redirect("/protected");
+    revalidatePath("/", "layout");
+    return redirect("/");
   };
 
   return (

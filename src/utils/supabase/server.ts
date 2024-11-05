@@ -1,6 +1,8 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { revalidatePath } from "next/cache";
 import { type RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export const createClient = () => {
   const cookieStore = cookies();
@@ -34,4 +36,22 @@ export const createClient = () => {
       },
     },
   );
+};
+
+export const signOut = async () => {
+  const supabase = createClient();
+  await supabase.auth.signOut();
+
+  revalidatePath("/");
+  return redirect("/login");
+};
+
+export const useUser = async () => {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  return user;
 };
