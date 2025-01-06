@@ -13,7 +13,10 @@ const signIn = async (formData: FormData) => {
     password,
   });
 
+  console.log(`Credentials used:\n\temail: ${email}\n\tpassword: ${password}`)
+  
   if (error) {
+    console.log(error)
     return redirect("/login?message=Could not authenticate user");
   }
 
