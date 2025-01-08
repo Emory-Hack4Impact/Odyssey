@@ -45,7 +45,6 @@
     "postcss": "8.4.33",
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.7",
-    "supabase": "^1.226.3",
     "tailwindcss": "3.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.4"
