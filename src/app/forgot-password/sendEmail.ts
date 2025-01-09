@@ -6,7 +6,9 @@ const resetPassword = async (formData: FormData) => {
 
   const email = formData.get("email") as string;
   const supabase = createClient();
-  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
+  });
 
   if (error) {
     return redirect(

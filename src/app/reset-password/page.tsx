@@ -1,14 +1,24 @@
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import { SubmitButton } from "../login/submit-button";
+import { SubmitButton } from "@/components/submit-button";
 import updatePassword from "./updatePassword";
 
-export default function ResetPassword({
+export default async function ResetPassword({
   searchParams,
 }: {
-  searchParams: { message: string };
+  searchParams: { token?: string, message: string };
 }) {
+  if (!searchParams.token) {
+    redirect('/forgot-password?message=Please request a password reset email first.');
+  }
+
+  const supabase = createClient();
+  const { data, error } = await supabase.auth.getSession();
+
+  if (error || !data.session) {
+    redirect("/forgot-password?message=Invalid or expired reset link. Please request a new one.")
+  }
 
   return (
     <div className="flex w-full flex-1 flex-col justify-center gap-2 bg-maroon px-8">

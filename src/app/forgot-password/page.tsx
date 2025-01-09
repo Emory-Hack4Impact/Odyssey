@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { redirect, usePathname } from "next/navigation";
-import { SubmitButton } from "../login/submit-button";
+import { SubmitButton } from "@/components/submit-button";
 import resetPassword from "./sendEmail";
 
 export default function ForgotPassword({

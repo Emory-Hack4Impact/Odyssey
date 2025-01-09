@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { SubmitButton } from "./submit-button";
+import { SubmitButton } from "@/components/submit-button";
 import signIn from "./signin";
 import { useEffect, useState } from "react";
 
