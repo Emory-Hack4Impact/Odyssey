@@ -6,7 +6,7 @@ export default function PerformanceEvaluation() {
     <>
       <div className="w-9/12 py-4">
         <div>
-          <h1>
+          <h1 className="font-playfair text-light-maroon">
             <b>MAJOR JOB OBJECTIVES</b>
           </h1>
           <ol style={{ listStyleType: "upper-alpha" }} className="mb-2 ml-6">
@@ -26,7 +26,7 @@ export default function PerformanceEvaluation() {
           </ol>
         </div>
         <div className="mb-2">
-          <h1>
+          <h1 className="font-playfair text-light-maroon">
             <b>MISSION STATEMENT</b>
           </h1>
           <p>
@@ -35,7 +35,7 @@ export default function PerformanceEvaluation() {
           </p>
         </div>
         <div>
-          <h1>
+          <h1 className="font-playfair text-light-maroon">
             <b>CORE VALUES</b>
           </h1>
           <p>

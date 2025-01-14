@@ -3,21 +3,12 @@
 import Link from "next/link";
 import { SubmitButton } from "@/components/submit-button";
 import signIn from "./signin";
-import { useEffect, useState } from "react";
 
 export default function Login({
   searchParams,
 }: {
   searchParams: { message: string };
 }) {
-
-  const [redirect, setRedirect] = useState('');
-
-  useEffect(() => {
-    console.log(window.location.origin)
-    setRedirect(window.location.origin + '/reset-password');
-  }, []);
-
   return (
     <div className="flex w-full flex-1 flex-col justify-center gap-2 bg-maroon px-8">
       <div className="mb-10">
@@ -58,7 +49,7 @@ export default function Login({
           </SubmitButton>
           <Link
             className="m-auto"
-            href={`/forgot-password?redirectUrl=${redirect}`}
+            href={`/forgot-password?redirectUrl=${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`}
           >
             Forgot password?
           </Link>
