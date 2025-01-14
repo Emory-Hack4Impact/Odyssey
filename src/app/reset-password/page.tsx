@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { SubmitButton } from "@/components/submit-button";
@@ -7,17 +6,19 @@ import updatePassword from "./updatePassword";
 export default async function ResetPassword({
   searchParams,
 }: {
-  searchParams: { token?: string, message: string };
+  searchParams: { message: string, code: string };
 }) {
-  if (!searchParams.token) {
-    redirect('/forgot-password?message=Please request a password reset email first.');
+  const supabase = createClient();
+
+  if (!searchParams.code) {
+    redirect("/forgot-password?message=Invalid code! Please try again.")
   }
 
-  const supabase = createClient();
-  const { data, error } = await supabase.auth.getSession();
-
-  if (error || !data.session) {
-    redirect("/forgot-password?message=Invalid or expired reset link. Please request a new one.")
+  // generate session
+  const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(searchParams.code);
+  
+  if (error || !session) {
+    redirect("/forgot-password?message=Error exchanging code.");
   }
 
   return (
@@ -48,6 +49,16 @@ export default async function ResetPassword({
             type="password"
             placeholder="Confirm Password"
             required
+          />
+          <input
+            type="hidden"
+            name="accessToken"
+            value={session.access_token}
+          />
+          <input
+            type="hidden"
+            name="refreshToken"
+            value={session.refresh_token}
           />
           <SubmitButton
             formAction={updatePassword}
