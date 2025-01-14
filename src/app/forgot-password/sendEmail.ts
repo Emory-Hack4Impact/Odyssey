@@ -15,6 +15,8 @@ const resetPassword = async (formData: FormData) => {
       "/forgot-password?message=Could not send password reset email",
     );
   }
+
+  return redirect("/forgot-password?message=Confirmation email sent!")
 };
 
 export default resetPassword;
