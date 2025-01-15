@@ -17,6 +17,8 @@
 </p>
 <br/>
 
+reference: `psql -h localhost -p 5432 -U postgres`, password is `postgres`
+
 ## Features
 
 - Works across the entire [Next.js](https://nextjs.org) stack
