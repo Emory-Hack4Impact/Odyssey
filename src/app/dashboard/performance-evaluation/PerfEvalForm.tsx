@@ -2,6 +2,7 @@ import { useState } from "react";
 import DropdownSelect from "@/components/DropdownSelect";
 
 interface FormData {
+  id: string; //pulled from logged in user
   year: number; // year of evaluation
   a: string; // objective a
   aComm: string; // comments for objective a
@@ -19,6 +20,7 @@ export default function PerfEvalForm() {
   const placeholder = "Select rating";
   // form variables
   const [formData, setFormData] = useState<FormData>({
+    id: "00000000-0000-0000-0000-000000000001",
     year: new Date().getFullYear(),
     a: "",
     aComm: "",
@@ -77,6 +79,7 @@ export default function PerfEvalForm() {
           <textarea
             id="aComm"
             placeholder="Add comments..."
+            required={true}
             rows={4}
             onChange={handleChange}
             className="mt-2 block w-full rounded-lg border border-gray-200 p-2 text-black"
@@ -98,6 +101,7 @@ export default function PerfEvalForm() {
           <textarea
             id="bComm"
             placeholder="Add comments..."
+            required={true}
             rows={4}
             onChange={handleChange}
             className="mt-2 block w-full rounded-lg border border-gray-200 p-2 text-black"
@@ -121,6 +125,7 @@ export default function PerfEvalForm() {
           <textarea
             id="cComm"
             placeholder="Add comments..."
+            required={true}
             rows={4}
             onChange={handleChange}
             className="mt-2 block w-full rounded-lg border border-gray-200 p-2 text-black"
@@ -143,6 +148,7 @@ export default function PerfEvalForm() {
           <textarea
             id="dComm"
             placeholder="Add comments..."
+            required={true}
             rows={4}
             onChange={handleChange}
             className="mt-2 block w-full rounded-lg border border-gray-200 p-2 text-black"
