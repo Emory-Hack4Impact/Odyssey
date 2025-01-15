@@ -6,17 +6,20 @@ import updatePassword from "./updatePassword";
 export default async function ResetPassword({
   searchParams,
 }: {
-  searchParams: { message: string, code: string };
+  searchParams: { message: string; code: string };
 }) {
   const supabase = createClient();
 
   if (!searchParams.code) {
-    redirect("/forgot-password?message=Invalid code! Please try again.")
+    redirect("/forgot-password?message=Invalid code! Please try again.");
   }
 
   // generate session
-  const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(searchParams.code);
-  
+  const {
+    data: { session },
+    error,
+  } = await supabase.auth.exchangeCodeForSession(searchParams.code);
+
   if (error || !session) {
     redirect("/forgot-password?message=Error exchanging code.");
   }

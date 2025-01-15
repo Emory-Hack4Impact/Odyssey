@@ -11,7 +11,7 @@ const Home: React.FC = () => {
         <div className="flex w-full items-center justify-center lg:w-1/3 lg:justify-start lg:pl-20">
           <DaysInfo />
         </div>
-        <div className="w-full lg:mt-20 lg:mb-10 lg:w-2/3">
+        <div className="w-full lg:mb-10 lg:mt-20 lg:w-2/3">
           <div className="p-4">
             <TimeOffForm />
           </div>

@@ -7,7 +7,7 @@ import resetPassword from "./sendEmail";
 export default function ForgotPassword({
   searchParams,
 }: {
-  searchParams: { message: string, redirectUrl: string };
+  searchParams: { message: string; redirectUrl: string };
 }) {
   const supabase = createClient();
 

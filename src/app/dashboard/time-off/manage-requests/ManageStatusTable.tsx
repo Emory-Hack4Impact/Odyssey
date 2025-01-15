@@ -39,12 +39,12 @@ const ManageStatusTable: React.FC = () => {
         </tr>
         <tr>
           <td className="border-b border-gray-200 px-4 py-2">Marcia</td>
-          <td className="border-b border-gray-200 px-4 py-2">Maternity Leave</td>
+          <td className="border-b border-gray-200 px-4 py-2">
+            Maternity Leave
+          </td>
           <td className="border-b border-gray-200 px-4 py-2">01/01/2024</td>
           <td className="border-b border-gray-200 px-4 py-2">01/05/2024</td>
-          <td className="border-b border-gray-200 px-4 py-2">
-            It's a Girl!
-          </td>
+          <td className="border-b border-gray-200 px-4 py-2">It's a Girl!</td>
           <td className="border-b border-gray-200 px-4 py-2">Pending</td>
         </tr>
         <tr>
@@ -52,9 +52,7 @@ const ManageStatusTable: React.FC = () => {
           <td className="border-b border-gray-200 px-4 py-2">Sick Leave</td>
           <td className="border-b border-gray-200 px-4 py-2">01/01/2024</td>
           <td className="border-b border-gray-200 px-4 py-2">01/05/2024</td>
-          <td className="border-b border-gray-200 px-4 py-2">
-            Covid-19
-          </td>
+          <td className="border-b border-gray-200 px-4 py-2">Covid-19</td>
           <td className="border-b border-gray-200 px-4 py-2">Rejected</td>
         </tr>
         {/* Add more rows here */}
