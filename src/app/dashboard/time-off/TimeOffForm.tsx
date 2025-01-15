@@ -26,6 +26,9 @@ const TimeOffForm: React.FC = () => {
     useState<boolean>(false);
   const [formErrors, setFormErrors] = useState<Partial<FormData>>({});
 
+  const [characterCount, setCharacterCount] = useState(0); // Track character count
+  const maxChars = 150; // Maximum character limit
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -41,6 +44,10 @@ const TimeOffForm: React.FC = () => {
         ...prevState,
         otherLeaveType: "",
       }));
+    }
+
+    if (name === "comments") {
+      setCharacterCount(value.length); // Update character count
     }
 
     setFormData((prevState) => ({
@@ -166,9 +173,13 @@ const TimeOffForm: React.FC = () => {
             name="comments"
             value={formData.comments}
             onChange={handleChange}
+            maxLength={150}
             className="form-textarea mt-1 block w-full rounded-md border border-gray-300 p-2 text-lg text-gray-700"
             rows={4}
           />
+          <p className="text-right text-sm text-gray-600">
+            Characters remaining: {maxChars - characterCount}
+          </p>
         </div>
         <button
           type="submit"
