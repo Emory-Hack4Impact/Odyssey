@@ -4,14 +4,15 @@ import ManageStatusTable from "./ManageStatusTable";
 import PendingTable from "./PendingTable";
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
+import { Value } from "node_modules/react-calendar/dist/esm/shared/types";
 
 
 export default function timeoffRequests() {
 
     const [date, setDate] = React.useState(new Date());
 
-    const onChange = (newDate) => {
-      setDate(newDate);
+    const onChange = (newDate: Value) => {
+      setDate(newDate as Date);
       // Handle date change, e.g., fetch time-off requests for the selected date
     };    
 
