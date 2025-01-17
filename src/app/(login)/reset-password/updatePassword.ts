@@ -13,7 +13,7 @@ const updatePassword = async (formData: FormData) => {
   await supabase.auth.setSession({
     access_token: accessToken,
     refresh_token: refreshToken,
-  })
+  });
 
   if (newPassword !== confirmPassword) {
     console.log("passwords must match");

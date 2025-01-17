@@ -12,7 +12,7 @@ const signIn = async (formData: FormData) => {
     email,
     password,
   });
-  
+
   if (error) {
     return redirect("/login?message=Could not authenticate user");
   }

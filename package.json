@@ -23,6 +23,7 @@
     "@prisma/client": "^5.11.0",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
+    "@typescript-eslint/typescript-estree": "^8.20.0",
     "autoprefixer": "10.4.17",
     "geist": "^1.2.1",
     "next": "latest",
@@ -31,7 +32,8 @@
     "prisma": "^5.11.0",
     "react": "18.2.0",
     "react-calendar": "^5.0.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "types": "^0.1.1"
   },
   "devDependencies": {
     "@types/eslint": "^8.44.7",

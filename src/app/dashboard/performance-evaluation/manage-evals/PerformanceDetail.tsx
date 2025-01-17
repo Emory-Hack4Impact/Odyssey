@@ -1,10 +1,10 @@
-import React from 'react';
+import React from "react";
 
 // Assuming this structure for the evaluation details passed as props
 const PerformanceDetail = ({ evaluation }) => {
   return (
-    <div className="mx-auto p-4 w-full max-w-2xl bg-white rounded-lg shadow-md">
-      <h2 className="text-xl font-bold mb-4">Performance Evaluation Detail</h2>
+    <div className="mx-auto w-full max-w-2xl rounded-lg bg-white p-4 shadow-md">
+      <h2 className="mb-4 text-xl font-bold">Performance Evaluation Detail</h2>
       <div className="mb-4">
         <strong>Employee Name:</strong> {evaluation.employeeName}
       </div>
@@ -14,10 +14,18 @@ const PerformanceDetail = ({ evaluation }) => {
       <div className="mb-4">
         <strong>Objectives and Comments:</strong>
         <ul className="list-disc pl-5">
-          <li><strong>A:</strong> {evaluation.a} - {evaluation.aComm}</li>
-          <li><strong>B:</strong> {evaluation.b} - {evaluation.bComm}</li>
-          <li><strong>C:</strong> {evaluation.c} - {evaluation.cComm}</li>
-          <li><strong>D:</strong> {evaluation.d} - {evaluation.dComm}</li>
+          <li>
+            <strong>A:</strong> {evaluation.a} - {evaluation.aComm}
+          </li>
+          <li>
+            <strong>B:</strong> {evaluation.b} - {evaluation.bComm}
+          </li>
+          <li>
+            <strong>C:</strong> {evaluation.c} - {evaluation.cComm}
+          </li>
+          <li>
+            <strong>D:</strong> {evaluation.d} - {evaluation.dComm}
+          </li>
         </ul>
       </div>
     </div>

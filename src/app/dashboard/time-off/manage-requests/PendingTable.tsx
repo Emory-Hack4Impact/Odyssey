@@ -43,11 +43,13 @@ const PendingTable: React.FC = () => {
         </tr>
         <tr>
           <td className="border-b border-gray-200 px-4 py-2">Marcia</td>
-          <td className="border-b border-gray-200 px-4 py-2">Maternity Leave</td>
+          <td className="border-b border-gray-200 px-4 py-2">
+            Maternity Leave
+          </td>
           <td className="border-b border-gray-200 px-4 py-2">01/01/2024</td>
           <td className="border-b border-gray-200 px-4 py-2">01/05/2024</td>
           <td className="border-b border-gray-200 px-4 py-2">
-            It's a Girl!
+            It&apos;s a Girl!
           </td>
           <td className="border-b border-gray-200 px-4 py-2">12/29/2023</td>
           <td className="border-b border-gray-200 px-4 py-2">yes or no</td>
@@ -57,9 +59,7 @@ const PendingTable: React.FC = () => {
           <td className="border-b border-gray-200 px-4 py-2">Sick Leave</td>
           <td className="border-b border-gray-200 px-4 py-2">01/01/2024</td>
           <td className="border-b border-gray-200 px-4 py-2">01/05/2024</td>
-          <td className="border-b border-gray-200 px-4 py-2">
-            COVID-19
-          </td>
+          <td className="border-b border-gray-200 px-4 py-2">COVID-19</td>
           <td className="border-b border-gray-200 px-4 py-2">12/29/2023</td>
           <td className="border-b border-gray-200 px-4 py-2">yes or no</td>
         </tr>
