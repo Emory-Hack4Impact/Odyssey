@@ -23,7 +23,6 @@
     "@prisma/client": "^5.11.0",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
-    "@typescript-eslint/typescript-estree": "^8.20.0",
     "autoprefixer": "10.4.17",
     "geist": "^1.2.1",
     "next": "latest",
