@@ -1,7 +1,21 @@
 import React, { useState } from "react";
 import PerformanceDetail from "./PerformanceDetail";
 
-const evaluations = [
+type Evaluation = {
+  id: number;
+  employeeName: string;
+  year: number;
+  a: string;
+  aComm: string;
+  b: string;
+  bComm: string;
+  c: string;
+  cComm: string;
+  d: string;
+  dComm: string;
+};
+
+const evaluations: Evaluation[] = [
   {
     id: 1,
     employeeName: "John Doe",
@@ -44,9 +58,10 @@ const evaluations = [
 ];
 
 const PerformanceList = () => {
-  const [selectedEvaluation, setSelectedEvaluation] = useState(null);
+  const [selectedEvaluation, setSelectedEvaluation] =
+    useState<null | Evaluation>(null);
 
-  const handleOpenClick = (evaluation) => {
+  const handleOpenClick = (evaluation: Evaluation) => {
     setSelectedEvaluation(evaluation);
   };
 

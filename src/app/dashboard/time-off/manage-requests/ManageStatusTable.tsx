@@ -44,7 +44,9 @@ const ManageStatusTable: React.FC = () => {
           </td>
           <td className="border-b border-gray-200 px-4 py-2">01/01/2024</td>
           <td className="border-b border-gray-200 px-4 py-2">01/05/2024</td>
-          <td className="border-b border-gray-200 px-4 py-2">It's a Girl!</td>
+          <td className="border-b border-gray-200 px-4 py-2">
+            It&apos;s a Girl!
+          </td>
           <td className="border-b border-gray-200 px-4 py-2">Pending</td>
         </tr>
         <tr>
