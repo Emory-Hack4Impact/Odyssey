@@ -1,3 +1,5 @@
+"use server";
+
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -5,7 +7,6 @@ export async function verifyCode(searchParams: {
   message: string;
   code: string;
 }) {
-  "use server";
   const supabase = createClient();
 
   if (!searchParams.code) {
@@ -26,8 +27,6 @@ export async function verifyCode(searchParams: {
 }
 
 export const updatePassword = async (formData: FormData) => {
-  "use server";
-
   const newPassword = formData.get("newPassword") as string;
   const confirmPassword = formData.get("confirmPassword") as string;
   const accessToken = formData.get("accessToken") as string;
