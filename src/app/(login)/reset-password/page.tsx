@@ -1,28 +1,12 @@
-import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
 import { SubmitButton } from "@/components/submit-button";
-import updatePassword from "./updatePassword";
+import { verifyCode, updatePassword } from "./action";
 
 export default async function ResetPassword({
   searchParams,
 }: {
   searchParams: { message: string; code: string };
 }) {
-  const supabase = createClient();
-
-  if (!searchParams.code) {
-    redirect("/forgot-password?message=Invalid code! Please try again.");
-  }
-
-  // generate session
-  const {
-    data: { session },
-    error,
-  } = await supabase.auth.exchangeCodeForSession(searchParams.code);
-
-  if (error ?? !session) {
-    redirect("/forgot-password?message=Error exchanging code.");
-  }
+  const session = await verifyCode(searchParams);
 
   return (
     <div className="flex w-full flex-1 flex-col justify-center gap-2 bg-maroon px-8">

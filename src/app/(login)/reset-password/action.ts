@@ -1,7 +1,31 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 
-const updatePassword = async (formData: FormData) => {
+export async function verifyCode(searchParams: {
+  message: string;
+  code: string;
+}) {
+  "use server";
+  const supabase = createClient();
+
+  if (!searchParams.code) {
+    redirect("/forgot-password?message=Invalid code! Please try again.");
+  }
+
+  // generate session
+  const {
+    data: { session },
+    error,
+  } = await supabase.auth.exchangeCodeForSession(searchParams.code);
+
+  if (error ?? !session) {
+    redirect("/forgot-password?message=Error exchanging code.");
+  }
+
+  return session;
+}
+
+export const updatePassword = async (formData: FormData) => {
   "use server";
 
   const newPassword = formData.get("newPassword") as string;
@@ -16,7 +40,6 @@ const updatePassword = async (formData: FormData) => {
   });
 
   if (newPassword !== confirmPassword) {
-    console.log("passwords must match");
     return redirect("/reset-password?message=Passwords must match");
   }
 
@@ -25,11 +48,8 @@ const updatePassword = async (formData: FormData) => {
   });
 
   if (error) {
-    console.log(error);
     return redirect(`/forgot-password?message=${error.message}`);
   } else {
-    return redirect("/protected");
+    return redirect("/dashboard");
   }
 };
-
-export default updatePassword;
