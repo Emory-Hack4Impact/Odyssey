@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { SubmitButton } from "@/components/submit-button";
-import signIn from "./signin";
+import signIn from "./action";
 
 export default function Login({
   searchParams,

@@ -21,8 +21,8 @@
   "dependencies": {
     "@headlessui/react": "^1.7.18",
     "@prisma/client": "^5.11.0",
-    "@supabase/ssr": "latest",
-    "@supabase/supabase-js": "latest",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.48.1",
     "autoprefixer": "10.4.17",
     "geist": "^1.2.1",
     "next": "latest",
@@ -47,7 +47,7 @@
     "postcss": "8.4.33",
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.7",
-    "supabase": "^2.0.0",
+    "supabase": "^2.9.6",
     "tailwindcss": "3.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.4"
