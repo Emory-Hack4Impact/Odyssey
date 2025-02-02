@@ -32,14 +32,6 @@ export function createClient() {
   )
 }
 
-export const signOut = async () => {
-  const supabase = createClient();
-  await supabase.auth.signOut();
-
-  revalidatePath("/");
-  return redirect("/login");
-};
-
 export const useUser = async () => {
   const supabase = createClient();
 
