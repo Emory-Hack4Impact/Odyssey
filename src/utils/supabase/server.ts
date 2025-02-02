@@ -1,7 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
-import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
 export function createClient() {
   const cookieStore = cookies();
