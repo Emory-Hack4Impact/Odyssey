@@ -5,5 +5,5 @@ export default async function AuthButton() {
         Sign out
       </button>
     </form>
-  )
+  );
 }

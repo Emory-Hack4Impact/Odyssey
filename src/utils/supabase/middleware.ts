@@ -39,6 +39,8 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && !publicPaths.includes(request.nextUrl.pathname)) {
     return NextResponse.redirect(new URL("/signin", request.url))
+  } else if (user && request.nextUrl.pathname === "/signin") {
+    return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
   return supabaseResponse
