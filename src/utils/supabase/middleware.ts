@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export const publicPaths = ["/login", "/forgot-password", "/reset-password"];
+export const publicPaths = ["/signin", "/forgot-password", "/reset-password"];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -33,7 +33,7 @@ export async function updateSession(request: NextRequest) {
   const {data: { user }} = await supabase.auth.getUser();
 
   if (!user && !publicPaths.includes(request.nextUrl.pathname)) {
-    return NextResponse.redirect(new URL("/login", request.url))
+    return NextResponse.redirect(new URL("/signin", request.url))
   }
 
   return supabaseResponse

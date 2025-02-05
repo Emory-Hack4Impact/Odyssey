@@ -4,7 +4,7 @@ import Link from "next/link";
 import { SubmitButton } from "@/components/submit-button";
 import signIn from "./action";
 
-export default function Login({
+export default function Signin({
   searchParams,
 }: {
   searchParams: { message: string };
