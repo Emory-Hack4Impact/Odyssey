@@ -15,7 +15,7 @@ export default function NavBar() {
         <ul className="flex h-full w-full items-center gap-8 whitespace-pre">
           <li className="h-full w-full">
             <Link
-              href="/"
+              href="/dashboard"
               className="rounded-full bg-white px-5 py-3 font-semibold transition-all hover:bg-gray-100"
             >
               Dashboard

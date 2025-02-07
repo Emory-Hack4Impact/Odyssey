@@ -1,79 +1,48 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
-import { type RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
-import { type NextRequest, NextResponse } from "next/server";
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
-export const updateSession = async (request: NextRequest) => {
-  // This `try/catch` block is only here for the interactive tutorial.
-  // Feel free to remove once you have Supabase connected.
-  try {
-    // Create an unmodified response
-    let response = NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    });
+export const publicPaths = ["/signin", "/forgot-password", "/reset-password", "/auth"];
 
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return request.cookies.get(name)?.value;
-          },
-          set(name: string, value: string, options: CookieOptions) {
-            // If the cookie is updated, update the cookies for the request and response
-            request.cookies.set({
-              name,
-              value,
-              ...options,
-            } as RequestCookie);
-            response = NextResponse.next({
-              request: {
-                headers: request.headers,
-              },
-            });
-            response.cookies.set({
-              name,
-              value,
-              ...options,
-            } as RequestCookie);
-          },
-          remove(name: string, options: CookieOptions) {
-            // If the cookie is removed, update the cookies for the request and response
-            request.cookies.set({
-              name,
-              value: "",
-              ...options,
-            } as RequestCookie);
-            response = NextResponse.next({
-              request: {
-                headers: request.headers,
-              },
-            });
-            response.cookies.set({
-              name,
-              value: "",
-              ...options,
-            } as RequestCookie);
-          },
+export async function updateSession(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({
+    request,
+  })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options: _options }) => request.cookies.set(name, value))
+          // ensure response object reflects the updated cookies
+          supabaseResponse = NextResponse.next({
+            request,
+          })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
         },
       },
-    );
+    }
+  )
 
-    // This will refresh session if expired - required for Server Components
-    // https://supabase.com/docs/guides/auth/server-side/nextjs
-    await supabase.auth.getUser();
+  // Do not run code between createServerClient and
+  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
+  // issues with users being randomly logged out.
 
-    return response;
-  } catch (e) {
-    // If you are here, a Supabase client could not be created!
-    // This is likely because you have not set up environment variables.
-    // Check out http://localhost:3000 for Next Steps.
-    return NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    });
+  // IMPORTANT: DO NOT REMOVE auth.getUser()
+  // refreshes session if expired
+  const {data: { user }} = await supabase.auth.getUser();
+
+  if (!user && !publicPaths.some((val: string) => request.nextUrl.pathname.startsWith(val))) {
+    return NextResponse.redirect(new URL("/signin", request.url))
+  } else if (user && request.nextUrl.pathname === "/signin") {
+    return NextResponse.redirect(new URL("/dashboard", request.url))
   }
-};
+
+  return supabaseResponse
+}
