@@ -16,7 +16,7 @@ const signIn = async (formData: FormData) => {
   });
 
   if (error) {
-    return redirect("/signin?message=Could not authenticate user");
+    return redirect(`/signin?message=${error.message}`);
   }
 
   revalidatePath("/", "layout");

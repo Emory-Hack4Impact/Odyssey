@@ -28,11 +28,7 @@ export default async function ResetPassword({
           placeholder="Confirm Password"
           required
         />
-        <input
-          type="hidden"
-          name="accessToken"
-          value={session.access_token}
-        />
+        <input type="hidden" name="accessToken" value={session.access_token} />
         <input
           type="hidden"
           name="refreshToken"
