@@ -14,18 +14,20 @@ datasource db {
 }
 
 model UserMetadata {
-  id       String  @id
-  is_admin Boolean @default(false)
-  is_hr    Boolean @default(false)
-  position String  @default("")
+  id              String           @id
+  is_admin        Boolean          @default(false)
+  is_hr           Boolean          @default(false)
+  position        String           @default("")
+  TimeOffRequests TimeOffRequest[]
 }
 
 model TimeOffRequest {
-  id              Int     @id @default(autoincrement())
-  employeeId      String
-  leaveType       String
-  otherLeaveType  String  @default("")
-  startDate       String
-  endDate         String
-  comments        String  @default("")
+  id             Int          @id @default(autoincrement())
+  employeeId     String
+  leaveType      String
+  otherLeaveType String       @default("")
+  startDate      DateTime
+  endDate        DateTime
+  comments       String       @default("")
+  UserMetadata   UserMetadata @relation(fields: [employeeId], references: [id])
 }

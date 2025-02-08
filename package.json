@@ -11,6 +11,7 @@
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
     "db:seed": "prisma db seed",
+    "db:migrate": "prisma migrate dev",
     "postinstall": "prisma generate",
     "format:check": "prettier --check .",
     "format": "prettier --write . --list-different"
