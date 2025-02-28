@@ -1,27 +1,97 @@
 "use client"
+import { useState } from "react"
 
-import { User } from "@supabase/supabase-js"
+interface HRServicesProps {
+  username: string; 
+}
 
-export const HRServices({ user: User }) {
-  const [timeOff, setTimeOff] = useState(true)
-  const [careerDev, setCareerDev] = useState(false)
-  const [perfEvals, setperfEvals] = useState(false)
-  const [benefits, setBenefits] = useState(false)
-  const [docs, setDocs] = useState(true)
+export const HRServices = ({ username }: HRServicesProps) => {
+
+  const [activeTab, setActiveTab] = useState("timeOff");
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+  };
 
   return (
     <div className="flex w-full h-screen items-start mt-12 px-4">
       <div className="animate-in flex flex-1 flex-col gap-20 px-3 opacity-0">
-        {/* non-null assertion because middleware will redirect to signin if user doesn't exist */}
-        <div className="flex justify-between border-b-2">
-            {`HR Services for ${res}`}
+        <div className="flex flex-col w-full">
+          <div className="flex justify-between border-b-2">
+            <h1 className="text-xl font-semibold mb-4">{`HR Services for ${username}`}</h1>
             <div className="flex">
-                <button className="px-4 py-2">Time Off</button>
-                <button className="px-4 py-2">Career Development</button>
-                <button className="px-4 py-2">Performance Evaluations</button>
-                <button className="px-4 py-2">Benefits</button>
-                <button className="px-4 py-2">Documents</button>
+              <button 
+                className={`px-4 ${activeTab === "timeOff" ? "border-b-2 border-black font-medium" : ""}`}
+                onClick={() => handleTabChange("timeOff")}
+              >
+                Time Off
+              </button>
+              <button 
+                className={`px-4 ${activeTab === "careerDev" ? "border-b-2 border-black font-medium" : ""}`}
+                onClick={() => handleTabChange("careerDev")}
+              >
+                Career Development
+              </button>
+              <button 
+                className={`px-4 ${activeTab === "perfEvals" ? "border-b-2 border-black font-medium" : ""}`}
+                onClick={() => handleTabChange("perfEvals")}
+              >
+                Performance Evaluations
+              </button>
+              <button 
+                className={`px-4 ${activeTab === "benefits" ? "border-b-2 border-black font-medium" : ""}`}
+                onClick={() => handleTabChange("benefits")}
+              >
+                Benefits
+              </button>
+              <button 
+                className={`px-4 ${activeTab === "docs" ? "border-b-2 border-black font-medium" : ""}`}
+                onClick={() => handleTabChange("docs")}
+              >
+                Documents
+              </button>
             </div>
+          </div>
+          
+          <div className="mt-6 p-4">
+            {activeTab === "timeOff" && (
+              <div>
+                <h2 className="text-lg font-medium mb-4">Time Off Management</h2>
+                <p>View and request time off here.</p>
+                {/* Time off content goes here */}
+              </div>
+            )}
+            
+            {activeTab === "careerDev" && (
+              <div>
+                <h2 className="text-lg font-medium mb-4">Career Development</h2>
+                <p>Explore career growth opportunities.</p>
+                {/* Career development content goes here */}
+              </div>
+            )}
+            
+            {activeTab === "perfEvals" && (
+              <div>
+                <h2 className="text-lg font-medium mb-4">Performance Evaluations</h2>
+                <p>View your performance evaluations.</p>
+                {/* Performance evaluations content goes here */}
+              </div>
+            )}
+            
+            {activeTab === "benefits" && (
+              <div>
+                <h2 className="text-lg font-medium mb-4">Benefits</h2>
+                {/* Insert content here */}
+              </div>
+            )}
+            
+            {activeTab === "docs" && (
+              <div>
+                <h2 className="text-lg font-medium mb-4">Documents</h2>
+                {/* Insert content here */}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

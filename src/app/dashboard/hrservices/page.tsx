@@ -1,15 +1,17 @@
-"use client"
-
 import { SubNavBar } from "@/components/NavBar";
-import { useUser } from "@/utils/supabase/server";
 import { HRServices } from "./HRServices";
+import { createClient } from "@/utils/supabase/server";
 
-export default async function hrservices() {
-  const user = useUser();
+export default async function HRServicesPage() {
+
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  const username = user?.email || user?.user_metadata?.name || "User";
 
   return (
     <>
-      <HRServices prop/>
+      <HRServices username={username} />
     </>
-  );
+  )
 }
