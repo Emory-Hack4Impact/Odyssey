@@ -17,7 +17,7 @@ export const HRServices = ({ username }: HRServicesProps) => {
   };
 
   return (
-    <div className="flex w-full h-screen items-start mt-12 px-4">
+    <div className="flex w-full min-h-screen items-start mt-12 px-4">
       <div className="animate-in flex flex-1 flex-col gap-20 px-3 opacity-0">
         <div className="flex flex-col w-full">
           <div className="flex justify-between border-b-2">
@@ -66,8 +66,7 @@ export const HRServices = ({ username }: HRServicesProps) => {
             {activeTab === "careerDev" && (
               <div>
                 <h2 className="text-lg font-medium mb-4">Career Development</h2>
-                <p>Explore career growth opportunities.</p>
-                {/* Career development content goes here */}
+                {/* Insert Career Dev Component */}
               </div>
             )}
             

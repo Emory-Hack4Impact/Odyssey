@@ -12,7 +12,6 @@ export default function DashboardLayout({
         <NavBar />
       </header>
       <main className="flex flex-col"> {children}
-        
       </main>
       <footer>
         <Footer />

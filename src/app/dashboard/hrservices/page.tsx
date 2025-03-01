@@ -10,8 +10,8 @@ export default async function HRServicesPage() {
   const username = user?.email || user?.user_metadata?.name || "User";
 
   return (
-    <>
+    <div>
       <HRServices username={username} />
-    </>
+    </div>
   )
 }
