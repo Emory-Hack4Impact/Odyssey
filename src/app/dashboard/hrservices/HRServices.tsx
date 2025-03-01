@@ -24,31 +24,31 @@ export const HRServices = ({ username }: HRServicesProps) => {
             <h1 className="text-xl font-semibold mb-4">{`HR Services for ${username}`}</h1>
             <div className="flex">
               <button 
-                className={`px-4 ${activeTab === "timeOff" ? "border-b-2 border-black font-medium" : ""}`}
+                className={`px-4 ${activeTab === "timeOff" ? "border-b-2 border-black transition-all font-medium" : ""}`}
                 onClick={() => handleTabChange("timeOff")}
               >
                 Time Off
               </button>
               <button 
-                className={`px-4 ${activeTab === "careerDev" ? "border-b-2 border-black font-medium" : ""}`}
+                className={`px-4 ${activeTab === "careerDev" ? "border-b-2 border-black transition-all font-medium" : ""}`}
                 onClick={() => handleTabChange("careerDev")}
               >
                 Career Development
               </button>
               <button 
-                className={`px-4 ${activeTab === "perfEvals" ? "border-b-2 border-black font-medium" : ""}`}
+                className={`px-4 ${activeTab === "perfEvals" ? "border-b-2 border-black transition-all font-medium" : ""}`}
                 onClick={() => handleTabChange("perfEvals")}
               >
                 Performance Evaluations
               </button>
               <button 
-                className={`px-4 ${activeTab === "benefits" ? "border-b-2 border-black font-medium" : ""}`}
+                className={`px-4 ${activeTab === "benefits" ? "border-b-2 border-black transition-all font-medium" : ""}`}
                 onClick={() => handleTabChange("benefits")}
               >
                 Benefits
               </button>
               <button 
-                className={`px-4 ${activeTab === "docs" ? "border-b-2 border-black font-medium" : ""}`}
+                className={`px-4 ${activeTab === "docs" ? "border-b-2 border-black transition-all font-medium" : ""}`}
                 onClick={() => handleTabChange("docs")}
               >
                 Documents
