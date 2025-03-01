@@ -1,4 +1,7 @@
 "use client"
+import PerfEval from "@/components/performance-evaluation/PerfEval";
+import TimeOff from "@/components/time-off/TimeOff";
+import { TimerOff } from "lucide-react";
 import { useState } from "react"
 
 interface HRServicesProps {
@@ -56,9 +59,7 @@ export const HRServices = ({ username }: HRServicesProps) => {
           <div className="mt-6 p-4">
             {activeTab === "timeOff" && (
               <div>
-                <h2 className="text-lg font-medium mb-4">Time Off Management</h2>
-                <p>View and request time off here.</p>
-                {/* Time off content goes here */}
+                <TimeOff />
               </div>
             )}
             
@@ -72,9 +73,7 @@ export const HRServices = ({ username }: HRServicesProps) => {
             
             {activeTab === "perfEvals" && (
               <div>
-                <h2 className="text-lg font-medium mb-4">Performance Evaluations</h2>
-                <p>View your performance evaluations.</p>
-                {/* Performance evaluations content goes here */}
+                <PerfEval />
               </div>
             )}
             

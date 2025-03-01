@@ -11,7 +11,9 @@ export default function DashboardLayout({
       <header>
         <NavBar />
       </header>
-      <main className="flex flex-col">{children}</main>
+      <main className="flex flex-col"> {children}
+        
+      </main>
       <footer>
         <Footer />
       </footer>
