@@ -1,19 +1,17 @@
-"use server"
+"use server";
 
 import { useUser } from "@/utils/supabase/server";
 
-const getUser = async () => {
-  
-    let res = await useUser()
+const GetUser = async () => {
+  const res = await useUser();
 
-    console.log(res)
+  console.log(res);
 
-    return (
-        <h1 className="text-2xl">
-            {`HR Services for ${res}`}
-        </h1>
-    )
-
+  return res ? (
+    <h1 className="text-2xl">{`HR Services for ${res.email}`}</h1>
+  ) : (
+    <h1 className="text-2xl">{`HR Services`}</h1>
+  );
 };
 
-export const title = await getUser()
+export const title = await GetUser();
