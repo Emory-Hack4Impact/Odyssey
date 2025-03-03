@@ -21,12 +21,9 @@
   "dependencies": {
     "@headlessui/react": "^1.7.18",
     "@prisma/client": "^5.11.0",
-    "@radix-ui/react-menubar": "^1.1.6",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.48.1",
     "autoprefixer": "10.4.17",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
     "geist": "^1.2.1",
     "lucide-react": "^0.475.0",
     "next": "latest",
@@ -36,7 +33,6 @@
     "react": "18.2.0",
     "react-calendar": "^5.0.0",
     "react-dom": "18.2.0",
-    "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
     "types": "^0.1.1"
   },
