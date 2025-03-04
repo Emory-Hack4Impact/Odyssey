@@ -6,7 +6,7 @@ import StatusTable from "./StatusTable";
 
 const Home: React.FC = () => {
   return (
-    <div className="min-h-screen w-full bg-white">
+    <div className="min-h-screen w-full">
       <div className="flex w-full flex-wrap">
         <div className="flex w-full items-center justify-center lg:w-1/3 lg:justify-start lg:pl-20">
           <DaysInfo />

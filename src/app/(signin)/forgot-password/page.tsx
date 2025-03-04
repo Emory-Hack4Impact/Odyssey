@@ -8,7 +8,7 @@ export default function ForgotPassword({
 }) {
   return (
     <div className="mx-auto mt-20 rounded-2xl bg-white p-8 shadow sm:max-w-md">
-      <form className="animate-in flex w-full flex-1 flex-col justify-center gap-2 text-foreground">
+      <form className="flex w-full flex-1 flex-col justify-center gap-2 text-foreground animate-in">
         <label className="text-md text-gray-800" htmlFor="email">
           Email
         </label>

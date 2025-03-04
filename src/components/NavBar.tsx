@@ -23,18 +23,18 @@ export default function NavBar() {
           </li>
           <li className="h-full w-full">
             <Link
-              href="/dashboard/time-off"
+              href="/dashboard/hrservices"
               className="rounded-full bg-white px-5 py-3 font-semibold transition-all hover:bg-gray-100"
             >
-              Time Off
+              HR Services
             </Link>
           </li>
           <li className="h-full w-full">
             <Link
-              href="/dashboard/performance-evaluation"
+              href="/dashboard"
               className="rounded-full bg-white px-5 py-3 font-semibold transition-all hover:bg-gray-100"
             >
-              Performance
+              Events & Announcements
             </Link>
           </li>
           <li className="h-full w-full">
