@@ -1,31 +1,35 @@
 "use client";
 
-import Image from "next/image";
 import { User } from "@supabase/supabase-js";
 import Avatar from "./Avatar";
+import { useState } from "react";
 
 export default function ProfileWidget({ user }: { user: User }) {
-    return (
-        <div className="rounded-md bg-gray-200 px-5 py-3">
-            <div>
-                {/* pfp */}
-                <Avatar
-                    uid={user?.id ?? null}
-                    url={""}
-                    size={500}
-                    onUpload={(url: string) => { return null }}
-                />
+  let [avatarUrl, setAvatarUrl] = useState("");
 
-                <div>
-                    {/* name */}
-                    {/* status */}
-                    {/* tags */}
-                </div>
+  return (
+    <div className="rounded-md bg-gray-200 px-5 py-3">
+      <div>
+        {/* pfp TODO: update to store avatar url in database and fetch instead of doing this */}
+        <Avatar
+          uid={user?.id ?? null}
+          url={avatarUrl}
+          size={500}
+          onUpload={(url: string) => {
+            setAvatarUrl(url);
+          }}
+        />
 
-                {/* Contact Info */}
-                {/* Work Info */}
-                {/* Personal Info */}
-            </div>
+        <div>
+          {/* name */}
+          {/* status */}
+          {/* tags */}
         </div>
-    );
+
+        {/* Contact Info */}
+        {/* Work Info */}
+        {/* Personal Info */}
+      </div>
+    </div>
+  );
 }
