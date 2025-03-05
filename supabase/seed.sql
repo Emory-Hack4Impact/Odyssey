@@ -65,3 +65,10 @@ INSERT INTO
         from
             auth.users
     );
+
+
+INSERT INTO storage.buckets
+    (id, name)
+values
+    ('avatars', 'avatars'),
+    ('files', 'files');
