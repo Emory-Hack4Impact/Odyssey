@@ -2,6 +2,7 @@ import React from "react";
 import { TextField } from "src/components/TextField";
 import { Tile } from "src/components/Tile";
 import PerfEvalForm from "./PerfEvalForm";
+import PerformanceBar from "./manage-evals/PerformanceBar"
 
 export const RegularEmployee = (): JSX.Element => {
   return (
@@ -58,102 +59,12 @@ export const RegularEmployee = (): JSX.Element => {
         <div className="relative w-fit mt-[-1.00px] [font-family:'Inter-Medium',Helvetica] font-medium text-black text-[22px] text-center tracking-[0] leading-[normal]">
           Job Performance Ratings
         </div>
-
-        <div className="inline-flex flex-col items-start gap-[5px] relative flex-[0_0_auto]">
-          <div className="relative w-fit mt-[-1.00px] [font-family:'Inter-Regular',Helvetica] font-normal text-black text-base text-center tracking-[0] leading-[normal] whitespace-nowrap">
-            Communication
-          </div>
-
-          <div className="inline-flex items-center gap-[15px] relative flex-[0_0_auto]">
-            <div className="relative w-[500px] h-5 bg-[#d9d9d9] rounded-[50px]">
-              <div className="h-5 bg-[#939393] rounded-[50px]" />
-            </div>
-
-            <div className="relative w-fit mt-[-0.50px] [font-family:'Inter-Medium',Helvetica] font-medium text-black text-base text-center tracking-[0] leading-[normal] whitespace-nowrap">
-              100%
-            </div>
-          </div>
-        </div>
-
-        <div className="inline-flex flex-col items-start gap-[5px] relative flex-[0_0_auto]">
-          <div className="relative w-fit mt-[-1.00px] [font-family:'Inter-Regular',Helvetica] font-normal text-black text-base text-center tracking-[0] leading-[normal] whitespace-nowrap">
-            Leadership
-          </div>
-
-          <div className="inline-flex items-center gap-[15px] relative flex-[0_0_auto]">
-            <div className="relative w-[500px] h-5 bg-[#d9d9d9] rounded-[50px]">
-              <div className="w-[391px] h-5 bg-[#939393] rounded-[50px]" />
-            </div>
-
-            <div className="relative w-fit mt-[-0.50px] [font-family:'Inter-Medium',Helvetica] font-medium text-black text-base text-center tracking-[0] leading-[normal] whitespace-nowrap">
-              75%
-            </div>
-          </div>
-        </div>
-
-        <div className="inline-flex flex-col items-start gap-[5px] relative flex-[0_0_auto]">
-          <div className="relative w-fit mt-[-1.00px] [font-family:'Inter-Regular',Helvetica] font-normal text-black text-base text-center tracking-[0] leading-[normal] whitespace-nowrap">
-            Timeliness
-          </div>
-
-          <div className="inline-flex items-center gap-[15px] relative flex-[0_0_auto]">
-            <div className="relative w-[500px] h-5 bg-[#d9d9d9] rounded-[50px]">
-              <div className="w-[457px] h-5 bg-[#939393] rounded-[50px]" />
-            </div>
-
-            <div className="relative w-fit mt-[-0.50px] [font-family:'Inter-Medium',Helvetica] font-medium text-black text-base text-center tracking-[0] leading-[normal] whitespace-nowrap">
-              90%
-            </div>
-          </div>
-        </div>
-
-        <div className="inline-flex flex-col items-start gap-[5px] relative flex-[0_0_auto]">
-          <div className="relative w-fit mt-[-1.00px] [font-family:'Inter-Regular',Helvetica] font-normal text-black text-base text-center tracking-[0] leading-[normal] whitespace-nowrap">
-            Skill
-          </div>
-
-          <div className="inline-flex items-center gap-[15px] relative flex-[0_0_auto]">
-            <div className="relative w-[500px] h-5 bg-[#d9d9d9] rounded-[50px]">
-              <div className="w-[250px] h-5 bg-[#939393] rounded-[50px]" />
-            </div>
-
-            <div className="relative w-fit mt-[-0.50px] [font-family:'Inter-Medium',Helvetica] font-medium text-black text-base text-center tracking-[0] leading-[normal] whitespace-nowrap">
-              50%
-            </div>
-          </div>
-        </div>
-
-        <div className="inline-flex flex-col items-start gap-[5px] relative flex-[0_0_auto]">
-          <div className="relative w-fit mt-[-1.00px] [font-family:'Inter-Regular',Helvetica] font-normal text-black text-base text-center tracking-[0] leading-[normal] whitespace-nowrap">
-            Skill
-          </div>
-
-          <div className="inline-flex items-center gap-[15px] relative flex-[0_0_auto]">
-            <div className="relative w-[500px] h-5 bg-[#d9d9d9] rounded-[50px]">
-              <div className="w-[250px] h-5 bg-[#939393] rounded-[50px]" />
-            </div>
-
-            <div className="relative w-fit mt-[-0.50px] [font-family:'Inter-Medium',Helvetica] font-medium text-black text-base text-center tracking-[0] leading-[normal] whitespace-nowrap">
-              50%
-            </div>
-          </div>
-        </div>
-
-        <div className="inline-flex flex-col items-start gap-[5px] relative flex-[0_0_auto]">
-          <div className="relative w-fit mt-[-1.00px] [font-family:'Inter-Regular',Helvetica] font-normal text-black text-base text-center tracking-[0] leading-[normal] whitespace-nowrap">
-            Skill
-          </div>
-
-          <div className="inline-flex items-center gap-[15px] relative flex-[0_0_auto]">
-            <div className="relative w-[500px] h-5 bg-[#d9d9d9] rounded-[50px]">
-              <div className="w-[250px] h-5 bg-[#939393] rounded-[50px]" />
-            </div>
-
-            <div className="relative w-fit mt-[-0.50px] [font-family:'Inter-Medium',Helvetica] font-medium text-black text-base text-center tracking-[0] leading-[normal] whitespace-nowrap">
-              50%
-            </div>
-          </div>
-        </div>
+        <PerformanceBar label="Communication" percentage={100} />
+        <PerformanceBar label="Leadership" percentage={75} />
+        <PerformanceBar label="Timeliness" percentage={90} />
+        <PerformanceBar label="Skill" percentage={50} />
+        <PerformanceBar label="Skill" percentage={50} />
+        <PerformanceBar label="Skill" percentage={50} />
 
         <div className="inline-flex items-start gap-[25px] pl-[100px] pr-[50px] pt-0 pb-[35px] absolute top-0 left-0">
           <Tile property1="stat" text="80%" text1="Overall Rating" />
