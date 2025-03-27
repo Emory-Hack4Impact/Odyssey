@@ -1,11 +1,11 @@
 import React from 'react';
 
 interface PerformanceBarProps {
-  label: string;
+  label?: string;
   percentage: number;
 }
 
-const PerformanceBar: React.FC<PerformanceBarProps> = ({ label, percentage }) => {
+const PerformanceBar: React.FC<PerformanceBarProps> = ({ label = '', percentage }) => {
 
   return (
     <div className="inline-flex flex-col items-start gap-2">
