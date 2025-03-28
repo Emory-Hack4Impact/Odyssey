@@ -1,7 +1,24 @@
 import React from "react";
 
+interface Evaluation {
+  employeeName: string;
+  year: number;
+  a: string;
+  aComm: string;
+  b: string;
+  bComm: string;
+  c: string;
+  cComm: string;
+  d: string;
+  dComm: string;
+}
+
+interface PerformanceDetailProps {
+  evaluation: Evaluation;
+}
+
 // Assuming this structure for the evaluation details passed as props
-const PerformanceDetail = ({ evaluation }) => {
+const PerformanceDetail: React.FC<PerformanceDetailProps> = ({ evaluation }) => {
   return (
     <div className="mx-auto w-full max-w-2xl rounded-lg bg-white p-4 shadow-md">
       <h2 className="mb-4 text-xl font-bold">Performance Evaluation Detail</h2>

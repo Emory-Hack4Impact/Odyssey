@@ -1,14 +1,32 @@
 "use client";
 import PerfEval from "@/components/performance-evaluation/PerfEval";
+import PerfEvalEmployee from "@/components/performance-evaluation/PerfEvalEmployee";
+import PerfEvalHR from "@/components/performance-evaluation/PerfEvalHR";
+import PerfEvalManager from "@/components/performance-evaluation/PerfEvalManager";
 import TimeOff from "@/components/time-off/TimeOff";
 import { Tab } from "@headlessui/react";
 import { Fragment } from "react";
 
 interface HRServicesProps {
   username: string;
+  userRole: string;
 }
 
-export const HRServices = ({ username }: HRServicesProps) => {
+export const HRServices = ({ username, userRole }: HRServicesProps) => {
+
+  const getPerformanceEvaluationComponent = () => {
+    switch(userRole) {
+      case 'Employee':
+        return <PerfEvalEmployee />;
+      case 'HR':
+        return <PerfEvalHR />;
+      case 'Manager':
+        return <PerfEvalHR />;
+      default:
+        return <PerfEval />;
+    }
+  };
+
   const categories = [
     { key: "timeOff", label: "Time Off", component: <TimeOff /> },
     {
@@ -24,7 +42,7 @@ export const HRServices = ({ username }: HRServicesProps) => {
     {
       key: "perfEvals",
       label: "Performance Evaluations",
-      component: <PerfEval />,
+      component: getPerformanceEvaluationComponent(),
     },
     {
       key: "benefits",
