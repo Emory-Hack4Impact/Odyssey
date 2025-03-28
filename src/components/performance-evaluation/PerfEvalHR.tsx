@@ -1,7 +1,74 @@
-import React from 'react'
+"use client"
+import React, { useState} from 'react'
+import { TextAreaWithDescription } from '../Textarea'
+import { PerformanceRatingSlider } from './PerformanceRatingSliders'
 
 export default function PerfEvalHR() {
+
+  const [strengths, setStrengths] = useState("")
+  const [weaknesses, setWeaknesses] = useState("")
+  const [improvements, setImprovements] = useState("")
+  const [notes, setNotes] = useState("")
+  const [ratings, setRatings] = useState<number[]>([])
+
   return (
-    <div>PerfEvalHR</div>
+    <div>
+      <div className="flex flex-col gap-6 mb-6">
+        <h3>Create Employee Performance Evaluation</h3>
+        <div className="flex gap-2">
+          <input 
+            type="text" 
+            className="border-2 border-gray-400 text-gray-400 px-3 py-2 rounded-3xl max-w-80" 
+            placeholder="Search Employee"
+          />
+          <button className="px-4 py-2 bg-gray-300 rounded-3xl text-3xl">+</button>
+          <button className="px-4 py-2 bg-gray-300 rounded-3xl text-3xl"></button>
+        </div>
+        <div className="w-36">
+            <h3 className="mb-2">Year</h3>
+            <div className="border-2 border-gray-400 text-gray-400 px-3 py-2 rounded-3xl">
+                <select id="year" name="year">
+                    <option value="" disabled selected>Select Year</option>
+                    <option value="2020">2020</option>
+                    <option value="2021">2021</option>
+                    <option value="2022">2022</option>
+                    <option value="2023">2023</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                </select>
+            </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <TextAreaWithDescription
+          label="Strengths"
+          placeholder="List employee's strengths."
+          onChange={(value) => setStrengths(value)}
+        />
+        <TextAreaWithDescription
+          label="Weaknesses"
+          placeholder="List employee's weaknesses."
+          onChange={(value) => setStrengths(value)}
+        />
+        <TextAreaWithDescription
+          label="Improvements"
+          placeholder="List things the employee can improve on."
+          onChange={(value) => setImprovements(value)}
+        />
+        <TextAreaWithDescription
+          label="Other Notes (Optional)"
+          placeholder="Other notes you want to include."
+          onChange={(value) => setNotes(value)}
+        />
+      </div>
+
+      <div className="w-[50%]">
+        <PerformanceRatingSlider 
+          categories={['Communication', 'Leadership', 'Timeliness', 'Skill', 'Skill', 'Skill']} 
+          onChange={(value: number[]) => setRatings(value)}
+        />
+      </div>
+    </div>
   )
 }
