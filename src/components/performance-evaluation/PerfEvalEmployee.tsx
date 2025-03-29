@@ -1,7 +1,15 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { PerformanceReviewDashboard } from './PerfReviewDashboard';
+import PerfEvalForm from './PerfEvalForm';
 
-export default function PerfEvalEmployee() {
+interface HRServicesProps {
+    username: string;
+    userRole: string;
+}
+
+export default function PerfEvalEmployee({ username, userRole }: HRServicesProps) {
+
+  const [toggleForm, setToggleForm] = useState(false)
 
   const performanceData = {
     overallRating: 80,
@@ -18,91 +26,102 @@ export default function PerfEvalEmployee() {
 
   return (
     <>
-        <div className="relative flex w-full mb-6">
+        {toggleForm && (
+            <>
+                <div className="relative flex justify-between items-center w-full mb-6">
+                    <h1 className="text-xl">Submit Your Evaluation</h1>
+                    <button className="border-2 px-3 py-2 rounded-lg" onClick={() => setToggleForm((prev) => !prev)}>View Evaluation</button>
+                </div>
+                <PerfEvalForm username={username} userRole={userRole} />
+            </>
+        )}
+
+        {!toggleForm && (
             <div>
-                <h3 className="mb-2">Year</h3>
-                <div className="border-2 border-gray-400 text-gray-400 px-3 py-2 rounded-3xl">
-                    <select id="year" name="year">
-                        <option value="2020">2020</option>
-                        <option value="2021">2021</option>
-                        <option value="2022">2022</option>
-                        <option value="2023" selected>2023</option>
-                        <option value="2024">2024</option>
-                        <option value="2025">2025</option>
-                    </select>
+                <div className="relative flex justify-between items-center w-full mb-6">
+                    <div>
+                        <h3 className="mb-2">Year</h3>
+                        <div className="border-2 text-gray-400 bg-white px-3 py-2 rounded-3xl">
+                            <select id="year" name="year">
+                                <option value="2020">2020</option>
+                                <option value="2021">2021</option>
+                                <option value="2022">2022</option>
+                                <option value="2023">2023</option>
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                            </select>
+                        </div>
+                    </div>
+                    <h1 className="text-xl">Performance Evaluations</h1>
+                    <button className="border-2 px-3 py-2 rounded-lg" onClick={() => setToggleForm((prev) => !prev)}>Submit Evaluation</button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                    <div>
+                        <PerformanceReviewDashboard {...performanceData} />
+                    </div>
+
+                    <div className="space-y-6">
+                        <div>
+                            <h3 className="text-xl mb-2">
+                                Strengths
+                            </h3>
+                            <ul className="list-disc ml-4 text-sm">
+                                <li>
+                                    Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
+                                </li>
+                                <li>
+                                    Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
+                                </li>
+                                <li>
+                                    Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h3 className="text-xl mb-2">
+                                Weaknesses
+                            </h3>
+                            <ul className="list-disc ml-4 text-sm">
+                                <li>
+                                    Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
+                                </li>
+                                <li>
+                                    Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h3 className="text-xl mb-2">
+                                Improvements
+                            </h3>
+                            <ul className="list-disc ml-4 text-sm">
+                                <li>
+                                    Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
+                                </li>
+                                <li>
+                                    Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h3 className="text-xl mb-2">
+                                Other Notes
+                            </h3>
+                            <ul className="list-disc ml-4 text-sm">
+                                <li>
+                                    Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <h1 className="text-xl absolute left-1/2 transform -translate-x-1/2">Performance Evaluations</h1>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-            <div>
-                <PerformanceReviewDashboard {...performanceData} />
-            </div>
-
-            <div className="space-y-6">
-                <div>
-                    <h3 className="text-xl mb-2">
-                        Strengths
-                    </h3>
-                    <ul className="list-disc ml-4">
-                        <li>
-                            Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
-                        </li>
-                        <li>
-                            Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
-                        </li>
-                        <li>
-                            Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
-                        </li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h3 className="text-xl mb-2">
-                        Weaknesses
-                    </h3>
-                    <ul className="list-disc ml-4">
-                        <li>
-                            Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
-                        </li>
-                        <li>
-                            Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
-                        </li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h3 className="text-xl mb-2">
-                        Improvements
-                    </h3>
-                    <ul className="list-disc ml-4">
-                        <li>
-                            Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
-                        </li>
-                        <li>
-                            Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
-                        </li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h3 className="text-xl mb-2">
-                        Other Notes
-                    </h3>
-                    <ul className="list-disc ml-4">
-                        <li>
-                            Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
-                        </li>
-                    </ul>
-                </div>
-
-
-            </div>
-        </div>
-
-        
+        )}
     </>
   )
 }

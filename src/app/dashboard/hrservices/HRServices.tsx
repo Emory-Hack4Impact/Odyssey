@@ -17,11 +17,11 @@ export const HRServices = ({ username, userRole }: HRServicesProps) => {
   const getPerformanceEvaluationComponent = () => {
     switch(userRole) {
       case 'Employee':
-        return <PerfEvalEmployee />;
+        return <PerfEvalEmployee username={username} userRole={userRole} />;
       case 'HR':
-        return <PerfEvalHR />;
+        return <PerfEvalHR username={username} userRole={userRole} />;
       case 'Manager':
-        return <PerfEvalHR />;
+        return <PerfEval />;
       default:
         return <PerfEval />;
     }

@@ -1,74 +1,104 @@
-"use client"
-import React, { useState} from 'react'
-import { TextAreaWithDescription } from '../Textarea'
-import { PerformanceRatingSlider } from './PerformanceRatingSliders'
+import React, { useState } from 'react'
+import { PerformanceReviewDashboard } from './PerfReviewDashboard';
+import PerfEvalForm from './PerfEvalForm';
 
-export default function PerfEvalHR() {
+interface HRServicesProps {
+    username: string;
+    userRole: string;
+}
 
-  const [strengths, setStrengths] = useState("")
-  const [weaknesses, setWeaknesses] = useState("")
-  const [improvements, setImprovements] = useState("")
-  const [notes, setNotes] = useState("")
-  const [ratings, setRatings] = useState<number[]>([])
+export default function PerfEvalHR({ username, userRole }: HRServicesProps) {
+
+  const [selectedEmployee, setSelectedEmployee] = useState("")
+  const [isOpened, setIsOpened] = useState(false)
+
+  console.log(selectedEmployee)
+  console.log(isOpened)
+
+  const employees = [
+    {
+        name: "Example Employee 1",
+        role: "employee"
+    },
+    {
+        name: "Example Employee 2",
+        role: "employee"
+    },
+    {
+        name: "Example Employee 3",
+        role: "employee"
+    },
+    {
+        name: "Example Employee 4",
+        role: "employee"
+    },
+    {
+        name: "Example Employee 5",
+        role: "employee"
+    },
+    {
+        name: "Example Employee 6",
+        role: "employee"
+    },
+    {
+        name: "Example Employee 7",
+        role: "employee"
+    },
+    {
+        name: "Example Employee 8",
+        role: "employee"
+    },
+    {
+        name: "Example Employee 9",
+        role: "employee"
+    },
+    {
+        name: "Example Employee 10",
+        role: "employee"
+    },
+  ];
 
   return (
-    <div>
-      <div className="flex flex-col gap-6 mb-6">
-        <h3>Create Employee Performance Evaluation</h3>
-        <div className="flex gap-2">
-          <input 
-            type="text" 
-            className="border-2 border-gray-400 text-gray-400 px-3 py-2 rounded-3xl max-w-80" 
-            placeholder="Search Employee"
-          />
-          <button className="px-4 py-2 bg-gray-300 rounded-3xl text-3xl">+</button>
-          <button className="px-4 py-2 bg-gray-300 rounded-3xl text-3xl"></button>
-        </div>
-        <div className="w-36">
-            <h3 className="mb-2">Year</h3>
-            <div className="border-2 border-gray-400 text-gray-400 px-3 py-2 rounded-3xl">
-                <select id="year" name="year">
-                    <option value="" disabled selected>Select Year</option>
-                    <option value="2020">2020</option>
-                    <option value="2021">2021</option>
-                    <option value="2022">2022</option>
-                    <option value="2023">2023</option>
-                    <option value="2024">2024</option>
-                    <option value="2025">2025</option>
-                </select>
+    <>
+        {isOpened && (
+            <>
+                <button onClick={() => setIsOpened(prev => !prev)} className="border-2 text-gray-400 px-3 py-2 rounded-3xl hover:text-black hover:border-black transition-all mb-4">← Back</button>
+                <PerfEvalForm username={username} userRole={userRole} />
+            </>
+        )}
+
+        {!isOpened && (<div>
+            <div className="relative flex justify-center items-center w-full mb-6">
+                <h1 className="text-xl">Performance Evaluations</h1>
             </div>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <TextAreaWithDescription
-          label="Strengths"
-          placeholder="List employee's strengths."
-          onChange={(value) => setStrengths(value)}
-        />
-        <TextAreaWithDescription
-          label="Weaknesses"
-          placeholder="List employee's weaknesses."
-          onChange={(value) => setStrengths(value)}
-        />
-        <TextAreaWithDescription
-          label="Improvements"
-          placeholder="List things the employee can improve on."
-          onChange={(value) => setImprovements(value)}
-        />
-        <TextAreaWithDescription
-          label="Other Notes (Optional)"
-          placeholder="Other notes you want to include."
-          onChange={(value) => setNotes(value)}
-        />
-      </div>
-
-      <div className="w-[50%]">
-        <PerformanceRatingSlider 
-          categories={['Communication', 'Leadership', 'Timeliness', 'Skill', 'Skill', 'Skill']} 
-          onChange={(value: number[]) => setRatings(value)}
-        />
-      </div>
-    </div>
+            <div className="flex gap-4 mb-6">
+                <input 
+                    type="text"
+                    placeholder="Search Employee Evaluations"
+                    className="w-80 border-2 bg-white rounded-3xl px-3 py-2"
+                />
+                <button className="border-2 border-gray-400 bg-white text-gray-400 rounded-3xl px-3 py-2 hover:text-black hover:border-black transition-all">Go</button>
+            </div>
+            
+            <div className="space-y-6">
+                <div>
+                    <div className="ml-4 text-lg">
+                        {employees.map((employee, index) => (
+                            <div 
+                                key={index}
+                                className="cursor-pointer px-3 py-2 border-2 hover:border-black"
+                                onClick={() => {
+                                setSelectedEmployee(employee.name)
+                                setIsOpened(true)
+                            }}>
+                                {employee.name}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>)}
+    </>
   )
 }

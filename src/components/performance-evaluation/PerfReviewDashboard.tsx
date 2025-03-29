@@ -19,11 +19,11 @@ interface PerformanceReviewDashboardProps {
       <div className="rounded-lg p-6 mx-auto">
         {/* Overall Rating and Reviewers Section */}
         <div className="flex justify-center gap-6 items-center mb-8">
-          <div className="flex flex-col items-center border-2 px-4 py-4 rounded-lg">
+          <div className="flex flex-col items-center border-2 px-4 py-4 rounded-3xl">
             <div className="text-4xl font-bold text-black">{overallRating}%</div>
             <div className="text-lg text-black">Overall Rating</div>
           </div>
-          <div className="flex flex-col items-center border-2 px-4 py-4 rounded-lg">
+          <div className="flex flex-col items-center border-2 px-4 py-4 rounded-3xl">
             <div className="flex space-x-1">
                 {[...Array(5)].map((_, index) => (
                 <div 
