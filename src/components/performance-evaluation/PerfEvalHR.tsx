@@ -3,11 +3,12 @@ import { PerformanceReviewDashboard } from './PerfReviewDashboard';
 import PerfEvalForm from './PerfEvalForm';
 
 interface HRServicesProps {
+    userId: string;
     username: string;
     userRole: string;
 }
 
-export default function PerfEvalHR({ username, userRole }: HRServicesProps) {
+export default function PerfEvalHR({ userId, username, userRole }: HRServicesProps) {
 
   const [selectedEmployee, setSelectedEmployee] = useState("")
   const [isOpened, setIsOpened] = useState(false)
@@ -63,7 +64,7 @@ export default function PerfEvalHR({ username, userRole }: HRServicesProps) {
         {isOpened && (
             <>
                 <button onClick={() => setIsOpened(prev => !prev)} className="border-2 text-gray-400 px-3 py-2 rounded-3xl hover:text-black hover:border-black transition-all mb-4">← Back</button>
-                <PerfEvalForm username={username} userRole={userRole} />
+                <PerfEvalForm userId={userId} username={username} userRole={userRole} />
             </>
         )}
 

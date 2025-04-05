@@ -21,13 +21,16 @@ export default async function HRServicesPage() {
   // console.log("user:", user);
   // console.log("usermetadata:", data);
 
-  // Get both username and role and pass as props
+  // Get userId, username and role and pass as props
+  const userId = user?.id ?? user?.user_metadata?.id ?? "0";
   const username = user?.email ?? user?.user_metadata?.name ?? "User";
   const userRole = data?.[0]?.position ?? "Unknown";
 
+  // console.log(userId, username, userRole)
+
   return (
     <div>
-      <HRServices username={username} userRole={userRole} />
+      <HRServices userId={userId} username={username} userRole={userRole} />
     </div>
   );
 }

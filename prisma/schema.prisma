@@ -14,18 +14,57 @@ datasource db {
 }
 
 model UserMetadata {
-  id       String  @id
-  is_admin Boolean @default(false)
-  is_hr    Boolean @default(false)
-  position String  @default("")
+  id              String           @id
+  is_admin        Boolean          @default(false)
+  is_hr           Boolean          @default(false)
+  position        String           @default("")
+  TimeOffRequests TimeOffRequest[]
+  Files           Files[]
+}
+
+enum FileTypes {
+  AVATAR
+  DOCUMENT
+  ATTACHMENT
+  ANNOUNCEMENT
+}
+
+model Files {
+  id         String       @id @default(dbgenerated("uuid_generate_v1()")) @db.Uuid
+  userId     String
+  owner      UserMetadata @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bucket     String
+  path       String
+  type       FileTypes
+  uploadedAt DateTime     @default(now())
+  metadata   Json?
+
+  @@index([userId, type])
 }
 
 model TimeOffRequest {
-  id              Int     @id @default(autoincrement())
+  id             Int          @id @default(autoincrement())
+  employeeId     String
+  leaveType      String
+  otherLeaveType String       @default("")
+  startDate      DateTime
+  endDate        DateTime
+  comments       String       @default("")
+  UserMetadata   UserMetadata @relation(fields: [employeeId], references: [id])
+}
+
+model EmployeeEvaluation {
+  id              Int         @id @default(autoincrement())
   employeeId      String
-  leaveType       String
-  otherLeaveType  String  @default("")
-  startDate       String
-  endDate         String
-  comments        String  @default("")
+  year            Int
+  strengths       String
+  weaknesses      String
+  improvements    String
+  notes           String
+  communication   String
+  leadership      String
+  timeliness      String
+  skill1          String
+  skill2          String
+  skill3          String
 }

@@ -8,18 +8,19 @@ import { Tab } from "@headlessui/react";
 import { Fragment } from "react";
 
 interface HRServicesProps {
+  userId: string;
   username: string;
   userRole: string;
 }
 
-export const HRServices = ({ username, userRole }: HRServicesProps) => {
+export const HRServices = ({ userId, username, userRole }: HRServicesProps) => {
 
   const getPerformanceEvaluationComponent = () => {
     switch(userRole) {
       case 'Employee':
-        return <PerfEvalEmployee username={username} userRole={userRole} />;
+        return <PerfEvalEmployee userId={userId} username={username} userRole={userRole} />;
       case 'HR':
-        return <PerfEvalHR username={username} userRole={userRole} />;
+        return <PerfEvalHR userId={userId} username={username} userRole={userRole} />;
       case 'Manager':
         return <PerfEval />;
       default:

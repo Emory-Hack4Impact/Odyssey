@@ -3,11 +3,12 @@ import { PerformanceReviewDashboard } from './PerfReviewDashboard';
 import PerfEvalForm from './PerfEvalForm';
 
 interface HRServicesProps {
+    userId: string;
     username: string;
     userRole: string;
 }
 
-export default function PerfEvalEmployee({ username, userRole }: HRServicesProps) {
+export default function PerfEvalEmployee({ userId, username, userRole }: HRServicesProps) {
 
   const [toggleForm, setToggleForm] = useState(false)
 
@@ -32,7 +33,7 @@ export default function PerfEvalEmployee({ username, userRole }: HRServicesProps
                     <h1 className="text-xl">Submit Your Evaluation</h1>
                     <button className="border-2 px-3 py-2 rounded-lg" onClick={() => setToggleForm((prev) => !prev)}>View Evaluation</button>
                 </div>
-                <PerfEvalForm username={username} userRole={userRole} />
+                <PerfEvalForm userId={userId} username={username} userRole={userRole} />
             </>
         )}
 
