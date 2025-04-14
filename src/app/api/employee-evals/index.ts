@@ -3,7 +3,7 @@
 import { PrismaClient } from "@prisma/client";
 
 export interface EmployeeEval {
-  id: string;
+  employeeId: string;
   year: number;
   strengths: string;
   weaknesses: string;
@@ -21,7 +21,55 @@ export async function SubmitEmployeeEval(data: EmployeeEval) {
   const prisma = new PrismaClient();
   return await prisma.employeeEvaluation.create({
     data: {
-      employeeId: data.id,
+      employeeId: data.employeeId,
+      year: data.year,
+      strengths: data.strengths,
+      weaknesses: data.weaknesses,
+      improvements: data.improvements,
+      notes: data.notes,
+      communication: data.communication,
+      leadership: data.leadership,
+      timeliness: data.timeliness,
+      skill1: data.skill1,
+      skill2: data.skill2,
+      skill3: data.skill3,
+    },
+  });
+}
+
+export async function GetAllEmployeeEvals() {
+  const prisma = new PrismaClient();
+  try {
+    return await prisma.employeeEvaluation.findMany();
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+export async function GetEmployeeEvals(employeeId: string) {
+  const prisma = new PrismaClient();
+  try {
+    return await prisma.employeeEvaluation.findMany({
+      where: {
+        employeeId: employeeId,
+      },
+      orderBy: {
+        year: 'desc',
+      },
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+export async function UpdateEmployeeEval(id: number, data: EmployeeEval) {
+  const prisma = new PrismaClient();
+  return await prisma.employeeEvaluation.update({
+    where: {
+      id: id,
+    },
+    data: {
+      employeeId: data.employeeId,
       year: data.year,
       strengths: data.strengths,
       weaknesses: data.weaknesses,

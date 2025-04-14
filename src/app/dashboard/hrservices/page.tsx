@@ -13,7 +13,7 @@ export default async function HRServicesPage() {
   }
 
   // Get UserMetadata from DB
-  const { data, error } = await supabase
+  const { data: userData, error: userError } = await supabase
     .from("UserMetadata")
     .select("is_admin, is_hr, position")
     .eq("id", user.id);
@@ -24,9 +24,15 @@ export default async function HRServicesPage() {
   // Get userId, username and role and pass as props
   const userId = user?.id ?? user?.user_metadata?.id ?? "0";
   const username = user?.email ?? user?.user_metadata?.name ?? "User";
-  const userRole = data?.[0]?.position ?? "Unknown";
+  const userRole = userData?.[0]?.position ?? "Unknown";
 
   // console.log(userId, username, userRole)
+
+  const { data: evaluations, error: evalError } = await supabase
+    .from("EmployeeEvaluation")
+    .select("*");
+
+  // console.log(evaluations)
 
   return (
     <div>

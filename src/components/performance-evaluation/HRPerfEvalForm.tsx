@@ -2,7 +2,7 @@
 import React, { useState} from 'react'
 import { TextAreaWithDescription } from '../Textarea'
 import { PerformanceRatingSlider } from './PerformanceRatingSliders'
-import { EmployeeEval, SubmitEmployeeEval } from '@/app/api/employee-evals'
+import { EmployeeEval, SubmitEmployeeEval, UpdateEmployeeEval } from '@/app/api/employee-evals'
 
 interface HRServicesProps {
   userId: string;
@@ -10,7 +10,7 @@ interface HRServicesProps {
   userRole: string;
 }
 
-export interface FormData {
+interface FormData {
   year: number;
   strengths: string;
   weaknesses: string;
@@ -24,21 +24,54 @@ export interface FormData {
   skill3: string;
 }
 
-export default function PerfEvalForm({ userId, username, userRole }: HRServicesProps) {
+interface FetchedEval {
+  id: number;
+  employeeId: string;
+  year: number;
+  strengths: string;
+  weaknesses: string;
+  improvements: string;
+  notes: string;
+  communication: string;
+  leadership: string;
+  timeliness: string;
+  skill1: string;
+  skill2: string;
+  skill3: string;
+}
 
-  const [formData, setFormData] = useState<EmployeeEval>({
-    id: userId,
+export default function HRPerfEvalForm({
+    id,
+    employeeId,
+    year, 
+    strengths, 
+    weaknesses, 
+    improvements, 
+    notes, 
+    communication, 
+    leadership,
+    timeliness,
+    skill1,
+    skill2,
+    skill3
+  }: FetchedEval
+) {
+
+
+  const [formData, setFormData] = useState<FetchedEval>({
+    id,
+    employeeId,
     year: 2025,
-    strengths: "",
-    weaknesses: "",
-    improvements: "",
-    notes: "",
-    communication: "",
-    leadership: "",
-    timeliness: "",
-    skill1: "",
-    skill2: "",
-    skill3: "",
+    strengths,
+    weaknesses,
+    improvements,
+    notes,
+    communication,
+    leadership,
+    timeliness,
+    skill1,
+    skill2,
+    skill3,
   });
 
   const [formErrors, setFormErrors] = useState<Partial<FormData>>({});
@@ -55,7 +88,6 @@ export default function PerfEvalForm({ userId, username, userRole }: HRServicesP
       [name]: value,
     }));
     
-    // Clear error for this field if it exists
     if (formErrors[name as keyof FormData]) {
       setFormErrors(prev => ({
         ...prev,
@@ -64,14 +96,12 @@ export default function PerfEvalForm({ userId, username, userRole }: HRServicesP
     }
   };
 
-  // Function to handle textarea changes from TextAreaWithDescription component
   const handleTextAreaChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
     
-    // Clear error for this field if it exists
     if (formErrors[field as keyof FormData]) {
       setFormErrors(prev => ({
         ...prev,
@@ -80,14 +110,12 @@ export default function PerfEvalForm({ userId, username, userRole }: HRServicesP
     }
   };
 
-  // Function to handle rating changes
   const handleRatingChange = (field: keyof EmployeeEval, value: number) => {
     setFormData(prev => ({
       ...prev,
       [field]: value.toString()
     }));
     
-    // Clear error for this field if it exists
     if (formErrors[field as keyof FormData]) {
       setFormErrors(prev => ({
         ...prev,
@@ -129,13 +157,14 @@ export default function PerfEvalForm({ userId, username, userRole }: HRServicesP
     if (Object.keys(errors).length === 0) {
       console.log("Submitting form data:", formData);
       try {
-        const response = await SubmitEmployeeEval(formData);
+        const response = await UpdateEmployeeEval(formData.id, formData);
         console.log(`Successfully submitted employee evaluation: ${response.id}`);
         alert("Evaluation submitted successfully!");
         
         // Reset form
         setFormData({
-          id: userId,
+          id: 0,
+          employeeId: "",
           year: 2025,
           strengths: "",
           weaknesses: "",
@@ -161,21 +190,20 @@ export default function PerfEvalForm({ userId, username, userRole }: HRServicesP
     <div>
       <form onSubmit={handleSubmit}>
         <div className="flex flex-col gap-6 mb-6">
-          <h3>Create Employee Performance Evaluation</h3>
+          <h3>Employee Performance Evaluation Review</h3>
           <div className="flex gap-2">
             <input 
               type="text" 
-              className="border-2 border-gray-400 bg-white text-gray-400 px-3 py-2 rounded-3xl max-w-80" 
-              placeholder={userRole === "Employee" ? username : "Search Employee"}
-              disabled={userRole === "Employee"}
+              className="border-2 border-gray-400 bg-white text-gray-400 px-3 py-2 rounded-3xl w-[400px]" 
+              value={employeeId}
             />
-            <button 
+            {/* <button 
               type="button" 
               className="border-2 text-gray-400 px-3 py-2 rounded-3xl hover:text-black hover:border-black transition-all" 
-              disabled={userRole === "Employee"}
+              disabled
             >
               +
-            </button>
+            </button> */}
           </div>
           <div className="w-36">
             <h3 className="mb-2">Year</h3>
@@ -185,7 +213,7 @@ export default function PerfEvalForm({ userId, username, userRole }: HRServicesP
                 name="year" 
                 value={formData.year} 
                 onChange={handleChange}
-                disabled={userRole === "Employee"}
+                disabled
               >
                 <option value="" disabled>Select Year</option>
                 <option value="2020">2020</option>
@@ -203,6 +231,7 @@ export default function PerfEvalForm({ userId, username, userRole }: HRServicesP
           <div>
             <TextAreaWithDescription
               label="Strengths"
+              value={formData.strengths}
               placeholder="List employee's strengths."
               onChange={(value) => handleTextAreaChange("strengths", value)}
             />
@@ -213,6 +242,7 @@ export default function PerfEvalForm({ userId, username, userRole }: HRServicesP
             <TextAreaWithDescription
               label="Weaknesses"
               placeholder="List employee's weaknesses."
+              value={formData.weaknesses}
               onChange={(value) => handleTextAreaChange("weaknesses", value)}
             />
             {formErrors.weaknesses && <p className="text-red-500 text-sm">{formErrors.weaknesses}</p>}
@@ -222,6 +252,7 @@ export default function PerfEvalForm({ userId, username, userRole }: HRServicesP
             <TextAreaWithDescription
               label="Improvements"
               placeholder="List things the employee can improve on."
+              value={formData.improvements}
               onChange={(value) => handleTextAreaChange("improvements", value)}
             />
             {formErrors.improvements && <p className="text-red-500 text-sm">{formErrors.improvements}</p>}
@@ -231,6 +262,7 @@ export default function PerfEvalForm({ userId, username, userRole }: HRServicesP
             <TextAreaWithDescription
               label="Other Notes (Optional)"
               placeholder="Other notes you want to include."
+              value={formData.notes}
               onChange={(value) => handleTextAreaChange("notes", value)}
             />
           </div>
@@ -242,6 +274,7 @@ export default function PerfEvalForm({ userId, username, userRole }: HRServicesP
             <div>
               <PerformanceRatingSlider 
                 category="Communication" 
+                value={Number(formData.communication)}
                 onChange={(value) => handleRatingChange("communication", value)} 
               />
               {formErrors.communication && <p className="text-red-500 text-sm">{formErrors.communication}</p>}
@@ -250,7 +283,8 @@ export default function PerfEvalForm({ userId, username, userRole }: HRServicesP
             <div>
               <PerformanceRatingSlider 
                 category="Leadership" 
-                onChange={(value) => handleRatingChange("leadership", value)} 
+                value={Number(formData.leadership)}
+                onChange={(value) => handleRatingChange("leadership", value)}
               />
               {formErrors.leadership && <p className="text-red-500 text-sm">{formErrors.leadership}</p>}
             </div>
@@ -258,6 +292,7 @@ export default function PerfEvalForm({ userId, username, userRole }: HRServicesP
             <div>
               <PerformanceRatingSlider 
                 category="Timeliness" 
+                value={Number(formData.timeliness)}
                 onChange={(value) => handleRatingChange("timeliness", value)} 
               />
               {formErrors.timeliness && <p className="text-red-500 text-sm">{formErrors.timeliness}</p>}
@@ -265,21 +300,24 @@ export default function PerfEvalForm({ userId, username, userRole }: HRServicesP
             
             <div>
               <PerformanceRatingSlider 
-                category="Technical Skill" 
+                category="Skill1" 
+                value={Number(formData.skill1)}
                 onChange={(value) => handleRatingChange("skill1", value)} 
               />
             </div>
             
             <div>
               <PerformanceRatingSlider 
-                category="Teamwork" 
+                category="Skill2" 
+                value={Number(formData.skill2)}
                 onChange={(value) => handleRatingChange("skill2", value)} 
               />
             </div>
             
             <div>
               <PerformanceRatingSlider 
-                category="Problem Solving" 
+                category="Skill3" 
+                value={Number(formData.skill3)}
                 onChange={(value) => handleRatingChange("skill3", value)} 
               />
             </div>
@@ -290,7 +328,7 @@ export default function PerfEvalForm({ userId, username, userRole }: HRServicesP
           type="submit" 
           className="border-2 text-gray-400 px-3 py-2 rounded-3xl hover:text-black hover:border-black transition-all"
         >
-          Submit
+          Submit Review
         </button>
       </form>
     </div>

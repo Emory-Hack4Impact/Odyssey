@@ -2,11 +2,16 @@ import React, { useState } from 'react';
 
 interface PerformanceRatingSliderProps {
   category: string;
+  value: number;
   onChange: (rating: number) => void;
 }
 
-export const PerformanceRatingSlider: React.FC<PerformanceRatingSliderProps> = ({ category, onChange }) => {
-  const [rating, setRating] = useState(50);
+export const PerformanceRatingSlider: React.FC<PerformanceRatingSliderProps> = ({ 
+  category, 
+  value,
+  onChange 
+}) => {
+  const [rating, setRating] = useState(value);
 
   const handleRatingChange = (value: number) => {
     setRating(value);

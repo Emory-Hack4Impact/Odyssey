@@ -2,7 +2,7 @@ import React from "react";
 
 interface RatingItemProps {
     label: string;
-    percentage: number;
+    percentage: string;
   }
   
 export const RatingItem: React.FC<RatingItemProps> = ({ label, percentage }) => {

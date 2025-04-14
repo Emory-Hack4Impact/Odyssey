@@ -4,6 +4,7 @@ interface TextAreaProps {
   label?: string;
   rows?: number;
   placeholder?: string;
+  value?: string;
   onChange?: (value: string) => void;
 }
 
@@ -11,6 +12,7 @@ export const TextAreaWithDescription: React.FC<TextAreaProps> = ({
   label,
   rows = 8,
   placeholder,
+  value,
   onChange
 }) => {
   return (
@@ -23,6 +25,7 @@ export const TextAreaWithDescription: React.FC<TextAreaProps> = ({
         rows={rows}
         className="resize-none w-full border-2 border-gray-400 rounded-2xl px-4 py-2"
         onChange={(e) => onChange?.(e.target.value)}
+        value={value}
       />
     </div>
   );
