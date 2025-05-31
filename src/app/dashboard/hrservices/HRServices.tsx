@@ -2,7 +2,6 @@
 import PerfEval from "@/components/performance-evaluation/PerfEval";
 import PerfEvalEmployee from "@/components/performance-evaluation/PerfEvalEmployee";
 import PerfEvalHR from "@/components/performance-evaluation/PerfEvalHR";
-import PerfEvalManager from "@/components/performance-evaluation/PerfEvalManager";
 import TimeOff from "@/components/time-off/TimeOff";
 import { Tab } from "@headlessui/react";
 import { Fragment } from "react";

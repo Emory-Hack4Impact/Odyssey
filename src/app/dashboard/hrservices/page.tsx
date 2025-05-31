@@ -1,4 +1,3 @@
-import { metadata } from "@/app/layout";
 import { HRServices } from "./HRServices";
 import { createClient } from "@/utils/supabase/server";
 
