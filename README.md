@@ -1,95 +1,197 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# Project Odyssey
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+Internal
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+This project is built with Next.js, Supabase, and Prisma. Follow the instructions below to get started with local development.
 
-reference: `psql -h localhost -p 5432 -U postgres`, password is `postgres`
+## Prerequisites
 
-## Features
+- [git](https://git-scm.com/)
+- [Node.js](https://nodejs.org/en/download)
+- npm (installed with Node)
+- [Docker](https://www.docker.com/get-started/)
+- [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started?queryGroups=platform&platform=npm)
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Middleware
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+## Initial Setup
 
-## Demo
+### 1. Clone the Repository
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+```bash
+git clone <repository-url>
+cd <project-directory>
+```
 
-## Deploy to Vercel
+### 2. Install Dependencies
 
-Vercel deployment will guide you through creating a Supabase account and project.
+```bash
+npm install
+```
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+### 3. Install Supabase CLI
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This%20starter%20configures%20Supabase%20Auth%20to%20use%20cookies%2C%20making%20the%20user's%20session%20available%20throughout%20the%20entire%20Next.js%20app%20-%20Client%20Components%2C%20Server%20Components%2C%20Route%20Handlers%2C%20Server%20Actions%20and%20Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png&integration-ids=oac_VqOgBHqhEoFTPzGkPd7L0iH6)
+Follow the [Supabase CLI installation guide](https://supabase.com/docs/guides/cli/getting-started) for your operating system.
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+### 4. Start Supabase Locally
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+```bash
+supabase start
+```
 
-## Clone and run locally
+This will spin up all Supabase services in Docker containers. Once complete, you'll see output with access credentials and URLs.
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
+**Important URLs:**
 
-2. Create a Next.js app using the Supabase Starter template npx command
+- **Supabase Studio Dashboard**: http://localhost:54323
+- **API URL**: http://localhost:54321
+- **Database**: See the output of `supabase start`!
+
+Keep these credentials handy, as you'll need them for your environment variables.
+
+### 5. Configure Environment Variables
+
+Copy `.env.sample` to `.env.local` file in the project root:
+
+```bash
+cp .env.example .env.local
+```
+
+Update the file with your local Supabase credentials from the `supabase start` output:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321 # API URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key> # anon key
+DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres # DB URL
+# ...
+```
+
+### 6. Set Up Prisma
+
+Generate the Prisma client and push the schema to your local database:
+
+```bash
+npm run db:generate
+npm run db:push
+```
+
+**Helpful Prisma tools:**
+
+- View your database schema: `npx prisma studio` (opens at http://localhost:5555)
+- See the [Prisma Schema Explorer](https://www.prisma.io/docs/concepts/components/prisma-schema) for reference
+
+### 7. Run the Development Server
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Development Workflow
+
+### Making Changes
+
+1. Create a new branch for your work:
 
    ```bash
-   npx create-next-app -e with-supabase
+   git checkout -b feature/your-feature-name
    ```
 
-3. Use `cd` to change into the app's directory
+2. Make your changes and test locally
 
-   ```bash
-   cd name-of-new-app
-   ```
+3. Format and lint your code before committing (see Best Practices below)
 
-4. Rename `.env.local.example` to `.env.local` and update the following:
+### Database Schema Changes
 
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=[INSERT SUPABASE PROJECT API ANON KEY]
-   ```
+When modifying the Prisma schema (`prisma/schema.prisma`):
 
-   Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` can be found in [your Supabase project's API settings](https://app.supabase.com/project/_/settings/api)
+```bash
+# Push changes to local database
+npx prisma db push
 
-5. You can now run the Next.js local development server:
+# Regenerate Prisma Client
+npx prisma generate
+```
 
-   ```bash
-   npm run dev
-   ```
+For production, create a migration:
 
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
+```bash
+npx prisma migrate dev --name descriptive_migration_name
+```
 
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
+### Stopping Services
 
-## Feedback and issues
+When you're done developing:
 
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
+```bash
+# Stop Supabase services
+supabase stop
+```
 
-## More Supabase examples
+## Best Practices
 
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+### Code Quality
+
+- **Check for linting errors**:
+
+  ```bash
+  npm run lint
+  ```
+
+- **Format code with Prettier** before committing:
+
+  ```bash
+  npm run format
+  ```
+
+### Git Workflow
+
+- **Work on feature branches**, never directly on `main`
+- **Write concise but descriptive commit messages** in present tense:
+  - ✅ Good: `Add user authentication flow`
+  - ✅ Good: `Fix navigation menu on mobile`
+  - ❌ Avoid: `Added stuff` or `Fixed things`
+- **Keep commits focused** on a single logical change so we can revert changes easily!
+
+### Submitting Changes
+
+1. Ensure your code is formatted and passes linting
+2. Test your changes locally
+3. Push your branch and create a pull request
+4. Provide a clear description of your changes in the PR
+
+## Useful Resources
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Supabase Documentation](https://supabase.com/docs)
+- [Supabase CLI Reference](https://supabase.com/docs/reference/cli)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [Prisma Studio](https://www.prisma.io/studio) - Database GUI
+
+## Troubleshooting
+
+### Supabase won't start
+
+- Ensure Docker Desktop is running
+- Check that ports 54321-54323 aren't already in use
+- Try `supabase stop` followed by `supabase start`
+
+### Prisma Client errors
+
+- Run `npx prisma generate` to regenerate the client
+- Ensure your `DATABASE_URL` in `.env.local` is correct
+
+### Module not found errors
+
+- Delete `node_modules` and lock file, then reinstall dependencies
+- Clear Next.js cache: `rm -rf .next`
+
+## Getting Help
+
+If you encounter issues not covered here, please:
+
+1. Review the documentation links above
+2. Check with our project director/tech lead

@@ -78,29 +78,29 @@ values
 ------------------------------- RLS -------------------------------
 -------------------------------------------------------------------
 
--- Enable RLS on the storage.objects table (if not already enabled)
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+-- -- Enable RLS on the storage.objects table (if not already enabled)
+-- ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 
--- Allow authenticated users to upload files (INSERT)
-CREATE POLICY "Users can upload their own avatars"
-ON storage.objects
-FOR INSERT
-WITH CHECK (auth.uid() IS NOT NULL);
+-- -- Allow authenticated users to upload files (INSERT)
+-- CREATE POLICY "Users can upload their own avatars"
+-- ON storage.objects
+-- FOR INSERT
+-- WITH CHECK (auth.uid() IS NOT NULL);
 
--- Allow any user to see avatars
-CREATE POLICY "Public can read avatars"
-ON storage.objects
-FOR SELECT
-USING (bucket_id = 'avatars');
+-- -- Allow any user to see avatars
+-- CREATE POLICY "Public can read avatars"
+-- ON storage.objects
+-- FOR SELECT
+-- USING (bucket_id = 'avatars');
 
--- Allow users to update only their own files (UPDATE)
-CREATE POLICY "Users can update their own avatars"
-ON storage.objects
-FOR UPDATE
-USING (auth.uid() = owner);
+-- -- Allow users to update only their own files (UPDATE)
+-- CREATE POLICY "Users can update their own avatars"
+-- ON storage.objects
+-- FOR UPDATE
+-- USING (auth.uid() = owner);
 
--- Allow users to delete only their own files (DELETE)
-CREATE POLICY "Users can delete their own avatars"
-ON storage.objects
-FOR DELETE
-USING (auth.uid() = owner);
+-- -- Allow users to delete only their own files (DELETE)
+-- CREATE POLICY "Users can delete their own avatars"
+-- ON storage.objects
+-- FOR DELETE
+-- USING (auth.uid() = owner);
