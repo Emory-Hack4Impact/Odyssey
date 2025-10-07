@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface TextAreaProps {
   label?: string;
@@ -13,7 +13,7 @@ export const TextAreaWithDescription: React.FC<TextAreaProps> = ({
   rows = 8,
   placeholder,
   value,
-  onChange
+  onChange,
 }) => {
   return (
     <div className="w-full max-w-2xl space-y-2">
@@ -23,7 +23,7 @@ export const TextAreaWithDescription: React.FC<TextAreaProps> = ({
       <textarea
         placeholder={placeholder}
         rows={rows}
-        className="resize-none w-full border-2 border-gray-400 rounded-2xl px-4 py-2"
+        className="w-full resize-none rounded-2xl border-2 border-gray-400 px-4 py-2"
         onChange={(e) => onChange?.(e.target.value)}
         value={value}
       />

@@ -6,8 +6,8 @@ import Image from "next/image";
 
 export default function Avatar({ uid, size }: { uid: string; size: number }) {
   const supabase = createClient();
-  let [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  let [uploading, setUploading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   async function updateAvatar(path: string) {
     const { data: imageData, error: downloadError } = await supabase.storage
@@ -31,12 +31,13 @@ export default function Avatar({ uid, size }: { uid: string; size: number }) {
         .limit(1)
         .maybeSingle();
 
-      if (error || !data) return;
+      if (error ?? !data) return;
 
-      await updateAvatar(data.path);
+      await updateAvatar(data.path as string);
     }
 
     fetchAvatar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uid, supabase]);
 
   const uploadAvatar: React.ChangeEventHandler<HTMLInputElement> = async (

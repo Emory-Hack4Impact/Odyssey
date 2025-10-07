@@ -1,8 +1,8 @@
-"use client"
-import React, { useState} from 'react'
-import { TextAreaWithDescription } from '../Textarea'
-import { PerformanceRatingSlider } from './PerformanceRatingSliders'
-import { EmployeeEval, SubmitEmployeeEval } from '@/app/api/employee-evals'
+"use client";
+import React, { useState } from "react";
+import { TextAreaWithDescription } from "../Textarea";
+import { PerformanceRatingSlider } from "./PerformanceRatingSliders";
+import { EmployeeEval, SubmitEmployeeEval } from "@/app/api/employee-evals";
 
 interface HRServicesProps {
   userId: string;
@@ -24,8 +24,11 @@ interface FormData {
   skill3: string;
 }
 
-export default function EmployeePerfEvalForm({ userId, username, userRole }: HRServicesProps) {
-
+export default function EmployeePerfEvalForm({
+  userId,
+  username,
+  userRole,
+}: HRServicesProps) {
   const [formData, setFormData] = useState<EmployeeEval>({
     employeeId: userId,
     year: 2025,
@@ -49,44 +52,44 @@ export default function EmployeePerfEvalForm({ userId, username, userRole }: HRS
     >,
   ) => {
     const { name, value } = e.target;
-    
+
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
-    
+
     if (formErrors[name as keyof FormData]) {
-      setFormErrors(prev => ({
+      setFormErrors((prev) => ({
         ...prev,
-        [name]: undefined
+        [name]: undefined,
       }));
     }
   };
 
   const handleTextAreaChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-    
+
     if (formErrors[field as keyof FormData]) {
-      setFormErrors(prev => ({
+      setFormErrors((prev) => ({
         ...prev,
-        [field]: undefined
+        [field]: undefined,
       }));
     }
   };
 
   const handleRatingChange = (field: keyof EmployeeEval, value: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value.toString()
+      [field]: value.toString(),
     }));
-    
+
     if (formErrors[field as keyof FormData]) {
-      setFormErrors(prev => ({
+      setFormErrors((prev) => ({
         ...prev,
-        [field]: undefined
+        [field]: undefined,
       }));
     }
   };
@@ -94,15 +97,15 @@ export default function EmployeePerfEvalForm({ userId, username, userRole }: HRS
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const errors: Partial<FormData> = {};
-  
+
     if (!formData.strengths) {
       errors.strengths = "*required";
     }
-  
+
     if (!formData.weaknesses) {
       errors.weaknesses = "*required";
     }
-  
+
     if (!formData.improvements) {
       errors.improvements = "*required";
     }
@@ -110,24 +113,26 @@ export default function EmployeePerfEvalForm({ userId, username, userRole }: HRS
     if (!formData.communication) {
       errors.communication = "*required";
     }
-    
+
     if (!formData.leadership) {
       errors.leadership = "*required";
     }
-    
+
     if (!formData.timeliness) {
       errors.timeliness = "*required";
     }
-  
+
     setFormErrors(errors);
-  
+
     if (Object.keys(errors).length === 0) {
       console.log("Submitting form data:", formData);
       try {
         const response = await SubmitEmployeeEval(formData);
-        console.log(`Successfully submitted employee evaluation: ${response.id}`);
+        console.log(
+          `Successfully submitted employee evaluation: ${response.id}`,
+        );
         alert("Evaluation submitted successfully!");
-        
+
         // Reset form
         setFormData({
           employeeId: userId,
@@ -143,11 +148,11 @@ export default function EmployeePerfEvalForm({ userId, username, userRole }: HRS
           skill2: "",
           skill3: "",
         });
-
-        
       } catch (error) {
         console.error("Error submitting evaluation:", error);
-        alert("There was an error submitting the evaluation. Please try again.");
+        alert(
+          "There was an error submitting the evaluation. Please try again.",
+        );
       }
     }
   };
@@ -155,7 +160,7 @@ export default function EmployeePerfEvalForm({ userId, username, userRole }: HRS
   return (
     <div>
       <form onSubmit={handleSubmit}>
-        <div className="flex flex-col gap-6 mb-6">
+        <div className="mb-6 flex flex-col gap-6">
           <h3>Create Employee Performance Evaluation</h3>
           {/* <div className="flex gap-2">
             <input 
@@ -174,15 +179,17 @@ export default function EmployeePerfEvalForm({ userId, username, userRole }: HRS
           </div> */}
           <div className="w-36">
             <h3 className="mb-2">Year</h3>
-            <div className="border-2 text-gray-400 bg-white px-3 py-2 rounded-3xl">
-              <select 
-                id="year" 
-                name="year" 
-                value={formData.year} 
+            <div className="rounded-3xl border-2 bg-white px-3 py-2 text-gray-400">
+              <select
+                id="year"
+                name="year"
+                value={formData.year}
                 onChange={handleChange}
                 disabled={userRole === "Employee"}
               >
-                <option value="" disabled>Select Year</option>
+                <option value="" disabled>
+                  Select Year
+                </option>
                 <option value="2020">2020</option>
                 <option value="2021">2021</option>
                 <option value="2022">2022</option>
@@ -194,7 +201,7 @@ export default function EmployeePerfEvalForm({ userId, username, userRole }: HRS
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <TextAreaWithDescription
               label="Strengths"
@@ -202,9 +209,11 @@ export default function EmployeePerfEvalForm({ userId, username, userRole }: HRS
               onChange={(value) => handleTextAreaChange("strengths", value)}
               value={formData.strengths}
             />
-            {formErrors.strengths && <p className="text-red-500 text-sm">{formErrors.strengths}</p>}
+            {formErrors.strengths && (
+              <p className="text-sm text-red-500">{formErrors.strengths}</p>
+            )}
           </div>
-          
+
           <div>
             <TextAreaWithDescription
               label="Weaknesses"
@@ -212,9 +221,11 @@ export default function EmployeePerfEvalForm({ userId, username, userRole }: HRS
               onChange={(value) => handleTextAreaChange("weaknesses", value)}
               value={formData.weaknesses}
             />
-            {formErrors.weaknesses && <p className="text-red-500 text-sm">{formErrors.weaknesses}</p>}
+            {formErrors.weaknesses && (
+              <p className="text-sm text-red-500">{formErrors.weaknesses}</p>
+            )}
           </div>
-          
+
           <div>
             <TextAreaWithDescription
               label="Improvements"
@@ -222,9 +233,11 @@ export default function EmployeePerfEvalForm({ userId, username, userRole }: HRS
               onChange={(value) => handleTextAreaChange("improvements", value)}
               value={formData.improvements}
             />
-            {formErrors.improvements && <p className="text-red-500 text-sm">{formErrors.improvements}</p>}
+            {formErrors.improvements && (
+              <p className="text-sm text-red-500">{formErrors.improvements}</p>
+            )}
           </div>
-          
+
           <div>
             <TextAreaWithDescription
               label="Other Notes (Optional)"
@@ -235,69 +248,77 @@ export default function EmployeePerfEvalForm({ userId, username, userRole }: HRS
           </div>
         </div>
 
-        <div className="w-full md:w-[50%] mb-6">
-          <h2 className="text-lg font-semibold mb-4">Performance Ratings</h2>
+        <div className="mb-6 w-full md:w-[50%]">
+          <h2 className="mb-4 text-lg font-semibold">Performance Ratings</h2>
           <div className="space-y-4">
             <div>
-              <PerformanceRatingSlider 
-                category="Communication" 
+              <PerformanceRatingSlider
+                category="Communication"
                 value={50}
-                onChange={(value) => handleRatingChange("communication", value)} 
+                onChange={(value) => handleRatingChange("communication", value)}
               />
-              {formErrors.communication && <p className="text-red-500 text-sm">{formErrors.communication}</p>}
+              {formErrors.communication && (
+                <p className="text-sm text-red-500">
+                  {formErrors.communication}
+                </p>
+              )}
             </div>
-            
+
             <div>
-              <PerformanceRatingSlider 
-                category="Leadership" 
+              <PerformanceRatingSlider
+                category="Leadership"
                 value={50}
-                onChange={(value) => handleRatingChange("leadership", value)} 
+                onChange={(value) => handleRatingChange("leadership", value)}
               />
-              {formErrors.leadership && <p className="text-red-500 text-sm">{formErrors.leadership}</p>}
+              {formErrors.leadership && (
+                <p className="text-sm text-red-500">{formErrors.leadership}</p>
+              )}
             </div>
-            
+
             <div>
-              <PerformanceRatingSlider 
+              <PerformanceRatingSlider
                 category="Timeliness"
-                value={50} 
-                onChange={(value) => handleRatingChange("timeliness", value)} 
-              />
-              {formErrors.timeliness && <p className="text-red-500 text-sm">{formErrors.timeliness}</p>}
-            </div>
-            
-            <div>
-              <PerformanceRatingSlider 
-                category="Skill1" 
                 value={50}
-                onChange={(value) => handleRatingChange("skill1", value)} 
+                onChange={(value) => handleRatingChange("timeliness", value)}
               />
+              {formErrors.timeliness && (
+                <p className="text-sm text-red-500">{formErrors.timeliness}</p>
+              )}
             </div>
-            
+
             <div>
-              <PerformanceRatingSlider 
-                category="Skill2" 
+              <PerformanceRatingSlider
+                category="Skill1"
                 value={50}
-                onChange={(value) => handleRatingChange("skill2", value)} 
+                onChange={(value) => handleRatingChange("skill1", value)}
               />
             </div>
-            
+
             <div>
-              <PerformanceRatingSlider 
+              <PerformanceRatingSlider
+                category="Skill2"
+                value={50}
+                onChange={(value) => handleRatingChange("skill2", value)}
+              />
+            </div>
+
+            <div>
+              <PerformanceRatingSlider
                 category="Skill3"
                 value={50}
-                onChange={(value) => handleRatingChange("skill3", value)} 
+                onChange={(value) => handleRatingChange("skill3", value)}
               />
             </div>
           </div>
         </div>
-        
-        <button 
-          type="submit" 
-          className="border-2 text-gray-400 px-3 py-2 rounded-3xl hover:text-black hover:border-black transition-all"
+
+        <button
+          type="submit"
+          className="rounded-3xl border-2 px-3 py-2 text-gray-400 transition-all hover:border-black hover:text-black"
         >
           Submit
         </button>
       </form>
     </div>
-  )
+  );
 }

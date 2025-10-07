@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 interface PerformanceRatingSliderProps {
   category: string;
@@ -6,11 +6,9 @@ interface PerformanceRatingSliderProps {
   onChange: (rating: number) => void;
 }
 
-export const PerformanceRatingSlider: React.FC<PerformanceRatingSliderProps> = ({ 
-  category, 
-  value,
-  onChange 
-}) => {
+export const PerformanceRatingSlider: React.FC<
+  PerformanceRatingSliderProps
+> = ({ category, value, onChange }) => {
   const [rating, setRating] = useState(value);
 
   const handleRatingChange = (value: number) => {
@@ -20,26 +18,26 @@ export const PerformanceRatingSlider: React.FC<PerformanceRatingSliderProps> = (
 
   return (
     <div className="space-y-2">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div className="text-sm text-gray-600">{category}</div>
         <div className="text-sm text-gray-600">{rating}%</div>
       </div>
-      <div className="relative h-4 bg-gray-200 rounded-full">
-        <div 
-          className="absolute top-0 left-0 h-4 bg-gray-400 rounded-full" 
+      <div className="relative h-4 rounded-full bg-gray-200">
+        <div
+          className="absolute left-0 top-0 h-4 rounded-full bg-gray-400"
           style={{ width: `${rating}%` }}
         />
-        <div 
-          className="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-black rounded-full shadow-md" 
-          style={{ left: `${rating}%`, transform: 'translate(-50%, -50%)' }}
+        <div
+          className="absolute top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-black shadow-md"
+          style={{ left: `${rating}%`, transform: "translate(-50%, -50%)" }}
         />
-        <input 
-          type="range" 
-          min="0" 
-          max="100" 
+        <input
+          type="range"
+          min="0"
+          max="100"
           value={rating}
           onChange={(e) => handleRatingChange(Number(e.target.value))}
-          className="absolute top-0 left-0 w-full h-4 opacity-0 cursor-pointer z-10"
+          className="absolute left-0 top-0 z-10 h-4 w-full cursor-pointer opacity-0"
         />
       </div>
     </div>

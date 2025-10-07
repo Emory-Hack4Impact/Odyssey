@@ -1,6 +1,6 @@
 # Project Odyssey
 
-Internal
+Internal HR Employee management hub.
 
 This project is built with Next.js, Supabase, and Prisma. Follow the instructions below to get started with local development.
 

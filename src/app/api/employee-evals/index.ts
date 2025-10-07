@@ -54,7 +54,7 @@ export async function GetEmployeeEvals(employeeId: string) {
         employeeId: employeeId,
       },
       orderBy: {
-        year: 'desc',
+        year: "desc",
       },
     });
   } finally {

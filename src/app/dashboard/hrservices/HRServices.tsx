@@ -13,14 +13,21 @@ interface HRServicesProps {
 }
 
 export const HRServices = ({ userId, username, userRole }: HRServicesProps) => {
-
   const getPerformanceEvaluationComponent = () => {
-    switch(userRole) {
-      case 'Employee':
-        return <PerfEvalEmployee userId={userId} username={username} userRole={userRole} />;
-      case 'HR':
-        return <PerfEvalHR userId={userId} username={username} userRole={userRole} />;
-      case 'Manager':
+    switch (userRole) {
+      case "Employee":
+        return (
+          <PerfEvalEmployee
+            userId={userId}
+            username={username}
+            userRole={userRole}
+          />
+        );
+      case "HR":
+        return (
+          <PerfEvalHR userId={userId} username={username} userRole={userRole} />
+        );
+      case "Manager":
         return <PerfEval />;
       default:
         return <PerfEval />;
