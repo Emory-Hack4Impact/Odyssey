@@ -4,11 +4,7 @@ import Link from "next/link";
 import { SubmitButton } from "@/components/submit-button";
 import signIn from "./action";
 
-export default function Signin({
-  searchParams,
-}: {
-  searchParams: { message: string };
-}) {
+export default function Signin({ searchParams }: { searchParams: { message: string } }) {
   return (
     <div className="mx-auto mt-20 rounded-2xl bg-white p-8 shadow sm:max-w-md">
       <form className="flex w-full flex-1 flex-col justify-center gap-2 text-foreground animate-in">

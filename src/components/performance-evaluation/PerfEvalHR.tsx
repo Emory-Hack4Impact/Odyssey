@@ -30,11 +30,7 @@ interface FetchedEval {
   skill3: string;
 }
 
-export default function PerfEvalHR({
-  userId,
-  username,
-  userRole,
-}: HRServicesProps) {
+export default function PerfEvalHR({ userId, username, userRole }: HRServicesProps) {
   const [employeeEvals, setEmployeeEvals] = useState<FetchedEval[]>([]);
   const [selectedEval, setSelectedEval] = useState<FetchedEval>({
     id: 0,

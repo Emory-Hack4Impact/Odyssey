@@ -64,8 +64,7 @@ export default function PerfEvalOld() {
         </div>
         <div className="mb-4">
           <label htmlFor="a">
-            A. Employee contributes to the success of Odyssey’s mission and
-            demonstrates core values
+            A. Employee contributes to the success of Odyssey’s mission and demonstrates core values
           </label>
           <DropdownSelect
             id="a"
@@ -86,9 +85,7 @@ export default function PerfEvalOld() {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="b">
-            B. Employee supports and sustains a team approach
-          </label>
+          <label htmlFor="b">B. Employee supports and sustains a team approach</label>
           <DropdownSelect
             id="b"
             options={rating}
@@ -109,9 +106,8 @@ export default function PerfEvalOld() {
         </div>
         <div className="mb-4">
           <label htmlFor="c">
-            C. Employee cultivates an atmosphere that emphasizes ongoing
-            learning and competence through training, supervision, consultation
-            and feedback
+            C. Employee cultivates an atmosphere that emphasizes ongoing learning and competence
+            through training, supervision, consultation and feedback
           </label>
           <DropdownSelect
             id="c"
@@ -133,8 +129,8 @@ export default function PerfEvalOld() {
         </div>
         <div className="mb-4">
           <label htmlFor="d">
-            D. Employee has mastered the responsibilities as outlined in job
-            description. Achievement of Goals (Last 12 Months)
+            D. Employee has mastered the responsibilities as outlined in job description.
+            Achievement of Goals (Last 12 Months)
           </label>
           <DropdownSelect
             id="d"

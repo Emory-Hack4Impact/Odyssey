@@ -2,11 +2,7 @@
 import React, { useState } from "react";
 import { TextAreaWithDescription } from "../Textarea";
 import { PerformanceRatingSlider } from "./PerformanceRatingSliders";
-import {
-  EmployeeEval,
-  SubmitEmployeeEval,
-  UpdateEmployeeEval,
-} from "@/app/api/employee-evals";
+import { EmployeeEval, SubmitEmployeeEval, UpdateEmployeeEval } from "@/app/api/employee-evals";
 
 interface HRServicesProps {
   userId: string;
@@ -78,9 +74,7 @@ export default function HRPerfEvalForm({
   const [formErrors, setFormErrors] = useState<Partial<FormData>>({});
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
 
@@ -159,9 +153,7 @@ export default function HRPerfEvalForm({
       console.log("Submitting form data:", formData);
       try {
         const response = await UpdateEmployeeEval(formData.id, formData);
-        console.log(
-          `Successfully submitted employee evaluation: ${response.id}`,
-        );
+        console.log(`Successfully submitted employee evaluation: ${response.id}`);
         alert("Evaluation submitted successfully!");
 
         // Reset form
@@ -182,9 +174,7 @@ export default function HRPerfEvalForm({
         });
       } catch (error) {
         console.error("Error submitting evaluation:", error);
-        alert(
-          "There was an error submitting the evaluation. Please try again.",
-        );
+        alert("There was an error submitting the evaluation. Please try again.");
       }
     }
   };
@@ -211,13 +201,7 @@ export default function HRPerfEvalForm({
           <div className="w-36">
             <h3 className="mb-2">Year</h3>
             <div className="rounded-3xl border-2 bg-white px-3 py-2 text-gray-400">
-              <select
-                id="year"
-                name="year"
-                value={formData.year}
-                onChange={handleChange}
-                disabled
-              >
+              <select id="year" name="year" value={formData.year} onChange={handleChange} disabled>
                 <option value="" disabled>
                   Select Year
                 </option>
@@ -240,9 +224,7 @@ export default function HRPerfEvalForm({
               placeholder="List employee's strengths."
               onChange={(value) => handleTextAreaChange("strengths", value)}
             />
-            {formErrors.strengths && (
-              <p className="text-sm text-red-500">{formErrors.strengths}</p>
-            )}
+            {formErrors.strengths && <p className="text-sm text-red-500">{formErrors.strengths}</p>}
           </div>
 
           <div>
@@ -289,9 +271,7 @@ export default function HRPerfEvalForm({
                 onChange={(value) => handleRatingChange("communication", value)}
               />
               {formErrors.communication && (
-                <p className="text-sm text-red-500">
-                  {formErrors.communication}
-                </p>
+                <p className="text-sm text-red-500">{formErrors.communication}</p>
               )}
             </div>
 

@@ -2,7 +2,8 @@
 
 Internal HR Employee management hub.
 
-This project is built with Next.js, Supabase, and Prisma. Follow the instructions below to get started with local development.
+This project is built with Next.js, Supabase, and Prisma. Follow the instructions below to get
+started with local development.
 
 ## Prerequisites
 
@@ -29,7 +30,8 @@ npm install
 
 ### 3. Install Supabase CLI
 
-Follow the [Supabase CLI installation guide](https://supabase.com/docs/guides/cli/getting-started) for your operating system.
+Follow the [Supabase CLI installation guide](https://supabase.com/docs/guides/cli/getting-started)
+for your operating system.
 
 ### 4. Start Supabase Locally
 
@@ -37,7 +39,8 @@ Follow the [Supabase CLI installation guide](https://supabase.com/docs/guides/cl
 supabase start
 ```
 
-This will spin up all Supabase services in Docker containers. Once complete, you'll see output with access credentials and URLs.
+This will spin up all Supabase services in Docker containers. Once complete, you'll see output with
+access credentials and URLs.
 
 **Important URLs:**
 
@@ -76,7 +79,8 @@ npm run db:push
 **Helpful Prisma tools:**
 
 - View your database schema: `npx prisma studio` (opens at http://localhost:5555)
-- See the [Prisma Schema Explorer](https://www.prisma.io/docs/concepts/components/prisma-schema) for reference
+- See the [Prisma Schema Explorer](https://www.prisma.io/docs/concepts/components/prisma-schema) for
+  reference
 
 ### 7. Run the Development Server
 

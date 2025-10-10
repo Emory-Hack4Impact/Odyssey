@@ -6,9 +6,11 @@ interface PerformanceRatingSliderProps {
   onChange: (rating: number) => void;
 }
 
-export const PerformanceRatingSlider: React.FC<
-  PerformanceRatingSliderProps
-> = ({ category, value, onChange }) => {
+export const PerformanceRatingSlider: React.FC<PerformanceRatingSliderProps> = ({
+  category,
+  value,
+  onChange,
+}) => {
   const [rating, setRating] = useState(value);
 
   const handleRatingChange = (value: number) => {
@@ -24,7 +26,7 @@ export const PerformanceRatingSlider: React.FC<
       </div>
       <div className="relative h-4 rounded-full bg-gray-200">
         <div
-          className="absolute left-0 top-0 h-4 rounded-full bg-gray-400"
+          className="absolute top-0 left-0 h-4 rounded-full bg-gray-400"
           style={{ width: `${rating}%` }}
         />
         <div
@@ -37,7 +39,7 @@ export const PerformanceRatingSlider: React.FC<
           max="100"
           value={rating}
           onChange={(e) => handleRatingChange(Number(e.target.value))}
-          className="absolute left-0 top-0 z-10 h-4 w-full cursor-pointer opacity-0"
+          className="absolute top-0 left-0 z-10 h-4 w-full cursor-pointer opacity-0"
         />
       </div>
     </div>

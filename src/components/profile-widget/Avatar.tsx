@@ -40,9 +40,7 @@ export default function Avatar({ uid, size }: { uid: string; size: number }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uid, supabase]);
 
-  const uploadAvatar: React.ChangeEventHandler<HTMLInputElement> = async (
-    event,
-  ) => {
+  const uploadAvatar: React.ChangeEventHandler<HTMLInputElement> = async (event) => {
     try {
       setUploading(true);
       if (!event.target.files || event.target.files.length === 0) {
@@ -54,9 +52,7 @@ export default function Avatar({ uid, size }: { uid: string; size: number }) {
       const filePath = `${uid}/${Date.now()}.${fileExt}`;
 
       // upload to bucket
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file);
+      const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file);
       if (uploadError) throw uploadError;
 
       // insert metadata into db
@@ -94,9 +90,7 @@ export default function Avatar({ uid, size }: { uid: string; size: number }) {
           }}
         />
       )}
-      <label htmlFor="uploadAvatar">
-        {uploading ? "Uploading..." : "Upload Avatar"}
-      </label>
+      <label htmlFor="uploadAvatar">{uploading ? "Uploading..." : "Upload Avatar"}</label>
       <input
         id="uploadAvatar"
         type="file"

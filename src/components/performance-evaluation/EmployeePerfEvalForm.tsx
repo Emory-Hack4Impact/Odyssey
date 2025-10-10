@@ -24,11 +24,7 @@ interface FormData {
   skill3: string;
 }
 
-export default function EmployeePerfEvalForm({
-  userId,
-  username,
-  userRole,
-}: HRServicesProps) {
+export default function EmployeePerfEvalForm({ userId, username, userRole }: HRServicesProps) {
   const [formData, setFormData] = useState<EmployeeEval>({
     employeeId: userId,
     year: 2025,
@@ -47,9 +43,7 @@ export default function EmployeePerfEvalForm({
   const [formErrors, setFormErrors] = useState<Partial<FormData>>({});
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
 
@@ -128,9 +122,7 @@ export default function EmployeePerfEvalForm({
       console.log("Submitting form data:", formData);
       try {
         const response = await SubmitEmployeeEval(formData);
-        console.log(
-          `Successfully submitted employee evaluation: ${response.id}`,
-        );
+        console.log(`Successfully submitted employee evaluation: ${response.id}`);
         alert("Evaluation submitted successfully!");
 
         // Reset form
@@ -150,9 +142,7 @@ export default function EmployeePerfEvalForm({
         });
       } catch (error) {
         console.error("Error submitting evaluation:", error);
-        alert(
-          "There was an error submitting the evaluation. Please try again.",
-        );
+        alert("There was an error submitting the evaluation. Please try again.");
       }
     }
   };
@@ -209,9 +199,7 @@ export default function EmployeePerfEvalForm({
               onChange={(value) => handleTextAreaChange("strengths", value)}
               value={formData.strengths}
             />
-            {formErrors.strengths && (
-              <p className="text-sm text-red-500">{formErrors.strengths}</p>
-            )}
+            {formErrors.strengths && <p className="text-sm text-red-500">{formErrors.strengths}</p>}
           </div>
 
           <div>
@@ -258,9 +246,7 @@ export default function EmployeePerfEvalForm({
                 onChange={(value) => handleRatingChange("communication", value)}
               />
               {formErrors.communication && (
-                <p className="text-sm text-red-500">
-                  {formErrors.communication}
-                </p>
+                <p className="text-sm text-red-500">{formErrors.communication}</p>
               )}
             </div>
 

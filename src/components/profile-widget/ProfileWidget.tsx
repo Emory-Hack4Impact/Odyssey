@@ -1,6 +1,6 @@
 "use client";
 
-import { User } from "@supabase/supabase-js";
+import { type User } from "@supabase/supabase-js";
 import Avatar from "./Avatar";
 
 export default function ProfileWidget({ user }: { user: User }) {

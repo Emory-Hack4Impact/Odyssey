@@ -11,9 +11,7 @@ const resetPassword = async (formData: FormData) => {
   });
 
   if (error) {
-    return redirect(
-      "/forgot-password?message=Could not send password reset email",
-    );
+    return redirect("/forgot-password?message=Could not send password reset email");
   }
 
   return redirect("/forgot-password?message=Confirmation email sent!");

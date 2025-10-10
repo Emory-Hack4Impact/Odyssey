@@ -1,7 +1,4 @@
-import {
-  SubmitTimeOff,
-  type SubmitTimeOffRequest,
-} from "@/app/api/time-off-req";
+import { SubmitTimeOff, type SubmitTimeOffRequest } from "@/app/api/time-off-req";
 import React, { useState } from "react";
 
 export interface FormData {
@@ -22,17 +19,14 @@ const TimeOffForm: React.FC = () => {
     comments: "",
   });
 
-  const [showOtherLeaveTypeField, setShowOtherLeaveTypeField] =
-    useState<boolean>(false);
+  const [showOtherLeaveTypeField, setShowOtherLeaveTypeField] = useState<boolean>(false);
   const [formErrors, setFormErrors] = useState<Partial<FormData>>({});
 
   const [characterCount, setCharacterCount] = useState(0); // Track character count
   const maxChars = 150; // Maximum character limit
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
 
@@ -78,9 +72,7 @@ const TimeOffForm: React.FC = () => {
       console.log(formData);
       // TODO: do something on success
       await SubmitTimeOff(formData)
-        .then((r) =>
-          console.log(`successfully submitted time off request: ${r.id}`),
-        )
+        .then((r) => console.log(`successfully submitted time off request: ${r.id}`))
         .catch((e) => console.error(e));
     }
   };
@@ -103,23 +95,16 @@ const TimeOffForm: React.FC = () => {
             <option value="Annual Leave">Annual Leave</option>
             <option value="Sick Leave">Sick Leave</option>
             <option value="Bereavement">Bereavement</option>
-            <option value="Maternity/Paternity Leave">
-              Maternity/Paternity Leave
-            </option>
+            <option value="Maternity/Paternity Leave">Maternity/Paternity Leave</option>
             <option value="Jury Duty">Jury Duty</option>
             <option value="Optional Holiday">Optional Holiday</option>
             <option value="Other">Other</option>
           </select>
-          {formErrors.leaveType && (
-            <p className="text-sm text-red-500">{formErrors.leaveType}</p>
-          )}
+          {formErrors.leaveType && <p className="text-sm text-red-500">{formErrors.leaveType}</p>}
         </div>
         {showOtherLeaveTypeField && (
           <div className="mb-4">
-            <label
-              htmlFor="otherLeaveType"
-              className="block text-lg text-gray-700"
-            >
+            <label htmlFor="otherLeaveType" className="block text-lg text-gray-700">
               Other Leave Type:
             </label>
             <input
@@ -144,9 +129,7 @@ const TimeOffForm: React.FC = () => {
             onChange={handleChange}
             className="form-input mt-1 block w-full rounded-md border border-gray-300 p-2 text-lg text-gray-700"
           />
-          {formErrors.startDate && (
-            <p className="text-sm text-red-500">{formErrors.startDate}</p>
-          )}
+          {formErrors.startDate && <p className="text-sm text-red-500">{formErrors.startDate}</p>}
         </div>
         <div className="mb-4">
           <label htmlFor="endDate" className="block text-lg text-gray-700">
@@ -160,9 +143,7 @@ const TimeOffForm: React.FC = () => {
             onChange={handleChange}
             className="form-input mt-1 block w-full rounded-md border border-gray-300 p-2 text-lg text-gray-700"
           />
-          {formErrors.endDate && (
-            <p className="text-sm text-red-500">{formErrors.endDate}</p>
-          )}
+          {formErrors.endDate && <p className="text-sm text-red-500">{formErrors.endDate}</p>}
         </div>
         <div className="mb-4">
           <label htmlFor="comments" className="block text-lg text-gray-700">

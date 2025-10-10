@@ -1,11 +1,12 @@
 /** @type {import('prettier').Config & import('prettier-plugin-tailwindcss').PluginOptions} */
 const config = {
   plugins: ["prettier-plugin-tailwindcss"],
+  tailwindStylesheet: "./src/app/globals.css",
   arrowParens: "always",
   bracketSpacing: true,
   htmlWhitespaceSensitivity: "css",
   insertPragma: false,
-  jsxBracketSameLine: false,
+  bracketSameLine: false,
   jsxSingleQuote: false,
   printWidth: 100,
   proseWrap: "always",

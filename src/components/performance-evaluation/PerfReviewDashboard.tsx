@@ -17,9 +17,7 @@ interface PerformanceReviewDashboardProps {
   skill3: string;
 }
 
-export const PerformanceReviewDashboard: React.FC<
-  PerformanceReviewDashboardProps
-> = ({
+export const PerformanceReviewDashboard: React.FC<PerformanceReviewDashboardProps> = ({
   strengths,
   weaknesses,
   improvements,
@@ -67,14 +65,8 @@ export const PerformanceReviewDashboard: React.FC<
 
           {/* Job Performance Ratings Section */}
           <div>
-            <h2 className="mb-4 text-lg font-semibold">
-              Job Performance Ratings
-            </h2>
-            <RatingItem
-              key={1}
-              label="Communication"
-              percentage={communication}
-            />
+            <h2 className="mb-4 text-lg font-semibold">Job Performance Ratings</h2>
+            <RatingItem key={1} label="Communication" percentage={communication} />
             <RatingItem key={2} label="Leadership" percentage={leadership} />
             <RatingItem key={3} label={"Timeliness"} percentage={timeliness} />
             <RatingItem key={4} label="Skill1" percentage={skill1} />

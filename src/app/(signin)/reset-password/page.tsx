@@ -29,11 +29,7 @@ export default async function ResetPassword({
           required
         />
         <input type="hidden" name="accessToken" value={session.access_token} />
-        <input
-          type="hidden"
-          name="refreshToken"
-          value={session.refresh_token}
-        />
+        <input type="hidden" name="refreshToken" value={session.refresh_token} />
         <SubmitButton
           formAction={updatePassword}
           className="mb-2 rounded-md bg-light-maroon px-4 py-2 text-foreground"

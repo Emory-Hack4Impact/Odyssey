@@ -25,15 +25,9 @@ interface EvaluationData {
   skill3: string;
 }
 
-export default function PerfEvalEmployee({
-  userId,
-  username,
-  userRole,
-}: HRServicesProps) {
+export default function PerfEvalEmployee({ userId, username, userRole }: HRServicesProps) {
   const [toggleForm, setToggleForm] = useState(false);
-  const [performanceData, setPerformanceData] = useState<EvaluationData | null>(
-    null,
-  );
+  const [performanceData, setPerformanceData] = useState<EvaluationData | null>(null);
   const [selectedYear, setSelectedYear] = useState("2025");
 
   const fetchData = async () => {
@@ -42,9 +36,7 @@ export default function PerfEvalEmployee({
       console.log("Fetched evaluations:", evals);
 
       const relevantEval = selectedYear
-        ? evals.find(
-            (evaluation) => evaluation.year.toString() === selectedYear,
-          )
+        ? evals.find((evaluation) => evaluation.year.toString() === selectedYear)
         : evals[0];
 
       setPerformanceData(relevantEval || null);
@@ -83,11 +75,7 @@ export default function PerfEvalEmployee({
               View Evaluation
             </button>
           </div>
-          <EmployeePerfEvalForm
-            userId={userId}
-            username={username}
-            userRole={userRole}
-          />
+          <EmployeePerfEvalForm userId={userId} username={username} userRole={userRole} />
         </>
       )}
 

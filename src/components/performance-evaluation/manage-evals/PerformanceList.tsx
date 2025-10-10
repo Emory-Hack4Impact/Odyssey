@@ -58,8 +58,7 @@ const evaluations: Evaluation[] = [
 ];
 
 const PerformanceList = () => {
-  const [selectedEvaluation, setSelectedEvaluation] =
-    useState<null | Evaluation>(null);
+  const [selectedEvaluation, setSelectedEvaluation] = useState<null | Evaluation>(null);
 
   const handleOpenClick = (evaluation: Evaluation) => {
     setSelectedEvaluation(evaluation);
@@ -77,25 +76,18 @@ const PerformanceList = () => {
             <PerformanceDetail evaluation={selectedEvaluation} />
             <button
               onClick={handleCloseClick}
-              className="mb-4 mt-4 rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:outline-none"
+              className="mt-4 mb-4 rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:outline-none"
             >
               Close
             </button>
           </div>
         ) : (
           evaluations.map((evaluation) => (
-            <div
-              key={evaluation.id}
-              className="mb-4 rounded-lg bg-white p-4 shadow-md"
-            >
+            <div key={evaluation.id} className="mb-4 rounded-lg bg-white p-4 shadow-md">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-bold">
-                    {evaluation.employeeName}
-                  </h2>
-                  <p className="text-gray-600">
-                    Submitted: {new Date().toLocaleString()}
-                  </p>
+                  <h2 className="text-lg font-bold">{evaluation.employeeName}</h2>
+                  <p className="text-gray-600">Submitted: {new Date().toLocaleString()}</p>
                 </div>
                 <button
                   onClick={() => handleOpenClick(evaluation)}
