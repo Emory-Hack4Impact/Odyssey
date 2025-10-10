@@ -31,7 +31,6 @@
   },
   "include": [
     "prisma/**/*.ts",
-    ".eslintrc.cjs",
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
