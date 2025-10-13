@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { SubmitButton } from "@/components/submit-button";
-import signIn from "@/app/auth/signin/action";
+import signIn from "@/app/api/auth/signin/action";
+// usually we keep server actions scoped with the page/components using them but to me it makes
+// more sense to place them in `auth/` here
 
 export default function Signin({ searchParams }: { searchParams: { message: string } }) {
   return (
@@ -14,7 +16,7 @@ export default function Signin({ searchParams }: { searchParams: { message: stri
         <input
           className="mb-6 rounded-md border border-gray-300 bg-inherit px-4 py-2 text-gray-800"
           name="email"
-          placeholder="sam.fisher@odysseycounseling.org"
+          placeholder="user@odysseycounseling.org"
           required
         />
         <label className="text-md text-gray-800" htmlFor="password">

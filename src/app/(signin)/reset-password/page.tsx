@@ -1,5 +1,7 @@
 import { SubmitButton } from "@/components/submit-button";
-import { verifyCode, updatePassword } from "@/app/auth/reset-password/action";
+import { verifyCode, updatePassword } from "@/app/api/auth/reset-password/action";
+// usually we keep server actions scoped with the page/components using them but to me it makes
+// more sense to place them in `auth/` here
 
 export default async function ResetPassword({
   searchParams,

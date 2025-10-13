@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import AuthButton from "./AuthButton";
 
 interface SubNavBarProps {
   selected: string;
@@ -38,7 +37,11 @@ export default function NavBar() {
             </Link>
           </li>
           <li className="h-full w-full">
-            <AuthButton />
+            <form action="/api/auth/signout" method="post" className="">
+              <button className="rounded-full bg-white px-5 py-3 font-semibold transition-all hover:cursor-pointer hover:bg-gray-100">
+                Sign out
+              </button>
+            </form>
           </li>
         </ul>
       </div>
