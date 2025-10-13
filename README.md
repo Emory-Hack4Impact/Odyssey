@@ -182,12 +182,18 @@ supabase stop
 3. Push your branch and create a pull request
 4. Provide a clear description of your changes in the PR
 
+### Use DaisyUI
+
+We use [daisyUI](https://daisyui.com/) for consistent styling. Check their component library before
+creating custom styles to keep our UI uniform.
+
 ## Useful Resources
 
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Supabase Documentation](https://supabase.com/docs)
 - [Supabase CLI Reference](https://supabase.com/docs/reference/cli)
 - [Prisma Documentation](https://www.prisma.io/docs)
+- [daisyUI Reference](https://daisyui.com/components/)
 
 ## Troubleshooting
 

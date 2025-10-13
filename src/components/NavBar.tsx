@@ -1,21 +1,28 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
-interface SubNavBarProps {
-  selected: string;
-}
-
-// todo: select active link with bg-gray-700 and text-gray-100
+// Detect current pathname and add `btn-neutral` class to the active link(s)
 export default function NavBar() {
+  const pathname = usePathname() || "/";
+
+  const activeClass = (href: string, exact = false) => {
+    if (!href) return "";
+    // exact match or href is a prefix of the pathname (e.g. /dashboard -> /dashboard/xyz)
+    return pathname === href || (!exact && pathname.startsWith(href + "/")) ? "btn-neutral" : "";
+  };
+
   return (
-    <nav className="flex h-32 w-full items-center justify-between bg-gray-200 p-5">
+    <nav className="navbar justify-between bg-base-100 px-5 shadow-sm">
       <Image width={125} height={125} src="/logo.png" alt="logo" />
       <div className="flex flex-row items-center">
         <ul className="flex h-full w-full items-center gap-8 whitespace-pre">
           <li className="h-full w-full">
             <Link
               href="/dashboard"
-              className="rounded-full bg-white px-5 py-3 font-semibold transition-all hover:bg-gray-100"
+              className={`btn rounded-full ${activeClass("/dashboard", true)}`}
             >
               Dashboard
             </Link>
@@ -23,24 +30,22 @@ export default function NavBar() {
           <li className="h-full w-full">
             <Link
               href="/dashboard/hrservices"
-              className="rounded-full bg-white px-5 py-3 font-semibold transition-all hover:bg-gray-100"
+              className={`btn rounded-full ${activeClass("/dashboard/hrservices")}`}
             >
               HR Services
             </Link>
           </li>
           <li className="h-full w-full">
             <Link
-              href="/dashboard"
-              className="rounded-full bg-white px-5 py-3 font-semibold transition-all hover:bg-gray-100"
+              href="/dashboard/bulletin"
+              className={`btn rounded-full ${activeClass("/dashboard/bulletin")}`}
             >
               Events & Announcements
             </Link>
           </li>
           <li className="h-full w-full">
             <form action="/api/auth/signout" method="post" className="">
-              <button className="rounded-full bg-white px-5 py-3 font-semibold transition-all hover:cursor-pointer hover:bg-gray-100">
-                Sign out
-              </button>
+              <button className="btn rounded-full">Sign out</button>
             </form>
           </li>
         </ul>
@@ -49,10 +54,10 @@ export default function NavBar() {
   );
 }
 
-export function SubNavBar(props: SubNavBarProps) {
+export function SubNavBar({ selected }: { selected: string }) {
   return (
     <div className="space flex w-full items-center justify-between">
-      <div>{props.selected}</div>
+      <div>{selected}</div>
     </div>
   );
 }

@@ -1,38 +1,56 @@
 @import "tailwindcss";
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
 @plugin "tailwindcss-animate";
+@plugin "daisyui";
+
+@plugin "daisyui/theme" {
+  name: "odyssey";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  --color-base-100: #ffffff;
+  --color-base-200: #f8f8f8;
+  --color-base-300: #eeeeee;
+
+  --color-base-content: #18181b;
+  --color-primary: #4d0000;
+  --color-primary-content: #f6f5f4;
+  --color-secondary: #35b5ac;
+  --color-secondary-content: #18181b;
+  --color-accent: #ffcc02;
+  --color-accent-content: #18181b;
+  --color-neutral: #09090b;
+  --color-neutral-content: #e4e4e7;
+
+  --color-info: #00bafe;
+  --color-info-content: #042e49;
+  --color-success: #41b97b;
+  --color-success-content: #032413;
+  --color-warning: #fca000;
+  --color-warning-content: #43020a;
+  --color-error: #ff637d;
+  --color-error-content: #4d0218;
+
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
 
 @theme {
   /* Font Families */
   --font-family-playfair: "Playfair Display", serif;
+  --font-family-inter: "Inter", ui-sans-serif;
 
   /* Colors */
   --color-maroon: #4d0000;
   --color-light-maroon: #a40235;
   --color-odyssey-yellow: #ffcc02;
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-btn-background: hsl(var(--btn-background));
-  --color-btn-background-hover: hsl(var(--btn-background-hover));
-
-  /* Border Radius */
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
-}
-
-@layer base {
-  :root {
-    --background: 200 20% 98%;
-    --btn-background: 200 10% 91%;
-    --btn-background-hover: 200 10% 89%;
-    --foreground: 200 50% 3%;
-    --radius: 0.5rem;
-  }
-
-  * {
-    @apply border-foreground/20;
-  }
 }
 
 @keyframes animateIn {
