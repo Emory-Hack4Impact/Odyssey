@@ -1,7 +1,7 @@
 "use server";
 
 import { getUser } from "@/utils/supabase/server";
-import ProfileWidget from "@/components/profile-widget/ProfileWidget";
+import ProfileWidget from "@/components/hrservices/profile-widget/ProfileWidget";
 
 export default async function Index() {
   // non-null assertion because middleware will redirect to signin if user doesn't exist

@@ -1,4 +1,4 @@
-import { SubmitButton } from "@/components/submit-button";
+import { SubmitButton } from "@/components/SubmitButton";
 import resetPassword from "@/app/api/auth/forgot-password/action";
 // usually we keep server actions scoped with the page/components using them but to me it makes
 // more sense to place them in `auth/` here
@@ -22,7 +22,7 @@ export default function ForgotPassword({
         />
         <SubmitButton
           formAction={resetPassword}
-          className="btn border-0 bg-light-maroon btn-primary"
+          className="btn border-0 btn-error"
           pendingText="Sending email"
         >
           Send Email

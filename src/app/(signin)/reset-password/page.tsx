@@ -1,4 +1,4 @@
-import { SubmitButton } from "@/components/submit-button";
+import { SubmitButton } from "@/components/SubmitButton";
 import { verifyCode, updatePassword } from "@/app/api/auth/reset-password/action";
 // usually we keep server actions scoped with the page/components using them but to me it makes
 // more sense to place them in `auth/` here
@@ -34,7 +34,7 @@ export default async function ResetPassword({
         <input type="hidden" name="refreshToken" value={session.refresh_token} />
         <SubmitButton
           formAction={updatePassword}
-          className="btn border-0 bg-light-maroon btn-primary"
+          className="btn border-0 btn-error"
           pendingText="Signing In..."
         >
           Reset Password

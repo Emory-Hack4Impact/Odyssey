@@ -1,8 +1,10 @@
 "use client";
-import PerfEval from "@/components/performance-evaluation/PerfEval";
-import PerfEvalEmployee from "@/components/performance-evaluation/PerfEvalEmployee";
-import PerfEvalHR from "@/components/performance-evaluation/PerfEvalHR";
-import TimeOff from "@/components/time-off/TimeOff";
+
+import PerfEval from "@/components/hrservices/performance-evaluation/PerfEval";
+import PerfEvalEmployee from "@/components/hrservices/performance-evaluation/PerfEvalEmployee";
+import PerfEvalHR from "@/components/hrservices/performance-evaluation/PerfEvalHR";
+import TimeOff from "@/components/hrservices/time-off/TimeOff";
+import { useState } from "react";
 
 interface HRServicesProps {
   userId: string;
@@ -63,31 +65,33 @@ export const HRServices = ({ userId, username, userRole }: HRServicesProps) => {
     },
   ];
 
-  return <div className="m-12 flex min-h-screen w-auto flex-col items-start px-4"></div>;
-  // TODO: fix
-  // <Tab.Group>
-  //   <div className="flex w-full flex-row justify-between gap-20 border-b-2 px-3 opacity-0 animate-in">
-  //     <h1 className="mb-4 text-xl font-semibold">{`HR Services for ${username}`}</h1>
-  //     <Tab.List className="flex">
-  //       {categories.map((category) => (
-  //         <Tab key={category.key} as={Fragment}>
-  //           {({ selected }) => (
-  //             <button
-  //               className={`px-4 focus:outline-none ${selected ? "border-b-2 border-black font-medium transition-all" : ""}`}
-  //             >
-  //               {/* if we have more time, should try to fix the font-medium shifting the tab buttons slightly */}
-  //               {category.label}
-  //             </button>
-  //           )}
-  //         </Tab>
-  //       ))}
-  //     </Tab.List>
-  //   </div>
-  //   {/* Tab panels */}
-  //   <Tab.Panels className="mt-6 w-full p-4">
-  //     {categories.map((category) => (
-  //       <Tab.Panel key={category.key}>{category.component}</Tab.Panel>
-  //     ))}
-  //   </Tab.Panels>
-  // </Tab.Group>
+  const [activeTab, setActiveTab] = useState<string>(categories[0]?.key ?? "");
+
+  return (
+    <div className="m-12 flex min-h-screen w-auto flex-col items-start px-4">
+      <div className="flex w-full flex-row justify-between gap-6 border-b-2 border-base-300 px-3">
+        <h1 className="mb-4 text-xl font-semibold">{`HR Services for ${username}`}</h1>
+        <div className="tabs">
+          {categories.map((category) => (
+            <button
+              key={category.key}
+              onClick={() => setActiveTab(category.key)}
+              className={`tab-lifted tab text-lg ${activeTab === category.key ? "tab-active" : ""}`}
+              aria-current={activeTab === category.key ? "true" : undefined}
+            >
+              {category.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-6 w-full p-4">
+        {categories.map((category) => (
+          <div key={category.key} className={`${activeTab === category.key ? "block" : "hidden"}`}>
+            {category.component}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { TextAreaWithDescription } from "../Textarea";
+import { TextAreaWithDescription } from "../../Textarea";
 import { PerformanceRatingSlider } from "./PerformanceRatingSliders";
 import { EmployeeEval, SubmitEmployeeEval } from "@/app/api/employee-evals";
 

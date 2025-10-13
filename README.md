@@ -62,10 +62,10 @@ Keep these credentials handy, as you'll need them for your environment variables
 
 ### 5. Configure Environment Variables
 
-Copy `.env.sample` to `.env.local` file in the project root:
+Copy `.env.sample` to `.env` file in the project root:
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
 Update the file with your local Supabase credentials from the `supabase start` output:
@@ -206,7 +206,7 @@ creating custom styles to keep our UI uniform.
 ### Prisma Client errors
 
 - Run `npx prisma generate` to regenerate the client
-- Ensure your `DATABASE_URL` in `.env.local` is correct
+- Ensure your `DATABASE_URL` in `.env` is correct
 
 ### Module not found errors
 

@@ -16,9 +16,6 @@
     "db:migrate": "prisma migrate dev",
     "postinstall": "prisma generate"
   },
-  "prisma": {
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
-  },
   "dependencies": {
     "@prisma/client": "^6.17.1",
     "@supabase/ssr": "^0.5.2",

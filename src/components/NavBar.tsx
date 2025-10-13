@@ -53,11 +53,3 @@ export default function NavBar() {
     </nav>
   );
 }
-
-export function SubNavBar({ selected }: { selected: string }) {
-  return (
-    <div className="space flex w-full items-center justify-between">
-      <div>{selected}</div>
-    </div>
-  );
-}

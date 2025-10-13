@@ -1,5 +1,6 @@
-@import "tailwindcss";
 @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
+@import "tailwindcss";
+
 @plugin "tailwindcss-animate";
 @plugin "daisyui";
 
@@ -10,8 +11,14 @@
   color-scheme: light;
 
   --color-base-100: #ffffff;
-  --color-base-200: #f8f8f8;
-  --color-base-300: #eeeeee;
+  --color-base-200: #e2e2e2;
+  --color-base-300: #c6c5c6;
+  --color-base-400: #aba9aa;
+  --color-base-500: #908e90;
+  --color-base-600: #767476;
+  --color-base-700: #5d5b5d;
+  --color-base-800: #444346;
+  --color-base-900: #2d2d30;
 
   --color-base-content: #18181b;
   --color-primary: #4d0000;
@@ -29,8 +36,8 @@
   --color-success-content: #032413;
   --color-warning: #fca000;
   --color-warning-content: #43020a;
-  --color-error: #ff637d;
-  --color-error-content: #4d0218;
+  --color-error: #a40235;
+  --color-error-content: #f6f5f4;
 
   --radius-selector: 0.5rem;
   --radius-field: 0.25rem;

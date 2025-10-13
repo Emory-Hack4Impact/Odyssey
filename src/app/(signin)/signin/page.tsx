@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { SubmitButton } from "@/components/submit-button";
+import { SubmitButton } from "@/components/SubmitButton";
 import signIn from "@/app/api/auth/signin/action";
 // usually we keep server actions scoped with the page/components using them but to me it makes
 // more sense to place them in `auth/` here
@@ -31,7 +31,7 @@ export default function Signin({ searchParams }: { searchParams: { message: stri
         />
         <SubmitButton
           formAction={signIn}
-          className="btn border-0 bg-light-maroon btn-primary"
+          className="btn border-0 btn-error"
           pendingText="Signing In..."
         >
           Sign In
