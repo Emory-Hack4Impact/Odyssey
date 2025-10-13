@@ -1,11 +1,9 @@
 "use server";
 
-import { useUser } from "@/utils/supabase/server";
+import { getUser } from "@/utils/supabase/server";
 
 const GetUser = async () => {
-  const res = await useUser();
-
-  console.log(res);
+  const res = await getUser();
 
   return res ? (
     <h1 className="text-2xl">{`HR Services for ${res.email}`}</h1>

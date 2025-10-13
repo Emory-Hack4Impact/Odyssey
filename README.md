@@ -5,6 +5,16 @@ Internal HR Employee management hub.
 This project is built with Next.js, Supabase, and Prisma. Follow the instructions below to get
 started with local development.
 
+## Table of Contents:
+
+1. [Prerequisites](#prerequisites)
+2. [Initial Setup](#initial-setup)
+3. [Development Workflow](#development-workflow)
+4. [Best Practices](#best-practices)
+5. [Useful Resources](#useful-resources)
+6. [Troubleshooting](#troubleshooting)
+7. [Getting Help](#getting-help)
+
 ## Prerequisites
 
 - [git](https://git-scm.com/)
@@ -126,6 +136,11 @@ For production, create a migration:
 npx prisma migrate dev --name descriptive_migration_name
 ```
 
+### Viewing Emails
+
+Supabase captures emails sent in a Mailpit instance, accessible via the Inbucket URL from
+`supabase status`.
+
 ### Stopping Services
 
 When you're done developing:
@@ -173,7 +188,6 @@ supabase stop
 - [Supabase Documentation](https://supabase.com/docs)
 - [Supabase CLI Reference](https://supabase.com/docs/reference/cli)
 - [Prisma Documentation](https://www.prisma.io/docs)
-- [Prisma Studio](https://www.prisma.io/studio) - Database GUI
 
 ## Troubleshooting
 

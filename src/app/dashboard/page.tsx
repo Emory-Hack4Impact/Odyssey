@@ -1,11 +1,11 @@
 "use server";
 
-import { useUser } from "@/utils/supabase/server";
+import { getUser } from "@/utils/supabase/server";
 import ProfileWidget from "@/components/profile-widget/ProfileWidget";
 
 export default async function Index() {
   // non-null assertion because middleware will redirect to signin if user doesn't exist
-  const user = (await useUser())!;
+  const user = (await getUser())!;
 
   return (
     <div className="flex w-full flex-1 flex-col items-center gap-20">
