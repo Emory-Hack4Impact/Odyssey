@@ -43,9 +43,8 @@
 }
 
 @theme {
-  /* Font Families */
-  --font-family-playfair: "Playfair Display", serif;
-  --font-family-inter: "Inter", ui-sans-serif;
+  --font-sans: "Inter", ui-sans-serif;
+  --font-serif: "Playfair Display", serif;
 
   /* Colors */
   --color-maroon: #4d0000;
