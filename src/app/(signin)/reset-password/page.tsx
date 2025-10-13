@@ -1,5 +1,5 @@
 import { SubmitButton } from "@/components/submit-button";
-import { verifyCode, updatePassword } from "./action";
+import { verifyCode, updatePassword } from "@/app/auth/reset-password/action";
 
 export default async function ResetPassword({
   searchParams,

@@ -1,5 +1,5 @@
 import { SubmitButton } from "@/components/submit-button";
-import resetPassword from "./action";
+import resetPassword from "@/app/auth/forgot-password/action";
 
 export default function ForgotPassword({
   searchParams,
@@ -15,7 +15,7 @@ export default function ForgotPassword({
         <input
           className="mb-6 rounded-md border border-gray-300 bg-inherit px-4 py-2 text-gray-800"
           name="email"
-          placeholder="you@example.com"
+          placeholder="sam.fisher@odysseycounseling.org"
           required
         />
         <SubmitButton
