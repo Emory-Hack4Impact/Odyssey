@@ -124,16 +124,19 @@ When modifying the Prisma schema (`prisma/schema.prisma`):
 
 ```bash
 # Push changes to local database
-npx prisma db push
+npm run db:push
+
+# Seed database with initial data (if applicable)
+npm run db:seed
 
 # Regenerate Prisma Client
-npx prisma generate
+npm run db:generate
 ```
 
 For production, create a migration:
 
 ```bash
-npx prisma migrate dev --name descriptive_migration_name
+npm run db:migrate
 ```
 
 ### Viewing Emails
