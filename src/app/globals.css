@@ -1,27 +1,62 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
+@import "tailwindcss";
 
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap");
+@plugin "tailwindcss-animate";
+@plugin "daisyui";
 
-@layer base {
-  :root {
-    --background: 200 20% 98%;
-    --btn-background: 200 10% 91%;
-    --btn-background-hover: 200 10% 89%;
-    --foreground: 200 50% 3%;
-    --radius: 0.5rem;
-  }
+@plugin "daisyui/theme" {
+  name: "odyssey";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  --color-base-100: #ffffff;
+  --color-base-200: #e2e2e2;
+  --color-base-300: #c6c5c6;
+  --color-base-400: #aba9aa;
+  --color-base-500: #908e90;
+  --color-base-600: #767476;
+  --color-base-700: #5d5b5d;
+  --color-base-800: #444346;
+  --color-base-900: #2d2d30;
+
+  --color-base-content: #18181b;
+  --color-primary: #4d0000;
+  --color-primary-content: #f6f5f4;
+  --color-secondary: #35b5ac;
+  --color-secondary-content: #18181b;
+  --color-accent: #ffcc02;
+  --color-accent-content: #18181b;
+  --color-neutral: #09090b;
+  --color-neutral-content: #e4e4e7;
+
+  --color-info: #00bafe;
+  --color-info-content: #042e49;
+  --color-success: #41b97b;
+  --color-success-content: #032413;
+  --color-warning: #fca000;
+  --color-warning-content: #43020a;
+  --color-error: #a40235;
+  --color-error-content: #f6f5f4;
+
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
 }
 
-@layer base {
-  * {
-    @apply border-foreground/20;
-  }
-}
+@theme {
+  --font-sans: "Inter", ui-sans-serif;
+  --font-serif: "Playfair Display", serif;
 
-.animate-in {
-  animation: animateIn 0.3s ease 0.15s both;
+  /* Colors */
+  --color-maroon: #4d0000;
+  --color-light-maroon: #a40235;
+  --color-odyssey-yellow: #ffcc02;
 }
 
 @keyframes animateIn {
@@ -33,4 +68,8 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.animate-in {
+  animation: animateIn 0.3s ease 0.15s both;
 }

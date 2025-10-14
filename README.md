@@ -2,7 +2,18 @@
 
 Internal HR Employee management hub.
 
-This project is built with Next.js, Supabase, and Prisma. Follow the instructions below to get started with local development.
+This project is built with Next.js, Supabase, and Prisma. Follow the instructions below to get
+started with local development.
+
+## Table of Contents:
+
+1. [Prerequisites](#prerequisites)
+2. [Initial Setup](#initial-setup)
+3. [Development Workflow](#development-workflow)
+4. [Best Practices](#best-practices)
+5. [Useful Resources](#useful-resources)
+6. [Troubleshooting](#troubleshooting)
+7. [Getting Help](#getting-help)
 
 ## Prerequisites
 
@@ -29,7 +40,8 @@ npm install
 
 ### 3. Install Supabase CLI
 
-Follow the [Supabase CLI installation guide](https://supabase.com/docs/guides/cli/getting-started) for your operating system.
+Follow the [Supabase CLI installation guide](https://supabase.com/docs/guides/cli/getting-started)
+for your operating system.
 
 ### 4. Start Supabase Locally
 
@@ -37,7 +49,8 @@ Follow the [Supabase CLI installation guide](https://supabase.com/docs/guides/cl
 supabase start
 ```
 
-This will spin up all Supabase services in Docker containers. Once complete, you'll see output with access credentials and URLs.
+This will spin up all Supabase services in Docker containers. Once complete, you'll see output with
+access credentials and URLs.
 
 **Important URLs:**
 
@@ -49,10 +62,10 @@ Keep these credentials handy, as you'll need them for your environment variables
 
 ### 5. Configure Environment Variables
 
-Copy `.env.sample` to `.env.local` file in the project root:
+Copy `.env.sample` to `.env` file in the project root:
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
 Update the file with your local Supabase credentials from the `supabase start` output:
@@ -76,7 +89,8 @@ npm run db:push
 **Helpful Prisma tools:**
 
 - View your database schema: `npx prisma studio` (opens at http://localhost:5555)
-- See the [Prisma Schema Explorer](https://www.prisma.io/docs/concepts/components/prisma-schema) for reference
+- See the [Prisma Schema Explorer](https://www.prisma.io/docs/concepts/components/prisma-schema) for
+  reference
 
 ### 7. Run the Development Server
 
@@ -122,6 +136,11 @@ For production, create a migration:
 npx prisma migrate dev --name descriptive_migration_name
 ```
 
+### Viewing Emails
+
+Supabase captures emails sent in a Mailpit instance, accessible via the Inbucket URL from
+`supabase status`.
+
 ### Stopping Services
 
 When you're done developing:
@@ -163,13 +182,18 @@ supabase stop
 3. Push your branch and create a pull request
 4. Provide a clear description of your changes in the PR
 
+### Use DaisyUI
+
+We use [daisyUI](https://daisyui.com/) for consistent styling. Check their component library before
+creating custom styles to keep our UI uniform.
+
 ## Useful Resources
 
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Supabase Documentation](https://supabase.com/docs)
 - [Supabase CLI Reference](https://supabase.com/docs/reference/cli)
 - [Prisma Documentation](https://www.prisma.io/docs)
-- [Prisma Studio](https://www.prisma.io/studio) - Database GUI
+- [daisyUI Reference](https://daisyui.com/components/)
 
 ## Troubleshooting
 
@@ -182,7 +206,7 @@ supabase stop
 ### Prisma Client errors
 
 - Run `npx prisma generate` to regenerate the client
-- Ensure your `DATABASE_URL` in `.env.local` is correct
+- Ensure your `DATABASE_URL` in `.env` is correct
 
 ### Module not found errors
 

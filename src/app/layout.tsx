@@ -11,14 +11,10 @@ export const metadata = {
   description: "Odyssey Family Counseling's intenal employee page",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={GeistSans.className}>
-      <body className="flex h-screen flex-col justify-between bg-background text-foreground">
+      <body className="bg-background text-foreground flex h-screen flex-col justify-between">
         {children}
       </body>
     </html>

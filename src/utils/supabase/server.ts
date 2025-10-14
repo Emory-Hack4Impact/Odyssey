@@ -30,7 +30,7 @@ export function createClient() {
   )
 }
 
-export const useUser = async () => {
+export const getUser = async () => {
   const supabase = createClient();
 
   const {

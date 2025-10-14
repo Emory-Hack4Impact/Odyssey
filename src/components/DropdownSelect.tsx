@@ -7,8 +7,9 @@ interface Props {
   className?: string;
 }
 
+// TODO: remove
 export default function DropdownSelect(props: Props) {
-  const required = props.required ? props.required : false;
+  const required = props.required ?? false;
 
   return (
     <div>
