@@ -8,12 +8,6 @@ interface HRServicesProps {
   userRole: string;
 }
 
-interface Employee {
-  id: string;
-  role: string;
-  evaluations: FetchedEval[];
-}
-
 interface FetchedEval {
   id: number;
   employeeId: string;
@@ -30,7 +24,11 @@ interface FetchedEval {
   skill3: string;
 }
 
-export default function PerfEvalHR({ userId, username, userRole }: HRServicesProps) {
+export default function PerfEvalHR({
+  userId: _userId,
+  username: _username,
+  userRole: _userRole,
+}: HRServicesProps) {
   const [employeeEvals, setEmployeeEvals] = useState<FetchedEval[]>([]);
   const [selectedEval, setSelectedEval] = useState<FetchedEval>({
     id: 0,
@@ -63,7 +61,7 @@ export default function PerfEvalHR({ userId, username, userRole }: HRServicesPro
   };
 
   useEffect(() => {
-    fetchEvals();
+    void fetchEvals();
   }, []);
 
   return (

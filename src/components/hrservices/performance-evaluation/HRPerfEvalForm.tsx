@@ -2,13 +2,7 @@
 import React, { useState } from "react";
 import { TextAreaWithDescription } from "../../Textarea";
 import { PerformanceRatingSlider } from "./PerformanceRatingSliders";
-import { EmployeeEval, SubmitEmployeeEval, UpdateEmployeeEval } from "@/app/api/employee-evals";
-
-interface HRServicesProps {
-  userId: string;
-  username: string;
-  userRole: string;
-}
+import { type EmployeeEval, UpdateEmployeeEval } from "@/app/api/employee-evals";
 
 interface FormData {
   year: number;
@@ -43,7 +37,7 @@ interface FetchedEval {
 export default function HRPerfEvalForm({
   id,
   employeeId,
-  year,
+  year = 2025,
   strengths,
   weaknesses,
   improvements,
@@ -58,7 +52,7 @@ export default function HRPerfEvalForm({
   const [formData, setFormData] = useState<FetchedEval>({
     id,
     employeeId,
-    year: 2025,
+    year: year,
     strengths,
     weaknesses,
     improvements,

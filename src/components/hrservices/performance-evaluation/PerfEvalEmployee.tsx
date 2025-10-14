@@ -39,14 +39,15 @@ export default function PerfEvalEmployee({ userId, username, userRole }: HRServi
         ? evals.find((evaluation) => evaluation.year.toString() === selectedYear)
         : evals[0];
 
-      setPerformanceData(relevantEval || null);
+      setPerformanceData(relevantEval ?? null);
     } catch (error) {
       console.error("Error fetching evaluations:", error);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, selectedYear]);
 
   //   const performanceData = {

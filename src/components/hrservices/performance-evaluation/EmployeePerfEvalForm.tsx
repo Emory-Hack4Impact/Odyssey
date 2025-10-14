@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { TextAreaWithDescription } from "../../Textarea";
 import { PerformanceRatingSlider } from "./PerformanceRatingSliders";
-import { EmployeeEval, SubmitEmployeeEval } from "@/app/api/employee-evals";
+import { type EmployeeEval, SubmitEmployeeEval } from "@/app/api/employee-evals";
 
 interface HRServicesProps {
   userId: string;
@@ -24,7 +24,11 @@ interface FormData {
   skill3: string;
 }
 
-export default function EmployeePerfEvalForm({ userId, username, userRole }: HRServicesProps) {
+export default function EmployeePerfEvalForm({
+  userId,
+  username: _username,
+  userRole,
+}: HRServicesProps) {
   const [formData, setFormData] = useState<EmployeeEval>({
     employeeId: userId,
     year: 2025,
