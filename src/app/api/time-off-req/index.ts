@@ -18,8 +18,8 @@ export async function SubmitTimeOff(data: SubmitTimeOffRequest) {
       employeeId: data.id,
       leaveType: data.leaveType,
       otherLeaveType: data.otherLeaveType,
-      startDate: data.startDate,
-      endDate: data.endDate,
+      startDate: new Date(data.startDate),
+      endDate: new Date(data.endDate),
       comments: data.comments,
     },
   });
