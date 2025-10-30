@@ -1,16 +1,31 @@
 import { SubmitTimeOff, type SubmitTimeOffRequest } from "@/app/api/time-off-req";
-import React, { useState } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 
 export interface FormData {
   leaveType: string;
   otherLeaveType: string;
-  startDate: string;
-  endDate: string;
+  startDate: Date;
+  endDate: Date;
   comments: string;
   approved: boolean;
 }
 
-const TimeOffForm: React.FC = () => {
+export type TimeOffRequest = FormData & {
+  id: number;
+  employeeId: string;
+  startDate: Date;
+  endDate: Date;
+};
+
+type FormError = Partial<
+  Omit<FormData, "startDate" | "endDate"> & { startDate: string; endDate: string }
+>;
+
+const TimeOffForm = ({
+  setRequests,
+}: {
+  setRequests: Dispatch<SetStateAction<TimeOffRequest[]>>;
+}) => {
   const [formData, setFormData] = useState<SubmitTimeOffRequest>({
     id: "00000000-0000-0000-0000-000000000001",
     leaveType: "",
@@ -22,10 +37,10 @@ const TimeOffForm: React.FC = () => {
   });
 
   const [showOtherLeaveTypeField, setShowOtherLeaveTypeField] = useState<boolean>(false);
-  const [formErrors, setFormErrors] = useState<Partial<FormData>>({});
+  const [formErrors, setFormErrors] = useState<FormError>({});
 
-  const [characterCount, setCharacterCount] = useState(0); // Track character count
-  const maxChars = 150; // Maximum character limit
+  const [characterCount, setCharacterCount] = useState(0);
+  const maxChars = 150;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -43,7 +58,7 @@ const TimeOffForm: React.FC = () => {
     }
 
     if (name === "comments") {
-      setCharacterCount(value.length); // Update character count
+      setCharacterCount(value.length);
     }
 
     setFormData((prevState) => ({
@@ -54,7 +69,7 @@ const TimeOffForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const errors: Partial<FormData> = {};
+    const errors: FormError = {};
 
     if (!formData.leaveType) {
       errors.leaveType = "*required";
@@ -71,11 +86,22 @@ const TimeOffForm: React.FC = () => {
     setFormErrors(errors);
 
     if (Object.keys(errors).length === 0) {
-      console.log(formData);
-      // TODO: do something on success
-      await SubmitTimeOff(formData)
-        .then((r) => console.log(`successfully submitted time off request: ${r.id}`))
-        .catch((e) => console.error(e));
+      try {
+        const newRequest = await SubmitTimeOff(formData);
+        setRequests((prev) => [newRequest, ...prev]);
+        setFormData({
+          id: formData.id,
+          leaveType: "",
+          otherLeaveType: "",
+          startDate: "",
+          endDate: "",
+          comments: "",
+          approved: false,
+        });
+        setCharacterCount(0);
+      } catch (e) {
+        console.error("Error submitting time off request:", e);
+      }
     }
   };
 
