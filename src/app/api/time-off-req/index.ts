@@ -9,6 +9,7 @@ export interface SubmitTimeOffRequest {
   startDate: string;
   endDate: string;
   comments: string;
+  approved: boolean;
 }
 
 export async function SubmitTimeOff(data: SubmitTimeOffRequest) {
@@ -21,6 +22,7 @@ export async function SubmitTimeOff(data: SubmitTimeOffRequest) {
       startDate: new Date(data.startDate),
       endDate: new Date(data.endDate),
       comments: data.comments,
+      approved: data.approved,
     },
   });
 }

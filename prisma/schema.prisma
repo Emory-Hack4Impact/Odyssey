@@ -37,6 +37,7 @@ model TimeOffRequest {
   startDate      DateTime
   endDate        DateTime
   comments       String       @default("")
+  approved       Boolean      @default(false)
   UserMetadata   UserMetadata @relation(fields: [employeeId], references: [id])
 }
 

@@ -7,6 +7,7 @@ export interface FormData {
   startDate: string;
   endDate: string;
   comments: string;
+  approved: boolean;
 }
 
 const TimeOffForm: React.FC = () => {
@@ -17,6 +18,7 @@ const TimeOffForm: React.FC = () => {
     startDate: "",
     endDate: "",
     comments: "",
+    approved: false,
   });
 
   const [showOtherLeaveTypeField, setShowOtherLeaveTypeField] = useState<boolean>(false);
