@@ -26,3 +26,14 @@ export async function SubmitTimeOff(data: SubmitTimeOffRequest) {
     },
   });
 }
+
+export async function FetchTimeOff(id: string) {
+  const prisma = new PrismaClient();
+  return await prisma.timeOffRequest.findMany({
+    where: {
+      employeeId: {
+        equals: id,
+      },
+    },
+  });
+}
