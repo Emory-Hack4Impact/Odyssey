@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { ROOT } from "./mockData"; // to be modified when backend is ready
-import type { DocumentNode, FolderNode, ItemNode } from "./types";
-import { FolderIcon, FileIcon } from "./icons";
+import type { DocumentNode, FolderNode } from "./types";
+import { FileIcon, FolderIcon, FolderOutlineIcon, ChevronRightIcon } from "./icons";
 
 /**
  * viewMode:
@@ -22,10 +22,6 @@ type PathResult = {
 /** Type guards */
 function isFolder(node: DocumentNode): node is FolderNode {
   return node.type === "folder";
-}
-
-function isItem(node: ItemNode): node is ItemNode {
-  return node.type === "item";
 }
 
 /** Returns type `PathResult` according to `path` provided */
@@ -53,7 +49,7 @@ export default function Documents() {
   const [path, setPath] = useState<string[]>([]); // [] means root
 
   // only rerender when path changed thro memorization
-  const { node: current, complete } = useMemo(() => findByPath(ROOT, path), [path]);
+  const { node: current } = useMemo(() => findByPath(ROOT, path), [path]);
 
   const crumbs: { id: string[]; label: string }[] = [{ id: [], label: ROOT.name }];
   let prefix: string[] = [];
@@ -68,6 +64,8 @@ export default function Documents() {
 
   const goTo = (ids: string[]) => setPath(ids);
 
+  const currentPathKey = path.length ? path.join("/") : "root";
+
   // different views:
 
   // icon view
@@ -77,39 +75,46 @@ export default function Documents() {
       role="list"
       aria-label="Folder contents as icons"
     >
-      {folder.children.map((node: DocumentNode) => (
-        <button
-          key={node.id}
-          type="button"
-          className="card link bg-base-100 p-3 text-left link-hover shadow transition hover:shadow-md"
-          onClick={() => {
-            if (node.type === "folder") {
-              setPath((prev) => [...prev, node.id]); // if folder go further
-            } else {
-              openItem(node.url); // if file open
-            }
-          }}
-        >
-          <div className="min-w-0">
-            {isFolder(node) ? (
-              <div className="truncate font-medium">{node.name}</div> // if folder, navigate into
-            ) : (
-              // enable
-              <a
-                href={node.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()} // avoid triggering the tile's onClick
-                className="link truncate font-medium link-hover"
-                title={node.name}
-              >
-                {node.name}
-              </a>
-            )}
-            <div className="text-xs text-base-content/60">{isFolder(node) ? "folder" : "item"}</div>
-          </div>
-        </button>
-      ))}
+      {folder.children.map((node: DocumentNode) => {
+        const isFolderNode = node.type === "folder";
+        return (
+          <button
+            key={node.id}
+            type="button"
+            className="group flex flex-col gap-3 rounded-xl border border-base-200 bg-base-100 p-4 text-left shadow-sm transition hover:border-primary/50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            onClick={() => {
+              if (node.type === "folder") {
+                setPath((prev) => [...prev, node.id]);
+              } else {
+                openItem(node.url);
+              }
+            }}
+          >
+            <span className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary/20">
+              {isFolderNode ? <FolderIcon className="h-8 w-8" /> : <FileIcon className="h-8 w-8" />}
+            </span>
+            <div className="min-w-0">
+              {node.type === "folder" ? (
+                <div className="truncate font-medium">{node.name}</div>
+              ) : (
+                <a
+                  href={node.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="link truncate font-medium group-hover:underline"
+                  title={node.name}
+                >
+                  {node.name}
+                </a>
+              )}
+              <div className="text-xs tracking-wide text-base-content/60 uppercase">
+                {node.type === "folder" ? "Folder" : "File"}
+              </div>
+            </div>
+          </button>
+        );
+      })}
     </div>
   );
 
@@ -118,44 +123,56 @@ export default function Documents() {
     <div className="overflow-x-auto">
       <table className="table table-zebra">
         <thead>
-          <tr>
+          <tr className="text-sm text-base-content/60 uppercase">
             <th className="w-0">Type</th>
             <th>Name</th>
           </tr>
         </thead>
         <tbody>
-          {folder.children.map((node) => (
-            <tr
-              key={node.id}
-              className={node.type === "folder" ? "link link-hover" : ""}
-              onClick={() => {
-                if (node.type === "folder") setPath((prev) => [...prev, node.id]);
-                else {
-                  openItem(node.url);
-                }
-              }}
-            >
-              <td className="align-middle">
-                {isFolder(node) ? ( // handle command click
-                  <div className="font-medium">{node.name}</div>
-                ) : (
-                  <a
-                    href={node.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()} // avoid triggering the row's onClick
-                    className="link font-medium link-hover"
-                    title={node.name}
-                  >
-                    {node.name}
-                  </a>
-                )}
-                <div className="text-xs text-base-content/60">
-                  {isFolder(node) ? "folder" : "item"}
-                </div>
-              </td>
-            </tr>
-          ))}
+          {folder.children.map((node) => {
+            const isFolderNode = node.type === "folder";
+            return (
+              <tr
+                key={node.id}
+                className="cursor-pointer transition hover:bg-base-200/70"
+                onClick={() => {
+                  if (node.type === "folder") setPath((prev) => [...prev, node.id]);
+                  else {
+                    openItem(node.url);
+                  }
+                }}
+              >
+                <td className="w-0 align-middle">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-base-200 text-primary">
+                    {isFolderNode ? (
+                      <FolderIcon className="h-6 w-6" />
+                    ) : (
+                      <FileIcon className="h-6 w-6" />
+                    )}
+                  </span>
+                </td>
+                <td className="align-middle">
+                  {node.type === "folder" ? (
+                    <span className="font-medium text-base-content">{node.name}</span>
+                  ) : (
+                    <a
+                      href={node.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="link font-medium"
+                      title={node.name}
+                    >
+                      {node.name}
+                    </a>
+                  )}
+                  <div className="text-xs tracking-wide text-base-content/60 uppercase">
+                    {node.type === "folder" ? "Folder" : "File"}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -181,40 +198,59 @@ export default function Documents() {
       </div>
 
       {/* Breadcrumbs */}
-      <div className="mb-3 overflow-x-auto">
-        <ul className="breadcrumbs p-1 text-sm">
-          {crumbs.map((c, idx) => {
+      <nav className="mb-3 overflow-x-auto" aria-label="Current folder path">
+        <ul className="breadcrumbs flex flex-nowrap items-center gap-2 p-1 text-sm">
+          {crumbs.map((crumb, idx) => {
             const isLast = idx === crumbs.length - 1;
             return (
-              <li key={c.id.length ? c.id.join("/") : "root"}>
-                {isLast ? (
-                  <span className="font-bold">{"> " + c.label}</span>
-                ) : (
-                  <button type="button" className="link link-hover" onClick={() => goTo(c.id)}>
-                    {c.label}
-                  </button>
-                )}
+              <li key={crumb.id.length ? crumb.id.join("/") : "root"} className="whitespace-nowrap">
+                <div className="flex items-center gap-2">
+                  <FolderOutlineIcon className={`h-4 w-4 ${isLast ? "text-primary" : ""}`} />
+                  {isLast ? (
+                    <span className="font-semibold text-primary" aria-current="page">
+                      {crumb.label}
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      className="text-base-content/80 transition hover:text-base-content"
+                      onClick={() => goTo(crumb.id)}
+                    >
+                      {crumb.label}
+                    </button>
+                  )}
+                  {!isLast ? <ChevronRightIcon className="h-3 w-3 text-base-content/40" /> : null}
+                </div>
               </li>
             );
           })}
         </ul>
-      </div>
+      </nav>
 
       {/* Main card shell */}
       <div className="card bg-base-200 shadow">
         <div className="card-body p-4">
-          {isFolder(current) ? (
-            viewMode === "icons" ? (
-              <IconGrid folder={current} />
+          <div key={currentPathKey} className="motion-safe:animate-[docFadeIn_0.22s_ease-out]">
+            {isFolder(current) ? (
+              current.children.length ? (
+                viewMode === "icons" ? (
+                  <IconGrid folder={current} />
+                ) : (
+                  <ListTable folder={current} />
+                )
+              ) : (
+                <div className="rounded-xl border border-dashed border-base-300 bg-base-100 p-10 text-center text-sm text-base-content/70">
+                  This folder is empty. Come back later when an administrator shares documents with
+                  you.
+                </div>
+              )
             ) : (
-              <ListTable folder={current} />
-            )
-          ) : (
-            // (Edge case) If someone somehow navigated to a file id, show a simple summary.
-            <div className="text-sm text-base-content/70">
-              “{current.name}” is a file. Use the breadcrumbs above to go back to a folder.
-            </div>
-          )}
+              // (Edge case) If someone somehow navigated to a file id, show a simple summary.
+              <div className="text-sm text-base-content/70">
+                “{current.name}” is a file. Use the breadcrumbs above to go back to a folder.
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
