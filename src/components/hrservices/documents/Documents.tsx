@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { ROOT } from "./mockData"; // to be modified when backend is ready
 import type { DocumentNode, FolderNode, ItemNode } from "./types";
 import { FolderIcon, FileIcon } from "./icons";
+
 /**
  * viewMode:
  * - "icons": grid of large icons (like the wireframe)
@@ -69,6 +70,7 @@ export default function Documents() {
 
   // different views:
 
+  // icon view
   const IconGrid = ({ folder }: { folder: FolderNode }) => (
     <div
       className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4"
@@ -88,22 +90,30 @@ export default function Documents() {
             }
           }}
         >
-          <div className="flex items-center gap-3">
-            {node.type === "folder" ? (
-              <FolderIcon className="h-8 w-10" />
+          <div className="min-w-0">
+            {isFolder(node) ? (
+              <div className="truncate font-medium">{node.name}</div> // if folder, navigate into
             ) : (
-              <FileIcon className="h-10 w-8" />
+              // enable
+              <a
+                href={node.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()} // avoid triggering the tile's onClick
+                className="link truncate font-medium link-hover"
+                title={node.name}
+              >
+                {node.name}
+              </a>
             )}
-            <div className="min-w-0">
-              <div className="truncate font-medium">{node.name}</div>
-              <div className="text-xs text-base-content/60">{node.type}</div>
-            </div>
+            <div className="text-xs text-base-content/60">{isFolder(node) ? "folder" : "item"}</div>
           </div>
         </button>
       ))}
     </div>
   );
 
+  // table view
   const ListTable = ({ folder }: { folder: FolderNode }) => (
     <div className="overflow-x-auto">
       <table className="table table-zebra">
@@ -120,18 +130,29 @@ export default function Documents() {
               className={node.type === "folder" ? "link link-hover" : ""}
               onClick={() => {
                 if (node.type === "folder") setPath((prev) => [...prev, node.id]);
+                else {
+                  openItem(node.url);
+                }
               }}
             >
               <td className="align-middle">
-                {node.type === "folder" ? (
-                  <FolderIcon className="h-5 w-6" />
+                {isFolder(node) ? ( // handle command click
+                  <div className="font-medium">{node.name}</div>
                 ) : (
-                  <FileIcon className="h-6 w-5" />
+                  <a
+                    href={node.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()} // avoid triggering the row's onClick
+                    className="link font-medium link-hover"
+                    title={node.name}
+                  >
+                    {node.name}
+                  </a>
                 )}
-              </td>
-              <td className="align-middle">
-                <div className="font-medium">{node.name}</div>
-                <div className="text-xs text-base-content/60">{node.type}</div>
+                <div className="text-xs text-base-content/60">
+                  {isFolder(node) ? "folder" : "item"}
+                </div>
               </td>
             </tr>
           ))}
@@ -144,7 +165,7 @@ export default function Documents() {
     <div className="w-full">
       {/* Top row: title + view mode switcher */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-medium">{current.name}</h2>
+        <h2 className="text-2xl font-bold">{current.name}</h2>
         <div className="flex items-center gap-2">
           <span className="text-sm">View</span>
           <select
@@ -161,7 +182,7 @@ export default function Documents() {
 
       {/* Breadcrumbs */}
       <div className="mb-3 overflow-x-auto">
-        <ul className="breadcrumbs text-sm">
+        <ul className="breadcrumbs p-1 text-sm">
           {crumbs.map((c, idx) => {
             const isLast = idx === crumbs.length - 1;
             return (
@@ -180,7 +201,7 @@ export default function Documents() {
       </div>
 
       {/* Main card shell */}
-      <div className="card bg-base-100 shadow">
+      <div className="card bg-base-200 shadow">
         <div className="card-body p-4">
           {isFolder(current) ? (
             viewMode === "icons" ? (
