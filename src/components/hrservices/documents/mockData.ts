@@ -33,8 +33,7 @@ export const ROOT: DocumentNode = {
               name: "OrientationAgenda.docx",
               type: "item",
               url: "/testfiles/testworddoc.docx",
-              mimeType:
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             },
           ],
         },
