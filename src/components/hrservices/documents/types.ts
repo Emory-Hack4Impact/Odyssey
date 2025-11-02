@@ -1,22 +1,25 @@
-export type NodeType = "folder" | "file";
+export type NodeType = "folder" | "item";
 
+// discriminated union design for safety
+export interface BaseNode {
+  id: string;
+  name: string;
+  type: NodeType;
+}
 /**
  * A DocumentNode represents either a folder or a file.
  * - If type === "folder", it can have children (more nodes).
  * - If type === "file", children is undefined.
  **/
-export type DocumentNode = FolderNode | FileNode;
+export type DocumentNode = FolderNode | ItemNode;
 
-export interface FolderNode {
-  id: string; // unique id for React keys and navigation
-  name: string; // display name
-  type: "folder"; // "folder" or "file"
-  children: DocumentNode[]; // present only for folders
+export interface FolderNode extends BaseNode {
+  type: "folder";
+  children: DocumentNode[];
 }
 
-export interface FileNode {
-  id: string;
-  name: string;
-  type: "file";
-  children?: never;
+export interface ItemNode extends BaseNode {
+  type: "item";
+  url: string;
+  mimeType?: string; // records file extension
 }

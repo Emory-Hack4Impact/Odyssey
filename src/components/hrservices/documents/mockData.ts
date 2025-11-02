@@ -4,6 +4,7 @@ import type { DocumentNode } from "./types";
  * Root folder that contains top-level folders and files
  * Only for demo
  * Will be replaced when backend is ready
+ * Id will be automatically when backend is ready
  */
 export const ROOT: DocumentNode = {
   id: "root",
@@ -12,37 +13,59 @@ export const ROOT: DocumentNode = {
   children: [
     {
       id: "f1",
-      name: "Onboarding",
+      name: "folder 1",
       type: "folder",
       children: [
         {
           id: "f1-1",
-          name: "Policies",
+          name: "folder 1-1",
           type: "folder",
           children: [
-            { id: "pol-1", name: "CodeOfConduct.pdf", type: "file" },
-            { id: "pol-2", name: "SecurityGuide.pdf", type: "file" },
+            {
+              id: "i1-1-1",
+              name: "testpdf.pdf",
+              type: "item",
+              url: "/public/testfiles/testpdf.pdf",
+              mimeType: "application/pdf",
+            },
+            {
+              id: "f1-1-1",
+              name: "folder 1-1-1",
+              type: "folder",
+              children: [
+                {
+                  id: "i1-1-1",
+                  name: "testworddoc.docx",
+                  type: "item",
+                  url: "/public/testfiles/testworddoc.docx",
+                  mimeType:
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                },
+              ],
+            },
           ],
         },
-        { id: "f1-r1", name: "Schedule.pdf", type: "file" },
+        {
+          id: "i1-2",
+          name: "testpic.png",
+          type: "item",
+          url: "/public/testfiles/testpic.png",
+          mimeType: "image/png",
+        },
+        {
+          id: "i1-3",
+          name: "testvideo.mp4",
+          type: "item",
+          url: "/public/testfiles/testvideo.mp4",
+          mimeType: "video/mp4",
+        },
       ],
     },
     {
       id: "f2",
-      name: "Benefits",
+      name: "folder 2",
       type: "folder",
-      children: [
-        { id: "ben-1", name: "Medical.pdf", type: "file" },
-        { id: "ben-2", name: "Dental.pdf", type: "file" },
-      ],
+      children: [],
     },
-    {
-      id: "f3",
-      name: "Performance",
-      type: "folder",
-      children: [{ id: "perf-1", name: "2024-Review.pdf", type: "file" }],
-    },
-    { id: "gen-1", name: "EmployeeHandbook.pdf", type: "file" },
-    { id: "gen-2", name: "OrgChart.pdf", type: "file" },
   ],
 };

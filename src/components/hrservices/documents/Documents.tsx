@@ -2,9 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { ROOT } from "./mockData"; // to be modified when backend is ready
-import type { DocumentNode, FolderNode } from "./types";
+import type { DocumentNode, FolderNode, ItemNode } from "./types";
 import { FolderIcon, FileIcon } from "./icons";
-
 /**
  * viewMode:
  * - "icons": grid of large icons (like the wireframe)
@@ -19,30 +18,41 @@ type PathResult = {
   complete: boolean;
 };
 
-/** Type guard: ensure a node is a FolderNode so we can safely access .children */
+/** Type guards */
 function isFolder(node: DocumentNode): node is FolderNode {
   return node.type === "folder";
 }
 
-// usage:
-// if C contains B, B contains A, given A,B,C all folders
-// then to move pointer to A, call findByPath(root, ["C","B","A"])
+function isItem(node: ItemNode): node is ItemNode {
+  return node.type === "item";
+}
+
+/** Returns type `PathResult` according to `path` provided */
 function findByPath(root: DocumentNode, path: string[]): PathResult {
   let current = root;
   for (const id of path) {
-    if (!isFolder(current)) break;
+    if (!isFolder(current)) return { node: current, complete: false }; // if not folder
     const next = current.children.find((c) => c.id === id && c.type === "folder");
-    if (!next) return { node: current, complete: false };
+    if (!next) return { node: current, complete: false }; // if no further folder
     current = next;
   }
   return { node: current, complete: true };
+}
+
+function openItem(url: string) {
+  // Opens in a NEW TAB; safe defaults:
+  // - "_blank": new tab
+  // - "noopener": new tab cannot control the opener
+  // - "noreferrer": don’t leak the current page as referrer
+  window.open(url, "_blank", "noopener, noreferrer");
 }
 
 export default function Documents() {
   const [viewMode, setViewMode] = useState<ViewMode>("icons");
   const [path, setPath] = useState<string[]>([]); // [] means root
 
-  const current = useMemo(() => findByPath(ROOT, path), [path]);
+  // only rerender when path changed thro memorization
+  const { node: current, complete } = useMemo(() => findByPath(ROOT, path), [path]);
 
   const crumbs: { id: string[]; label: string }[] = [{ id: [], label: ROOT.name }];
   let prefix: string[] = [];
@@ -71,8 +81,11 @@ export default function Documents() {
           type="button"
           className="card link bg-base-100 p-3 text-left link-hover shadow transition hover:shadow-md"
           onClick={() => {
-            if (node.type === "folder") setPath((prev) => [...prev, node.id]);
-            // For files in Sprint 1, we do nothing on click (no backend yet)
+            if (node.type === "folder") {
+              setPath((prev) => [...prev, node.id]); // if folder go further
+            } else {
+              openItem(node.url); // if file open
+            }
           }}
         >
           <div className="flex items-center gap-3">
@@ -131,7 +144,7 @@ export default function Documents() {
     <div className="w-full">
       {/* Top row: title + view mode switcher */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-medium">{current.node.name}</h2>
+        <h2 className="text-lg font-medium">{current.name}</h2>
         <div className="flex items-center gap-2">
           <span className="text-sm">View</span>
           <select
@@ -169,16 +182,16 @@ export default function Documents() {
       {/* Main card shell */}
       <div className="card bg-base-100 shadow">
         <div className="card-body p-4">
-          {isFolder(current.node) ? (
+          {isFolder(current) ? (
             viewMode === "icons" ? (
-              <IconGrid folder={current.node} />
+              <IconGrid folder={current} />
             ) : (
-              <ListTable folder={current.node} />
+              <ListTable folder={current} />
             )
           ) : (
             // (Edge case) If someone somehow navigated to a file id, show a simple summary.
             <div className="text-sm text-base-content/70">
-              “{current.node.name}” is a file. Use the breadcrumbs above to go back to a folder.
+              “{current.name}” is a file. Use the breadcrumbs above to go back to a folder.
             </div>
           )}
         </div>
