@@ -16,8 +16,14 @@ const formatDate = (date: Date): string => {
 const StatusTable = ({ requests }: {requests: TimeOffRequest[]}) => {
   return (
     <table className="mx-auto mt-10 w-full max-w-full border-collapse rounded-lg border border-gray-200 p-6 text-black shadow-lg">
+    <table className="mx-auto mt-10 w-full max-w-full border-collapse rounded-lg border border-gray-200 p-6 text-black shadow-lg">
       <thead>
         <tr>
+          <th className="border-b border-gray-200 bg-gray-100 px-4 py-2 text-left">Leave Type</th>
+          <th className="border-b border-gray-200 bg-gray-100 px-4 py-2 text-left">Date From</th>
+          <th className="border-b border-gray-200 bg-gray-100 px-4 py-2 text-left">Date To</th>
+          <th className="border-b border-gray-200 bg-gray-100 px-4 py-2 text-left">Additional Info</th>
+          <th className="border-b border-gray-200 bg-gray-100 px-4 py-2 text-left">Status</th>
           <th className="border-b border-gray-200 bg-gray-100 px-4 py-2 text-left">Leave Type</th>
           <th className="border-b border-gray-200 bg-gray-100 px-4 py-2 text-left">Date From</th>
           <th className="border-b border-gray-200 bg-gray-100 px-4 py-2 text-left">Date To</th>
