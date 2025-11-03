@@ -18,8 +18,17 @@ model UserMetadata {
   is_admin        Boolean          @default(false)
   is_hr           Boolean          @default(false)
   position        String           @default("")
+  employeeFirstName String?
+  employeeLastName  String?
   TimeOffRequests TimeOffRequest[]
   Files           Files[]
+  // NOTE: Prisma requires opposite relation fields when a model has multiple relations
+  // to the same target model. These two fields are present to satisfy Prisma's
+  // relation mapping and are not intended for direct use in app logic.
+  // Evaluations this user is the subject of (reviewed employee) — internal relation field
+  evaluationsReceivedRelation EmployeeEvaluation[] @relation("ReviewedEmployee")
+  // Evaluations submitted by this user — internal relation field
+  evaluationsSubmittedRelation EmployeeEvaluation[] @relation("Submitter")
 }
 
 enum FileTypes {
@@ -54,17 +63,34 @@ model TimeOffRequest {
 }
 
 model EmployeeEvaluation {
-  id              Int         @id @default(autoincrement())
-  employeeId      String
-  year            Int
-  strengths       String
-  weaknesses      String
-  improvements    String
-  notes           String
-  communication   String
-  leadership      String
-  timeliness      String
-  skill1          String
-  skill2          String
-  skill3          String
+  // evaluation submission id (unique per submission)
+  id                String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  // reviewed employee (FK to UserMetadata)
+  employeeId         String?
+  reviewedEmployee   UserMetadata? @relation("ReviewedEmployee", fields: [employeeId], references: [id])
+
+  // id of the person who submitted this evaluation (FK to UserMetadata)
+  submitterId       String?
+  submitter         UserMetadata? @relation("Submitter", fields: [submitterId], references: [id])
+
+  // denormalized snapshot of employee name at time of submission
+  // denormalized snapshot of employee name at time of submission (removed — use relation)
+
+  year              Int
+  strengths         String
+  weaknesses        String
+  improvements      String
+  notes             String
+  communication     Int
+  leadership        Int
+  timeliness        Int
+  skill1            Int
+  skill2            Int
+  skill3            Int
+
+  submittedAt       DateTime      @default(now())
+
+  @@index([employeeId])
+  @@index([submitterId])
 }

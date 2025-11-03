@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { TextAreaWithDescription } from "../../Textarea";
 import { PerformanceRatingSlider } from "./PerformanceRatingSliders";
-import { type EmployeeEval, SubmitEmployeeEval } from "@/app/api/employee-evals";
 
 interface HRServicesProps {
   userId: string;
@@ -25,50 +24,44 @@ interface FormData {
 }
 
 export default function EmployeePerfEvalForm({
-  userId,
+  userId: _userId,
   username: _username,
-  userRole,
+  userRole: _userRole,
 }: HRServicesProps) {
-  const [formData, setFormData] = useState<EmployeeEval>({
-    employeeId: userId,
+  type State = {
+    year: number;
+    strengths: string;
+    weaknesses: string;
+    improvements: string;
+    notes: string;
+    communication: number;
+    leadership: number;
+    timeliness: number;
+    skill1: number;
+    skill2: number;
+    skill3: number;
+  };
+
+  const [formData, setFormData] = useState<State>({
     year: 2025,
     strengths: "",
     weaknesses: "",
     improvements: "",
     notes: "",
-    communication: "",
-    leadership: "",
-    timeliness: "",
-    skill1: "",
-    skill2: "",
-    skill3: "",
+    communication: 50,
+    leadership: 50,
+    timeliness: 50,
+    skill1: 50,
+    skill2: 50,
+    skill3: 50,
   });
 
   const [formErrors, setFormErrors] = useState<Partial<FormData>>({});
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-
-    if (formErrors[name as keyof FormData]) {
-      setFormErrors((prev) => ({
-        ...prev,
-        [name]: undefined,
-      }));
-    }
-  };
+  // No generic input handler required anymore (name/year/name fields removed)
 
   const handleTextAreaChange = (field: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value } as unknown as State));
 
     if (formErrors[field as keyof FormData]) {
       setFormErrors((prev) => ({
@@ -78,11 +71,8 @@ export default function EmployeePerfEvalForm({
     }
   };
 
-  const handleRatingChange = (field: keyof EmployeeEval, value: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value.toString(),
-    }));
+  const handleRatingChange = (field: keyof State, value: number) => {
+    setFormData((prev) => ({ ...prev, [field]: value } as unknown as State));
 
     if (formErrors[field as keyof FormData]) {
       setFormErrors((prev) => ({
@@ -125,24 +115,46 @@ export default function EmployeePerfEvalForm({
     if (Object.keys(errors).length === 0) {
       console.log("Submitting form data:", formData);
       try {
-        const response = await SubmitEmployeeEval(formData);
+        // attach submitter info from props (username, userRole). Email may not be available here; leave blank unless the caller passes it later.
+        const payload = {
+          employeeId: undefined,
+          submitterId: undefined,
+          year: formData.year,
+          strengths: formData.strengths,
+          weaknesses: formData.weaknesses,
+          improvements: formData.improvements,
+          notes: formData.notes,
+          communication: formData.communication,
+          leadership: formData.leadership,
+          timeliness: formData.timeliness,
+          skill1: formData.skill1,
+          skill2: formData.skill2,
+          skill3: formData.skill3,
+          submittedAt: new Date(),
+        };
+
+        const resp = await fetch("/api/employee-evals", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const response = await resp.json();
         console.log(`Successfully submitted employee evaluation: ${response.id}`);
         alert("Evaluation submitted successfully!");
 
-        // Reset form
+        // Reset form to defaults
         setFormData({
-          employeeId: userId,
           year: 2025,
           strengths: "",
           weaknesses: "",
           improvements: "",
           notes: "",
-          communication: "",
-          leadership: "",
-          timeliness: "",
-          skill1: "",
-          skill2: "",
-          skill3: "",
+          communication: 50,
+          leadership: 50,
+          timeliness: 50,
+          skill1: 50,
+          skill2: 50,
+          skill3: 50,
         });
       } catch (error) {
         console.error("Error submitting evaluation:", error);
@@ -154,46 +166,7 @@ export default function EmployeePerfEvalForm({
   return (
     <div>
       <form onSubmit={handleSubmit}>
-        <div className="mb-6 flex flex-col gap-6">
-          <h3>Create Employee Performance Evaluation</h3>
-          {/* <div className="flex gap-2">
-            <input 
-              type="text" 
-              className="border-2 border-gray-400 bg-white text-gray-400 px-3 py-2 rounded-3xl max-w-80" 
-              placeholder={userRole === "Employee" ? username : "Search Employee"}
-              disabled={userRole === "Employee"}
-            />
-            <button 
-              type="button" 
-              className="border-2 text-gray-400 px-3 py-2 rounded-3xl hover:text-black hover:border-black transition-all" 
-              disabled={userRole === "Employee"}
-            >
-              +
-            </button>
-          </div> */}
-          <div className="w-36">
-            <h3 className="mb-2">Year</h3>
-            <div className="rounded-3xl border-2 bg-white px-3 py-2 text-gray-400">
-              <select
-                id="year"
-                name="year"
-                value={formData.year}
-                onChange={handleChange}
-                disabled={userRole === "Employee"}
-              >
-                <option value="" disabled>
-                  Select Year
-                </option>
-                <option value="2020">2020</option>
-                <option value="2021">2021</option>
-                <option value="2022">2022</option>
-                <option value="2023">2023</option>
-                <option value="2024">2024</option>
-                <option value="2025">2025</option>
-              </select>
-            </div>
-          </div>
-        </div>
+        {/* Header and name/year fields intentionally removed per UX request */}
 
         <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>

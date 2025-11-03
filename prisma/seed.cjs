@@ -1,3 +1,4 @@
+// CommonJS seed script to avoid ESM loader issues
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -68,18 +69,13 @@ async function main() {
     },
   });
 
-  // Restore sample EmployeeEvaluation data for employee ...0005 (year 2025)
   const EMP_ID = "00000000-0000-0000-0000-000000000005";
-  const HR_ID = "00000000-0000-0000-0000-000000000002"; // HR user
+  const HR_ID = "00000000-0000-0000-0000-000000000002";
 
-  // Clean previous dev rows for determinism
   try {
     await prisma.employeeEvaluation.deleteMany({ where: { employeeId: EMP_ID, year: 2025 } });
-  } catch {
-    // table may not exist if migrations haven't been applied yet; ignore
-  }
+  } catch { }
 
-  // Employee self-submitted evaluation
   try {
     await prisma.employeeEvaluation.create({
       data: {
@@ -113,11 +109,8 @@ async function main() {
         submittedAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
       },
     });
-  } catch {
-    // ignore if table not present
-  }
+  } catch { }
 
-  // HR-submitted evaluation
   try {
     await prisma.employeeEvaluation.create({
       data: {
@@ -152,9 +145,7 @@ async function main() {
         submittedAt: new Date(),
       },
     });
-  } catch {
-    // ignore if table not present
-  }
+  } catch { }
 }
 
 main()
