@@ -44,7 +44,7 @@ function openItem(url: string) {
   window.open(url, "_blank", "noopener, noreferrer");
 }
 
-export default function Documents() {
+export default function UserDocuments() {
   const [viewMode, setViewMode] = useState<ViewMode>("icons");
   const [path, setPath] = useState<string[]>([]); // [] means root
 
