@@ -162,7 +162,7 @@ function UploadPanel({
   };
 
   return (
-    <section className="card bg-base-100 shadow">
+    <section className="card bg-base-200 shadow-lg">
       <div className="card-body gap-6">
         <div>
           <h3 className="text-lg font-semibold">Upload documents</h3>
@@ -190,7 +190,7 @@ function UploadPanel({
 
         <label
           htmlFor="admin-doc-upload"
-          className="flex min-h-[150px] cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-base-300 bg-base-200/40 p-8 text-center transition hover:border-primary hover:bg-base-200"
+          className="flex min-h-[150px] cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-base-300 bg-base-100 p-8 text-center transition hover:border-primary hover:bg-base-100/80"
           onDrop={handleDrop}
           onDragOver={(event) => event.preventDefault()}
         >
@@ -207,7 +207,7 @@ function UploadPanel({
         </label>
 
         {!!files.length && (
-          <div className="rounded-lg border border-base-200 bg-base-200/40 p-3">
+          <div className="rounded-lg border border-base-300 bg-base-100 p-3">
             <h4 className="mb-2 text-sm font-semibold">Selected files</h4>
             <ul className="space-y-2 text-sm">
               {files.map((file, index) => (
@@ -324,9 +324,8 @@ function UploadPanel({
 function DocumentGrid({ documents, onEdit, viewMode }: DocumentGridProps) {
   if (!documents.length) {
     return (
-      <div className="rounded-xl border border-dashed border-base-300 bg-base-200/40 p-10 text-center text-sm text-base-content/70">
-        Upload documents to see them listed here. Admins will eventually see results from the
-        backend in this space.
+      <div className="rounded-xl border border-dashed border-base-300 bg-base-100 p-10 text-center text-sm text-base-content/70">
+        Upload documents to see them listed here.
       </div>
     );
   }
@@ -651,15 +650,13 @@ export default function AdminDocuments() {
         onRecipientQueryChange={setUploadRecipientQuery}
       />
 
-      <section className="card bg-base-100 shadow">
+      <section className="card bg-base-200 shadow-lg">
         <div className="card-body gap-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <h3 className="text-lg font-semibold">Existing documents</h3>
-              <p className="text-sm text-base-content/70">
-                {/* This view currently shows sample data. Hook up the data-fetching layer so admins see
-                every uploaded file across the organization. */}
-              </p>
+              <p className="text-sm text-base-content/70">Review the files available to admins.</p>
+              {/* TODO: Replace local state with backend-powered document listing */}
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-base-content/70">View</span>
