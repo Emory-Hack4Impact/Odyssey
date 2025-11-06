@@ -42,6 +42,169 @@ const demoEvents = [
   { date: "2025-11-24", label: "Lunch & Learn" },
 ];
 
+function startOfMonth(d: Date) {
+  return new Date(d.getFullYear(), d.getMonth(), 1);
+}
+function endOfMonth(d: Date) {
+  return new Date(d.getFullYear(), d.getMonth() + 1, 0);
+}
+function addMonths(d: Date, n: number) {
+  return new Date(d.getFullYear(), d.getMonth() + n, 1);
+}
+
+function toISODate(d: Date) {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function CalendarMini({ events = [] as { date: string; label?: string }[] }) {
+  const [cursor, setCursor] = useState<Date>(startOfMonth(new Date()));
+  const [selectedISO, setSelectedISO] = useState<string>(toISODate(new Date()));
+
+  const { weeks, monthName, year } = useMemo(() => {
+    const first = startOfMonth(cursor);
+    const last = endOfMonth(cursor);
+
+    const monthName = first.toLocaleString(undefined, { month: "long" });
+    const year = first.getFullYear();
+
+    const days: Date[] = [];
+    // pad from Sunday
+    const padBefore = first.getDay();
+    for (let i = 0; i < padBefore; i++)
+      days.push(new Date(first.getFullYear(), first.getMonth(), 0 - (padBefore - 1 - i)));
+    // month days
+    for (let d = 1; d <= last.getDate(); d++)
+      days.push(new Date(first.getFullYear(), first.getMonth(), d));
+    // pad after to fill 6 weeks
+    const total = Math.ceil(days.length / 7) * 7;
+    for (let i = days.length; i < total; i++)
+      days.push(
+        new Date(last.getFullYear(), last.getMonth(), last.getDate() + (i - days.length) + 1),
+      );
+
+    // group into weeks
+    const weeks: Date[][] = [];
+    for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7));
+
+    return { weeks, monthName, year };
+  }, [cursor]);
+
+  const eventDates = useMemo(() => new Set(events.map((e) => e.date)), [events]);
+  const todayISO = toISODate(new Date());
+
+  const dayEvents = useMemo(
+    () => events.filter((e) => e.date === selectedISO),
+    [events, selectedISO],
+  );
+
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+      <div className="flex items-center justify-between">
+        <button
+          aria-label="Previous month"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 hover:bg-gray-50"
+          onClick={() => setCursor((d) => addMonths(d, -1))}
+        >
+          ‹
+        </button>
+        <div className="text-sm font-medium">
+          {monthName} {year}
+        </div>
+        <button
+          aria-label="Next month"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 hover:bg-gray-50"
+          onClick={() => setCursor((d) => addMonths(d, 1))}
+        >
+          ›
+        </button>
+      </div>
+
+      <div className="mt-3 grid grid-cols-7 text-center text-xs text-gray-500">
+        {"SMTWTFS".split("").map((c) => (
+          <div key={c} className="py-1">
+            {c}
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7 gap-1 text-sm">
+        {weeks.map((wk, i) => (
+          <React.Fragment key={i}>
+            {wk.map((d, j) => {
+              const inMonth = d.getMonth() === cursor.getMonth();
+              const iso = toISODate(d);
+              const hasEvent = eventDates.has(iso);
+              const isToday = iso === todayISO;
+              const isSelected = iso === selectedISO;
+              return (
+                <button
+                  type="button"
+                  aria-label={`Select ${iso}`}
+                  key={j}
+                  onClick={() => setSelectedISO(iso)}
+                  disabled={!inMonth}
+                  className={classNames(
+                    "relative aspect-square rounded-xl text-center leading-6 transition",
+                    inMonth
+                      ? "bg-base-100 hover:bg-base-200/60"
+                      : "bg-transparent text-base-content/30",
+                    isToday && "ring-1 ring-indigo-500",
+                    isSelected && "outline outline-2 outline-indigo-600",
+                  )}
+                >
+                  <div className={classNames("mt-1", !inMonth && "opacity-40")}>
+                    {inMonth ? d.getDate() : ""}
+                  </div>
+                  {hasEvent && (
+                    <div className="absolute inset-x-0 bottom-1 mx-auto h-1.5 w-1.5 rounded-full bg-indigo-600" />
+                  )}
+                </button>
+              );
+            })}
+          </React.Fragment>
+        ))}
+      </div>
+
+      <div className="mt-4">
+        <div className="text-sm font-medium">
+          Events on{" "}
+          {new Date(selectedISO).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+        </div>
+        {dayEvents.length ? (
+          <ul className="mt-2 space-y-1 text-sm">
+            {dayEvents.map((e, i) => (
+              <li key={i} className="flex items-center gap-2">
+                <span className="inline-block h-2 w-2 rounded-full bg-indigo-600" />
+                <span className="text-gray-700">{e.label}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-sm text-gray-500">No events for this day.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MediaCard({ title, blurb, href }: { title: string; blurb: string; href?: string }) {
+  return (
+    <a
+      href={href ?? "#"}
+      className="group block rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
+    >
+      <div className="aspect-[4/3] w-full rounded-t-2xl bg-gray-200" />
+      <div className="p-3">
+        <div className="text-sm font-medium text-gray-900 group-hover:underline">{title}</div>
+        <p className="mt-1 text-sm text-gray-600">{blurb}</p>
+      </div>
+    </a>
+  );
+}
+
 export default function CareerDev() {
   // ---- article modal state ----
   const [activeArticle, setActiveArticle] = useState<null | {
@@ -58,7 +221,9 @@ export default function CareerDev() {
       {/* content grid */}
       <div className="grid gap-6 lg:grid-cols-12">
         {/* left column: calendar */}
-        <div className="lg:col-span-4">{/* <CalendarMini events={demoEvents} /> */}</div>
+        <div className="lg:col-span-4">
+          <CalendarMini events={demoEvents} />
+        </div>
 
         {/* right column: cards */}
         <div className="lg:col-span-8">
@@ -67,9 +232,9 @@ export default function CareerDev() {
               Featured Career Development Courses
             </h3>
             <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {/* {courses.map((c) => (
+              {courses.map((c) => (
                 <MediaCard key={c.id} title={c.title} blurb={c.blurb} href={c.href} />
-              ))} */}
+              ))}
             </div>
           </section>
 
@@ -85,7 +250,7 @@ export default function CareerDev() {
                   onClick={() => setActiveArticle({ ...a, body: mockArticleBodies[a.id] })}
                   className="text-left"
                 >
-                  {/* <MediaCard title={a.title} blurb={a.blurb} href={undefined} /> */}
+                  <MediaCard title={a.title} blurb={a.blurb} href={undefined} />
                 </button>
               ))}
             </div>
