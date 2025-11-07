@@ -1,5 +1,4 @@
 import { SubmitTimeOff, type SubmitTimeOffRequest } from "@/app/api/time-off-req";
-import { request } from "node:http";
 import { type Dispatch, type SetStateAction, useState } from "react";
 
 export interface FormData {
@@ -153,97 +152,115 @@ const TimeOffForm = ({
   };
 
   return (
-    <div className="mx-auto mt-10 w-full max-w-2xl rounded-lg border border-gray-200 bg-white p-6 shadow-lg">
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="leaveType" className="block text-lg text-gray-700">
-            Leave Type:
-          </label>
-          <select
-            id="leaveType"
-            name="leaveType"
-            value={formData.leaveType}
-            onChange={handleChange}
-            className="form-select mt-1 block w-full rounded-md border border-gray-300 p-2 text-lg text-gray-700"
-          >
-            <option value="">Select Leave Type</option>
-            <option value="Annual Leave">Annual Leave</option>
-            <option value="Sick Leave">Sick Leave</option>
-            <option value="Bereavement">Bereavement</option>
-            <option value="Maternity/Paternity Leave">Maternity/Paternity Leave</option>
-            <option value="Jury Duty">Jury Duty</option>
-            <option value="Optional Holiday">Optional Holiday</option>
-            <option value="Other">Other</option>
-          </select>
-          {formErrors.leaveType && <p className="text-sm text-red-500">{formErrors.leaveType}</p>}
+    <div className="mx-auto mt-10 w-full max-w-2xl">
+      <div className="card rounded-box border border-base-content/5 bg-base-100 shadow-lg">
+        <div className="card-body">
+          <h2 className="mb-4 card-title text-2xl">Request Time Off</h2>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text text-lg">Leave Type</span>
+              </label>
+              <select
+                id="leaveType"
+                name="leaveType"
+                value={formData.leaveType}
+                onChange={handleChange}
+                className="select-bordered select w-full"
+              >
+                <option value="">Select Leave Type</option>
+                <option value="Annual Leave">Annual Leave</option>
+                <option value="Sick Leave">Sick Leave</option>
+                <option value="Bereavement">Bereavement</option>
+                <option value="Maternity/Paternity Leave">Maternity/Paternity Leave</option>
+                <option value="Jury Duty">Jury Duty</option>
+                <option value="Optional Holiday">Optional Holiday</option>
+                <option value="Other">Other</option>
+              </select>
+              {formErrors.leaveType && (
+                <p className="mt-1 text-sm text-error">{formErrors.leaveType}</p>
+              )}
+            </div>
+
+            {showOtherLeaveTypeField && (
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text text-lg">Other Leave Type</span>
+                </label>
+                <input
+                  type="text"
+                  id="otherLeaveType"
+                  name="otherLeaveType"
+                  value={formData.otherLeaveType}
+                  onChange={handleChange}
+                  className="input-bordered input w-full"
+                />
+              </div>
+            )}
+
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text text-lg">Start Date</span>
+              </label>
+              <input
+                type="date"
+                id="startDate"
+                name="startDate"
+                value={formData.startDate}
+                onChange={handleChange}
+                className="input-bordered input w-full"
+              />
+              {formErrors.startDate && (
+                <p className="mt-1 text-sm text-error">{formErrors.startDate}</p>
+              )}
+            </div>
+
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text text-lg">End Date</span>
+              </label>
+              <input
+                type="date"
+                id="endDate"
+                name="endDate"
+                value={formData.endDate}
+                onChange={handleChange}
+                className="input-bordered input w-full"
+              />
+              {formErrors.endDate && (
+                <p className="mt-1 text-sm text-error">{formErrors.endDate}</p>
+              )}
+            </div>
+
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text text-lg">Additional Information</span>
+              </label>
+              <textarea
+                id="comments"
+                name="comments"
+                value={formData.comments}
+                onChange={handleChange}
+                maxLength={150}
+                rows={4}
+                className="textarea-bordered textarea w-full"
+              />
+              <label className="label justify-end">
+                <span className="label-text-alt text-gray-500">
+                  Characters remaining: {maxChars - characterCount}
+                </span>
+              </label>
+            </div>
+
+            <div className="form-control mt-6">
+              <button type="submit" className="btn text-lg btn-primary">
+                Submit Request
+              </button>
+            </div>
+          </form>
         </div>
-        {showOtherLeaveTypeField && (
-          <div className="mb-4">
-            <label htmlFor="otherLeaveType" className="block text-lg text-gray-700">
-              Other Leave Type:
-            </label>
-            <input
-              type="text"
-              id="otherLeaveType"
-              name="otherLeaveType"
-              value={formData.otherLeaveType}
-              onChange={handleChange}
-              className="form-input mt-1 block w-full rounded-md border border-gray-300 p-2 text-lg text-gray-700"
-            />
-          </div>
-        )}
-        <div className="mb-4">
-          <label htmlFor="startDate" className="block text-lg text-gray-700">
-            Start Date:
-          </label>
-          <input
-            type="date"
-            id="startDate"
-            name="startDate"
-            value={formData.startDate}
-            onChange={handleChange}
-            className="form-input mt-1 block w-full rounded-md border border-gray-300 p-2 text-lg text-gray-700"
-          />
-          {formErrors.startDate && <p className="text-sm text-red-500">{formErrors.startDate}</p>}
-        </div>
-        <div className="mb-4">
-          <label htmlFor="endDate" className="block text-lg text-gray-700">
-            End Date:
-          </label>
-          <input
-            type="date"
-            id="endDate"
-            name="endDate"
-            value={formData.endDate}
-            onChange={handleChange}
-            className="form-input mt-1 block w-full rounded-md border border-gray-300 p-2 text-lg text-gray-700"
-          />
-          {formErrors.endDate && <p className="text-sm text-red-500">{formErrors.endDate}</p>}
-        </div>
-        <div className="mb-4">
-          <label htmlFor="comments" className="block text-lg text-gray-700">
-            Additional Information:
-          </label>
-          <textarea
-            id="comments"
-            name="comments"
-            value={formData.comments}
-            onChange={handleChange}
-            maxLength={150}
-            className="form-textarea mt-1 block w-full rounded-md border border-gray-300 p-2 text-lg text-gray-700"
-            rows={4}
-          />
-          <p className="text-right text-sm text-gray-600">
-            Characters remaining: {maxChars - characterCount}
-          </p>
-        </div>
-        <button
-          type="submit"
-          className="rounded bg-blue-500 px-4 py-2 text-lg text-white hover:bg-blue-600"
-        >
-          Submit
-        </button>
-      </form>
+      </div>
     </div>
   );
 };
