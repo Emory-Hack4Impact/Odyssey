@@ -4,6 +4,7 @@ import PerfEval from "@/components/hrservices/performance-evaluation/PerfEval";
 import PerfEvalEmployee from "@/components/hrservices/performance-evaluation/PerfEvalEmployee";
 import PerfEvalHR from "@/components/hrservices/performance-evaluation/PerfEvalHR";
 import TimeOff from "@/components/hrservices/time-off/TimeOff";
+import TimeOffHR from "@/components/hrservices/time-off/TimeOffHR";
 import AdminDocuments from "@/components/hrservices/documents/AdminDocuments";
 import UserDocuments from "@/components/hrservices/documents/UserDocuments";
 import { useState } from "react";
@@ -33,8 +34,16 @@ export const HRServices = ({ userId, username, userRole, userMetadata }: HRServi
     }
   };
 
+  const getTimeOffComponent = () => {
+    // If user is HR or Admin, show the HR view, otherwise show employee view
+    if (userMetadata?.is_hr || userMetadata?.is_admin) {
+      return <TimeOffHR employeeId={userId} />;
+    }
+    return <TimeOff employeeId={userId} />;
+  };
+
   const categories = [
-    { key: "timeOff", label: "Time Off", component: <TimeOff /> },
+    { key: "timeOff", label: "Time Off", component: getTimeOffComponent() },
     {
       key: "careerDev",
       label: "Career Development",

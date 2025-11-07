@@ -14,12 +14,13 @@ datasource db {
 }
 
 model UserMetadata {
-  id              String           @id
-  is_admin        Boolean          @default(false)
-  is_hr           Boolean          @default(false)
-  position        String           @default("")
-  TimeOffRequests TimeOffRequest[]
-  Files           Files[]
+  id               String           @id
+  is_admin         Boolean          @default(false)
+  is_hr            Boolean          @default(false)
+  position         String           @default("")
+  TimeOffRequests  TimeOffRequest[]
+  ApprovedRequests TimeOffRequest[] @relation("ApprovedRequests")
+  Files            Files[]
 }
 
 enum FileTypes {
@@ -42,15 +43,29 @@ model Files {
   @@index([userId, type])
 }
 
+enum RequestStatus {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
 model TimeOffRequest {
-  id             Int          @id @default(autoincrement())
+  id             Int           @id @default(autoincrement())
   employeeId     String
   leaveType      String
-  otherLeaveType String       @default("")
+  otherLeaveType String        @default("")
   startDate      DateTime
   endDate        DateTime
-  comments       String       @default("")
-  UserMetadata   UserMetadata @relation(fields: [employeeId], references: [id])
+  comments       String        @default("")
+  status         RequestStatus @default(PENDING)
+  approvedBy     String?
+  requestDate    DateTime      @default(now())
+  approvedDate   DateTime?
+  UserMetadata   UserMetadata  @relation(fields: [employeeId], references: [id])
+  Approver       UserMetadata? @relation("ApprovedRequests", fields: [approvedBy], references: [id])
+
+  @@index([status])
+  @@index([employeeId, status])
 }
 
 model EmployeeEvaluation {
