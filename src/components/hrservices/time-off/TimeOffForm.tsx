@@ -23,11 +23,13 @@ type FormError = Partial<
 
 const TimeOffForm = ({
   setRequests,
+  userId,
 }: {
   setRequests: Dispatch<SetStateAction<TimeOffRequest[]>>;
+  userId: string;
 }) => {
   const [formData, setFormData] = useState<SubmitTimeOffRequest>({
-    id: "00000000-0000-0000-0000-000000000001",
+    id: userId,
     leaveType: "",
     otherLeaveType: "",
     startDate: "",

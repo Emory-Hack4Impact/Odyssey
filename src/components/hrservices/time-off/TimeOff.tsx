@@ -5,9 +5,7 @@ import DaysInfo from "./DaysInfo";
 import StatusTable from "./StatusTable";
 import { FetchTimeOff } from "@/app/api/time-off-req";
 
-const EMPLOYEE_ID = "00000000-0000-0000-0000-000000000001"; // Use a constant for the ID
-
-const Home: React.FC = () => {
+const Home = ({ userId }: { userId: string }) => {
   const [requests, setRequests] = useState<TimeOffRequest[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,7 +14,7 @@ const Home: React.FC = () => {
       try {
         setError(null);
 
-        const existingRequests = await FetchTimeOff(EMPLOYEE_ID);
+        const existingRequests = await FetchTimeOff(userId);
 
         setRequests(existingRequests as TimeOffRequest[]);
       } catch (e) {
@@ -24,11 +22,8 @@ const Home: React.FC = () => {
         setError("Failed to load existing requests.");
       }
     };
-
-    // REMOVE: The fix: Use the 'void' operator when calling the async function
-    // REMOVE: This tells ESLint you know it's a Promise but you've handled the error (with try/catch inside)
-    void loadRequests();
-  }, []);
+    if (userId) void loadRequests(); //don't understand this
+  }, [userId]); //don't understand this either...
 
   if (error) {
     return <div className="p-10 text-center text-xl text-red-600">Error: {error}</div>; //redirect to error page
@@ -42,7 +37,7 @@ const Home: React.FC = () => {
         </div>
         <div className="w-full lg:mt-20 lg:mb-10 lg:w-2/3">
           <div className="p-4">
-            <TimeOffForm setRequests={setRequests} />
+            <TimeOffForm setRequests={setRequests} userId={userId} />
           </div>
           <div className="overflow-x-scroll p-4">
             <StatusTable requests={requests} />
