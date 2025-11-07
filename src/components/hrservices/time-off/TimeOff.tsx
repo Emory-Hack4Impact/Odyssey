@@ -37,7 +37,7 @@ const Home = ({ userId }: { userId: string }) => {
         </div>
         <div className="w-full lg:mt-20 lg:mb-10 lg:w-2/3">
           <div className="p-4">
-            <TimeOffForm setRequests={setRequests} userId={userId} />
+            <TimeOffForm setRequests={setRequests} requests={requests} userId={userId} />
           </div>
           <div className="overflow-x-scroll p-4">
             <StatusTable requests={requests} />

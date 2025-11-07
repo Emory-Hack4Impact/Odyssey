@@ -1,4 +1,5 @@
 import { SubmitTimeOff, type SubmitTimeOffRequest } from "@/app/api/time-off-req";
+import { request } from "node:http";
 import { type Dispatch, type SetStateAction, useState } from "react";
 
 export interface FormData {
@@ -21,11 +22,35 @@ type FormError = Partial<
   Omit<FormData, "startDate" | "endDate"> & { startDate: string; endDate: string }
 >;
 
+const validDate = (
+  startDate: string,
+  endDate: string,
+  daysAvailable: number,
+): { field: "startDate" | "endDate"; message: string } | null => {
+  const today = new Date();
+  const endOfYear = new Date(today.getFullYear(), 11, 31);
+
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  if (start < today) return { field: "startDate", message: "Start date must be in the future." };
+  if (end < start) return { field: "endDate", message: "End date cannot be before start date." };
+  if (end > endOfYear) return { field: "endDate", message: "End date must be before December 31." };
+
+  const diffDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  if (diffDays > daysAvailable)
+    return { field: "endDate", message: `You only have ${daysAvailable} day(s) remaining.` };
+
+  return null;
+};
+
 const TimeOffForm = ({
   setRequests,
+  requests,
   userId,
 }: {
   setRequests: Dispatch<SetStateAction<TimeOffRequest[]>>;
+  requests: TimeOffRequest[];
   userId: string;
 }) => {
   const [formData, setFormData] = useState<SubmitTimeOffRequest>({
@@ -43,6 +68,21 @@ const TimeOffForm = ({
 
   const [characterCount, setCharacterCount] = useState(0);
   const maxChars = 150;
+
+  const daysAvailable = () => {
+    const approved = requests.filter((requests) => requests.approved);
+
+    const totalDays = approved.reduce((total, request) => {
+      const start = new Date(request.startDate);
+      const end = new Date(request.endDate);
+
+      const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+      return total + days;
+    }, 0);
+
+    return 20 - totalDays;
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -83,6 +123,11 @@ const TimeOffForm = ({
 
     if (!formData.endDate) {
       errors.endDate = "*required";
+    }
+
+    const dateError = validDate(formData.startDate, formData.endDate, daysAvailable());
+    if (dateError) {
+      errors[dateError.field] = dateError.message;
     }
 
     setFormErrors(errors);
