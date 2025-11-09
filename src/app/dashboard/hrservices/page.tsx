@@ -20,7 +20,8 @@ export default async function HRServicesPage() {
   // Get userId, username and role and pass as props
   const userId = user?.id ?? user?.user_metadata?.id ?? "0";
   const username = user?.email ?? user?.user_metadata?.name ?? "User";
-  const userRole = userData?.[0]?.position ?? "Unknown";
+  const userMetadata = userData?.[0] ?? null;
+  const userRole = userMetadata?.position ?? "Unknown";
 
   // const { data: evaluations, error: evalError } = await supabase
   //   .from("EmployeeEvaluation")
@@ -30,7 +31,12 @@ export default async function HRServicesPage() {
 
   return (
     <div>
-      <HRServices userId={userId} username={username} userRole={userRole} />
+      <HRServices
+        userId={userId}
+        username={username}
+        userRole={userRole}
+        userMetadata={userMetadata}
+      />
     </div>
   );
 }

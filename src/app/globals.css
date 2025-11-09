@@ -73,3 +73,14 @@
 .animate-in {
   animation: animateIn 0.3s ease 0.15s both;
 }
+
+@keyframes docFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
