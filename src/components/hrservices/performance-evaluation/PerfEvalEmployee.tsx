@@ -25,7 +25,18 @@ export default function PerfEvalEmployee({ userId, username, userRole }: HRServi
               View Evaluation
             </button>
           </div>
-          <EmployeePerfEvalForm userId={userId} username={username} userRole={userRole} />
+          <EmployeePerfEvalForm
+            userId={userId}
+            username={username}
+            userRole={userRole}
+            selectedYear={selectedYear}
+            onSuccess={(year: number | string) => {
+              // Hide the form and show the employee evaluation dashboard
+              // for the submitted year.
+              setToggleForm(false);
+              setSelectedYear(String(year));
+            }}
+          />
         </>
       )}
 

@@ -47,24 +47,63 @@ export async function SubmitEmployeeEval(data: EmployeeEval) {
       }
     }
 
-    return await prisma.employeeEvaluation.create({
-      data: {
-        employeeId: data.employeeId,
-        year: data.year,
-        strengths: data.strengths,
-        weaknesses: data.weaknesses,
-        improvements: data.improvements,
-        notes: data.notes,
-        communication: Number(data.communication),
-        leadership: Number(data.leadership),
-        timeliness: Number(data.timeliness),
-        skill1: data.skill1,
-        skill2: data.skill2,
-        skill3: data.skill3,
-        submitterId: data.submitterId,
-        submittedAt: data.submittedAt ?? new Date(),
-      },
-    });
+    // Default: create a new evaluation row for non-self submissions
+    try {
+      return await prisma.employeeEvaluation.create({
+        data: {
+          employeeId: data.employeeId,
+          year: data.year,
+          strengths: data.strengths,
+          weaknesses: data.weaknesses,
+          improvements: data.improvements,
+          notes: data.notes,
+          communication: Number(data.communication),
+          leadership: Number(data.leadership),
+          timeliness: Number(data.timeliness),
+          skill1: data.skill1,
+          skill2: data.skill2,
+          skill3: data.skill3,
+          submitterId: data.submitterId,
+          submittedAt: data.submittedAt ?? new Date(),
+        },
+      });
+    } catch (err: unknown) {
+      // If a unique-constraint violation occurred (P2002), another process
+      // likely created the row concurrently. In that case, find the existing
+      // record and update it instead of failing.
+      const code = (err as { code?: unknown })?.code as string | undefined;
+      const name = (err as { name?: unknown })?.name as string | undefined;
+      if (code === "P2002" || name === "PrismaClientKnownRequestError") {
+        // locate the existing row by the composite key
+        const existing = await prisma.employeeEvaluation.findFirst({
+          where: {
+            employeeId: data.employeeId,
+            submitterId: data.submitterId,
+            year: data.year,
+          },
+        });
+        if (existing) {
+          return await prisma.employeeEvaluation.update({
+            where: { id: existing.id },
+            data: {
+              strengths: data.strengths,
+              weaknesses: data.weaknesses,
+              improvements: data.improvements,
+              notes: data.notes,
+              communication: Number(data.communication),
+              leadership: Number(data.leadership),
+              timeliness: Number(data.timeliness),
+              skill1: data.skill1,
+              skill2: data.skill2,
+              skill3: data.skill3,
+              submittedAt: data.submittedAt ?? new Date(),
+            },
+          });
+        }
+      }
+      // rethrow if it's not a handled case
+      throw err;
+    }
   } finally {
     await prisma.$disconnect();
   }

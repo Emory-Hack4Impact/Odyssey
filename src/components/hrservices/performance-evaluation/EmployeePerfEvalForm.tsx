@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { TextAreaWithDescription } from "../../Textarea";
 import { PerformanceRatingSlider } from "./PerformanceRatingSliders";
 
@@ -7,6 +7,9 @@ interface HRServicesProps {
   userId: string;
   username: string;
   userRole: string;
+  selectedYear?: string | number;
+  // callback invoked after a successful submit; parent can switch views
+  onSuccess?: (year: number | string) => void;
 }
 
 interface FormData {
@@ -27,6 +30,8 @@ export default function EmployeePerfEvalForm({
   userId: _userId,
   username: _username,
   userRole: _userRole,
+  selectedYear: _selectedYear,
+  onSuccess: _onSuccess,
 }: HRServicesProps) {
   type State = {
     year: number;
@@ -57,6 +62,105 @@ export default function EmployeePerfEvalForm({
   });
 
   const [formErrors, setFormErrors] = useState<Partial<FormData>>({});
+  const [loadedYear, setLoadedYear] = useState<number | null>(null);
+  // navigation no longer required; parent controls view swap via onSuccess
+  // const router = useRouter();
+
+  // If a `selectedYear` prop is provided (e.g. from the parent selector), keep
+  // the local form year in sync and force a reload of evaluation data for the
+  // new year.
+  useEffect(() => {
+    if (!_selectedYear) return;
+    const yearNum = Number(_selectedYear);
+    if (Number.isNaN(yearNum)) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      year: yearNum,
+    }));
+    // mark as not loaded so the fetch effect will run for the new year
+    setLoadedYear(null);
+  }, [_selectedYear]);
+
+  // Load the employee's latest self-submitted evaluation for the selected year, if any.
+  useEffect(() => {
+    const year = formData.year;
+    if (!_userId) return;
+    if (loadedYear === year) return; // already loaded for this year
+
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const resp = await fetch(`/api/employee-evals?employeeId=${encodeURIComponent(_userId)}&year=${encodeURIComponent(year)}`);
+        if (!resp.ok) {
+          // No data for this year (or error). Reset the form to blank/defaults
+          // so the employee sees an empty form with sliders at 50%.
+          setFormData((prev) => ({
+            ...prev,
+            year,
+            strengths: "",
+            weaknesses: "",
+            improvements: "",
+            notes: "",
+            communication: 50,
+            leadership: 50,
+            timeliness: 50,
+            skill1: 50,
+            skill2: 50,
+            skill3: 50,
+          }));
+          setLoadedYear(year);
+          return;
+        }
+        const payload = await resp.json();
+        // route returns { evaluation, reviewers } or possibly an array
+        const evalObj = payload?.evaluation ?? (Array.isArray(payload) ? payload[0] : null);
+        if (!evalObj) {
+          // no existing self-submission; leave form blank/defaults
+          setFormData((prev) => ({
+            ...prev,
+            year,
+            strengths: "",
+            weaknesses: "",
+            improvements: "",
+            notes: "",
+            communication: 50,
+            leadership: 50,
+            timeliness: 50,
+            skill1: 50,
+            skill2: 50,
+            skill3: 50,
+          }));
+        } else {
+          if (cancelled) return;
+          setFormData({
+            year: Number(evalObj.year) ?? year,
+            strengths: evalObj.strengths ?? "",
+            weaknesses: evalObj.weaknesses ?? "",
+            improvements: evalObj.improvements ?? "",
+            notes: evalObj.notes ?? "",
+            communication: Number(evalObj.communication) ?? 50,
+            leadership: Number(evalObj.leadership) ?? 50,
+            timeliness: Number(evalObj.timeliness) ?? 50,
+            skill1: Number(evalObj.skill1) ?? 50,
+            skill2: Number(evalObj.skill2) ?? 50,
+            skill3: Number(evalObj.skill3) ?? 50,
+          });
+        }
+        setLoadedYear(year);
+      } catch (err) {
+        console.warn("Failed to load existing evaluation:", err);
+        setLoadedYear(year);
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [_userId, formData.year, loadedYear]);
 
   // No generic input handler required anymore (name/year/name fields removed)
 
@@ -117,8 +221,9 @@ export default function EmployeePerfEvalForm({
       try {
         // attach submitter info from props (username, userRole). Email may not be available here; leave blank unless the caller passes it later.
         const payload = {
-          employeeId: undefined,
-          submitterId: undefined,
+          // employee is submitting for themself
+          employeeId: _userId,
+          submitterId: _userId,
           year: formData.year,
           strengths: formData.strengths,
           weaknesses: formData.weaknesses,
@@ -138,24 +243,23 @@ export default function EmployeePerfEvalForm({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        const response = await resp.json();
-        console.log(`Successfully submitted employee evaluation: ${response.id}`);
-        alert("Evaluation submitted successfully!");
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({ error: 'unknown' }));
+          console.error('Submission failed', err);
+          alert('There was an error submitting the evaluation.');
+          return;
+        }
 
-        // Reset form to defaults
-        setFormData({
-          year: 2025,
-          strengths: "",
-          weaknesses: "",
-          improvements: "",
-          notes: "",
-          communication: 50,
-          leadership: 50,
-          timeliness: 50,
-          skill1: 50,
-          skill2: 50,
-          skill3: 50,
-        });
+        // On success, prefer to let the parent component hide the form and
+        // show the evaluation dashboard for the submitted year. If a parent
+        // didn't supply an `onSuccess` callback, fall back to a client-side
+        // navigation to the overview page for compatibility.
+        if (typeof _onSuccess === "function") {
+          _onSuccess(formData.year);
+        } else if (typeof window !== "undefined") {
+          // fallback to a full-page navigation if parent didn't provide a handler
+          window.location.href = "/perfevalemployee";
+        }
       } catch (error) {
         console.error("Error submitting evaluation:", error);
         alert("There was an error submitting the evaluation. Please try again.");
@@ -219,7 +323,7 @@ export default function EmployeePerfEvalForm({
             <div>
               <PerformanceRatingSlider
                 category="Communication"
-                value={50}
+                value={formData.communication}
                 onChange={(value) => handleRatingChange("communication", value)}
               />
               {formErrors.communication && (
@@ -230,7 +334,7 @@ export default function EmployeePerfEvalForm({
             <div>
               <PerformanceRatingSlider
                 category="Leadership"
-                value={50}
+                value={formData.leadership}
                 onChange={(value) => handleRatingChange("leadership", value)}
               />
               {formErrors.leadership && (
@@ -241,7 +345,7 @@ export default function EmployeePerfEvalForm({
             <div>
               <PerformanceRatingSlider
                 category="Timeliness"
-                value={50}
+                value={formData.timeliness}
                 onChange={(value) => handleRatingChange("timeliness", value)}
               />
               {formErrors.timeliness && (
@@ -252,7 +356,7 @@ export default function EmployeePerfEvalForm({
             <div>
               <PerformanceRatingSlider
                 category="Skill1"
-                value={50}
+                value={formData.skill1}
                 onChange={(value) => handleRatingChange("skill1", value)}
               />
             </div>
@@ -260,7 +364,7 @@ export default function EmployeePerfEvalForm({
             <div>
               <PerformanceRatingSlider
                 category="Skill2"
-                value={50}
+                value={formData.skill2}
                 onChange={(value) => handleRatingChange("skill2", value)}
               />
             </div>
@@ -268,7 +372,7 @@ export default function EmployeePerfEvalForm({
             <div>
               <PerformanceRatingSlider
                 category="Skill3"
-                value={50}
+                value={formData.skill3}
                 onChange={(value) => handleRatingChange("skill3", value)}
               />
             </div>
