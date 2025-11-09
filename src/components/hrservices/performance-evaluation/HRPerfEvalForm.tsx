@@ -45,12 +45,13 @@ export default function HRPerfEvalForm(props: Props) {
   } = props;
 
   // normalize possible string props to numbers for internal state
-  const communicationNum = typeof communication === "string" ? Number(communication) : communication ?? 0;
-  const leadershipNum = typeof leadership === "string" ? Number(leadership) : leadership ?? 0;
-  const timelinessNum = typeof timeliness === "string" ? Number(timeliness) : timeliness ?? 0;
-  const skill1Num = typeof skill1 === "string" ? Number(skill1) : skill1 ?? 0;
-  const skill2Num = typeof skill2 === "string" ? Number(skill2) : skill2 ?? 0;
-  const skill3Num = typeof skill3 === "string" ? Number(skill3) : skill3 ?? 0;
+  const communicationNum =
+    typeof communication === "string" ? Number(communication) : (communication ?? 0);
+  const leadershipNum = typeof leadership === "string" ? Number(leadership) : (leadership ?? 0);
+  const timelinessNum = typeof timeliness === "string" ? Number(timeliness) : (timeliness ?? 0);
+  const skill1Num = typeof skill1 === "string" ? Number(skill1) : (skill1 ?? 0);
+  const skill2Num = typeof skill2 === "string" ? Number(skill2) : (skill2 ?? 0);
+  const skill3Num = typeof skill3 === "string" ? Number(skill3) : (skill3 ?? 0);
   type State = {
     id: string;
     employeeId?: string | null;
@@ -88,12 +89,12 @@ export default function HRPerfEvalForm(props: Props) {
   const [formErrors, setFormErrors] = useState<Partial<Record<string, string>>>({});
 
   const handleChange = (field: keyof State, value: string | number) => {
-    setFormData((prev) => ({ ...prev, [field]: value } as unknown as State));
+    setFormData((prev) => ({ ...prev, [field]: value }) as unknown as State);
     if (formErrors[field as string]) setFormErrors((p) => ({ ...p, [field as string]: undefined }));
   };
 
   const handleRatingChange = (field: keyof State, value: number) => {
-    setFormData((prev) => ({ ...prev, [field]: value } as unknown as State));
+    setFormData((prev) => ({ ...prev, [field]: value }) as unknown as State);
     if (formErrors[field as string]) setFormErrors((p) => ({ ...p, [field as string]: undefined }));
   };
 
@@ -160,7 +161,13 @@ export default function HRPerfEvalForm(props: Props) {
           <div className="w-36">
             <h3 className="mb-2">Year</h3>
             <div className="rounded-3xl border-2 bg-white px-3 py-2 text-gray-400">
-              <select id="year" name="year" value={formData.year} onChange={(e) => handleChange("year", e.target.value)} disabled>
+              <select
+                id="year"
+                name="year"
+                value={formData.year}
+                onChange={(e) => handleChange("year", e.target.value)}
+                disabled
+              >
                 <option value="2020">2020</option>
                 <option value="2021">2021</option>
                 <option value="2022">2022</option>
@@ -190,7 +197,9 @@ export default function HRPerfEvalForm(props: Props) {
               value={formData.weaknesses}
               onChange={(value) => handleChange("weaknesses", value)}
             />
-            {formErrors.weaknesses && <p className="text-sm text-red-500">{formErrors.weaknesses}</p>}
+            {formErrors.weaknesses && (
+              <p className="text-sm text-red-500">{formErrors.weaknesses}</p>
+            )}
           </div>
 
           <div>
@@ -200,7 +209,9 @@ export default function HRPerfEvalForm(props: Props) {
               value={formData.improvements}
               onChange={(value) => handleChange("improvements", value)}
             />
-            {formErrors.improvements && <p className="text-sm text-red-500">{formErrors.improvements}</p>}
+            {formErrors.improvements && (
+              <p className="text-sm text-red-500">{formErrors.improvements}</p>
+            )}
           </div>
 
           <div>
@@ -222,7 +233,9 @@ export default function HRPerfEvalForm(props: Props) {
                 value={formData.communication}
                 onChange={(v) => handleRatingChange("communication", v)}
               />
-              {formErrors.communication && <p className="text-sm text-red-500">{formErrors.communication}</p>}
+              {formErrors.communication && (
+                <p className="text-sm text-red-500">{formErrors.communication}</p>
+              )}
             </div>
 
             <div>
@@ -231,7 +244,9 @@ export default function HRPerfEvalForm(props: Props) {
                 value={formData.leadership}
                 onChange={(v) => handleRatingChange("leadership", v)}
               />
-              {formErrors.leadership && <p className="text-sm text-red-500">{formErrors.leadership}</p>}
+              {formErrors.leadership && (
+                <p className="text-sm text-red-500">{formErrors.leadership}</p>
+              )}
             </div>
 
             <div>
@@ -240,7 +255,9 @@ export default function HRPerfEvalForm(props: Props) {
                 value={formData.timeliness}
                 onChange={(v) => handleRatingChange("timeliness", v)}
               />
-              {formErrors.timeliness && <p className="text-sm text-red-500">{formErrors.timeliness}</p>}
+              {formErrors.timeliness && (
+                <p className="text-sm text-red-500">{formErrors.timeliness}</p>
+              )}
             </div>
 
             <div>

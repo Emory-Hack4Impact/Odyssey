@@ -92,7 +92,9 @@ export default function EmployeePerfEvalForm({
 
     async function load() {
       try {
-        const resp = await fetch(`/api/employee-evals?employeeId=${encodeURIComponent(_userId)}&year=${encodeURIComponent(year)}`);
+        const resp = await fetch(
+          `/api/employee-evals?employeeId=${encodeURIComponent(_userId)}&year=${encodeURIComponent(year)}`,
+        );
         if (!resp.ok) {
           // No data for this year (or error). Reset the form to blank/defaults
           // so the employee sees an empty form with sliders at 50%.
@@ -165,7 +167,7 @@ export default function EmployeePerfEvalForm({
   // No generic input handler required anymore (name/year/name fields removed)
 
   const handleTextAreaChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value } as unknown as State));
+    setFormData((prev) => ({ ...prev, [field]: value }) as unknown as State);
 
     if (formErrors[field as keyof FormData]) {
       setFormErrors((prev) => ({
@@ -176,7 +178,7 @@ export default function EmployeePerfEvalForm({
   };
 
   const handleRatingChange = (field: keyof State, value: number) => {
-    setFormData((prev) => ({ ...prev, [field]: value } as unknown as State));
+    setFormData((prev) => ({ ...prev, [field]: value }) as unknown as State);
 
     if (formErrors[field as keyof FormData]) {
       setFormErrors((prev) => ({
@@ -244,9 +246,9 @@ export default function EmployeePerfEvalForm({
           body: JSON.stringify(payload),
         });
         if (!resp.ok) {
-          const err = await resp.json().catch(() => ({ error: 'unknown' }));
-          console.error('Submission failed', err);
-          alert('There was an error submitting the evaluation.');
+          const err = await resp.json().catch(() => ({ error: "unknown" }));
+          console.error("Submission failed", err);
+          alert("There was an error submitting the evaluation.");
           return;
         }
 

@@ -6,23 +6,21 @@ const prisma = new PrismaClient();
 async function run() {
   try {
     await prisma.$executeRawUnsafe(
-      "GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role"
+      "GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role",
     );
 
     await prisma.$executeRawUnsafe(
-      'GRANT SELECT ON TABLE "UserMetadata" TO anon, authenticated, service_role'
+      'GRANT SELECT ON TABLE "UserMetadata" TO anon, authenticated, service_role',
+    );
+
+    await prisma.$executeRawUnsafe('ALTER TABLE "UserMetadata" ENABLE ROW LEVEL SECURITY');
+
+    await prisma.$executeRawUnsafe(
+      'DROP POLICY IF EXISTS "Users can read own metadata" ON "UserMetadata"',
     );
 
     await prisma.$executeRawUnsafe(
-      'ALTER TABLE "UserMetadata" ENABLE ROW LEVEL SECURITY'
-    );
-
-    await prisma.$executeRawUnsafe(
-      'DROP POLICY IF EXISTS "Users can read own metadata" ON "UserMetadata"'
-    );
-
-    await prisma.$executeRawUnsafe(
-      'CREATE POLICY "Users can read own metadata" ON "UserMetadata" FOR SELECT USING (id = auth.uid()::text)'
+      'CREATE POLICY "Users can read own metadata" ON "UserMetadata" FOR SELECT USING (id = auth.uid()::text)',
     );
 
     console.log("Permissions and RLS policies applied successfully.");

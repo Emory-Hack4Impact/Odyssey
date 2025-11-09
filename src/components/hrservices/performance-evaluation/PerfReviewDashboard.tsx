@@ -29,7 +29,10 @@ interface Reviewer {
   initials: string;
 }
 
-export const PerformanceReviewDashboard: React.FC<PerformanceReviewDashboardProps> = ({ employeeId, selectedYear }) => {
+export const PerformanceReviewDashboard: React.FC<PerformanceReviewDashboardProps> = ({
+  employeeId,
+  selectedYear,
+}) => {
   const [evaluation, setEvaluation] = useState<EmployeeEvaluationAPI | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +58,10 @@ export const PerformanceReviewDashboard: React.FC<PerformanceReviewDashboardProp
         }
         if (selectedYear) {
           // server returns { evaluation, reviewers }
-          const obj = payload as { evaluation?: EmployeeEvaluationAPI | null; reviewers?: Reviewer[] } | null;
+          const obj = payload as {
+            evaluation?: EmployeeEvaluationAPI | null;
+            reviewers?: Reviewer[];
+          } | null;
           setEvaluation(obj?.evaluation ?? null);
           setReviewers(obj?.reviewers ?? []);
         } else {
@@ -104,8 +110,7 @@ export const PerformanceReviewDashboard: React.FC<PerformanceReviewDashboardProp
           <div className="mb-8 flex items-center justify-center gap-6">
             <div className="flex flex-col items-center rounded-3xl border-2 px-4 py-4">
               <div className="text-4xl font-bold text-black">
-                {Math.round((commNum + leadNum + timeNum + s1Num + s2Num + s3Num) / 6)}
-                %
+                {Math.round((commNum + leadNum + timeNum + s1Num + s2Num + s3Num) / 6)}%
               </div>
               <div className="text-lg text-black">Overall Rating</div>
             </div>
@@ -113,7 +118,10 @@ export const PerformanceReviewDashboard: React.FC<PerformanceReviewDashboardProp
               <div className="flex space-x-2">
                 {reviewers.length > 0 ? (
                   reviewers.map((r) => (
-                    <div key={r.id} className="h-10 w-10 flex items-center justify-center rounded-full border-2 bg-gray-300 text-sm font-medium">
+                    <div
+                      key={r.id}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border-2 bg-gray-300 text-sm font-medium"
+                    >
                       {r.initials}
                     </div>
                   ))
@@ -143,10 +151,16 @@ export const PerformanceReviewDashboard: React.FC<PerformanceReviewDashboardProp
           <h3 className="mb-2 text-xl">Strengths</h3>
           {(() => {
             const splitBullets = (s: string) => {
-              const lines = s.split(/\r?\n/).map((t) => t.trim()).filter(Boolean);
+              const lines = s
+                .split(/\r?\n/)
+                .map((t) => t.trim())
+                .filter(Boolean);
               if (lines.length > 1) return lines;
               // fallback to period-split if no newlines present
-              return s.split(".").map((t) => t.trim()).filter(Boolean);
+              return s
+                .split(".")
+                .map((t) => t.trim())
+                .filter(Boolean);
             };
             return (
               <ul className="ml-4 list-disc text-sm">
@@ -162,9 +176,15 @@ export const PerformanceReviewDashboard: React.FC<PerformanceReviewDashboardProp
           <h3 className="mb-2 text-xl">Weaknesses</h3>
           {(() => {
             const splitBullets = (s: string) => {
-              const lines = s.split(/\r?\n/).map((t) => t.trim()).filter(Boolean);
+              const lines = s
+                .split(/\r?\n/)
+                .map((t) => t.trim())
+                .filter(Boolean);
               if (lines.length > 1) return lines;
-              return s.split(".").map((t) => t.trim()).filter(Boolean);
+              return s
+                .split(".")
+                .map((t) => t.trim())
+                .filter(Boolean);
             };
             return (
               <ul className="ml-4 list-disc text-sm">
@@ -180,9 +200,15 @@ export const PerformanceReviewDashboard: React.FC<PerformanceReviewDashboardProp
           <h3 className="mb-2 text-xl">Improvements</h3>
           {(() => {
             const splitBullets = (s: string) => {
-              const lines = s.split(/\r?\n/).map((t) => t.trim()).filter(Boolean);
+              const lines = s
+                .split(/\r?\n/)
+                .map((t) => t.trim())
+                .filter(Boolean);
               if (lines.length > 1) return lines;
-              return s.split(".").map((t) => t.trim()).filter(Boolean);
+              return s
+                .split(".")
+                .map((t) => t.trim())
+                .filter(Boolean);
             };
             return (
               <ul className="ml-4 list-disc text-sm">
@@ -198,9 +224,15 @@ export const PerformanceReviewDashboard: React.FC<PerformanceReviewDashboardProp
           <h3 className="mb-2 text-xl">Other Notes</h3>
           {(() => {
             const splitBullets = (s: string) => {
-              const lines = s.split(/\r?\n/).map((t) => t.trim()).filter(Boolean);
+              const lines = s
+                .split(/\r?\n/)
+                .map((t) => t.trim())
+                .filter(Boolean);
               if (lines.length > 1) return lines;
-              return s.split(".").map((t) => t.trim()).filter(Boolean);
+              return s
+                .split(".")
+                .map((t) => t.trim())
+                .filter(Boolean);
             };
             return (
               <ul className="ml-4 list-disc text-sm">

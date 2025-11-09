@@ -32,14 +32,14 @@ export const PerformanceRatingSlider: React.FC<PerformanceRatingSliderProps> = (
           <div className="h-4 w-full rounded-full bg-gray-200" />
           <div
             className="absolute left-0 h-4 rounded-full bg-gray-400"
-            style={{ width: `${value}%`, top: '50%', transform: 'translateY(-50%)' }}
+            style={{ width: `${value}%`, top: "50%", transform: "translateY(-50%)" }}
           />
         </div>
 
         {/* Thumb - vertically centered relative to the container */}
         <div
           className="absolute h-6 w-6 rounded-full bg-black shadow-md"
-          style={{ left: `${value}%`, top: '50%', transform: 'translate(-50%, -50%)' }}
+          style={{ left: `${value}%`, top: "50%", transform: "translate(-50%, -50%)" }}
         />
 
         {/* Invisible native range for interaction */}

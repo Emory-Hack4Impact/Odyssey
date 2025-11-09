@@ -74,7 +74,7 @@ async function main() {
 
   try {
     await prisma.employeeEvaluation.deleteMany({ where: { employeeId: EMP_ID, year: 2025 } });
-  } catch { }
+  } catch {}
 
   try {
     await prisma.employeeEvaluation.create({
@@ -87,10 +87,9 @@ async function main() {
           "Communicates scope changes early",
           "Supports teammates proactively",
         ].join("\n"),
-        weaknesses: [
-          "Can overcommit during sprint planning",
-          "Occasional test flakiness",
-        ].join("\n"),
+        weaknesses: ["Can overcommit during sprint planning", "Occasional test flakiness"].join(
+          "\n",
+        ),
         improvements: [
           "Allocate buffer for integration tests",
           "Adopt test retry strategy where appropriate",
@@ -109,7 +108,7 @@ async function main() {
         submittedAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
       },
     });
-  } catch { }
+  } catch {}
 
   try {
     await prisma.employeeEvaluation.create({
@@ -145,7 +144,7 @@ async function main() {
         submittedAt: new Date(),
       },
     });
-  } catch { }
+  } catch {}
 }
 
 main()

@@ -39,11 +39,15 @@ export async function SubmitEmployeeEval(data: EmployeeEval) {
         // Fall back for DB schema/type mismatches (e.g. conversion errors) by
         // querying without the year and checking in JS.
         console.warn("Prisma findFirst with year failed, falling back to client-side filter:", err);
-        const candidates = await prisma.employeeEvaluation.findMany({ where: { employeeId: data.employeeId, submitterId: data.employeeId } });
+        const candidates = await prisma.employeeEvaluation.findMany({
+          where: { employeeId: data.employeeId, submitterId: data.employeeId },
+        });
         self = candidates.find((c) => Number(c.year) === Number(data.year)) ?? null;
       }
       if (!self) {
-        throw new Error("Employee must submit their evaluation before manager/HR can submit for the same year.");
+        throw new Error(
+          "Employee must submit their evaluation before manager/HR can submit for the same year.",
+        );
       }
     }
 
@@ -131,7 +135,9 @@ export async function GetEmployeeEvals(employeeId: string) {
       // Some Prisma clients / schema states may not have `submittedAt` available
       // (unknown argument). Fall back to querying without orderBy and sort in JS.
       console.warn("Prisma ordering by submittedAt failed, falling back to client-side sort:", err);
-      const rows: EmployeeEvaluation[] = await prisma.employeeEvaluation.findMany({ where: { employeeId: employeeId } });
+      const rows: EmployeeEvaluation[] = await prisma.employeeEvaluation.findMany({
+        where: { employeeId: employeeId },
+      });
       // sort by submittedAt if present, otherwise keep DB order
       const getTime = (val: unknown) => {
         if (!val) return 0;
@@ -153,14 +159,26 @@ export async function GetLatestEmployeeEvalWithReviewers(employeeId: string, yea
   try {
     let evals: EmployeeEvaluation[] = [];
     try {
-      evals = await prisma.employeeEvaluation.findMany({ where: { employeeId, year }, orderBy: { submittedAt: "desc" } });
+      evals = await prisma.employeeEvaluation.findMany({
+        where: { employeeId, year },
+        orderBy: { submittedAt: "desc" },
+      });
     } catch (err) {
-      console.warn("Prisma findMany with year/orderBy failed, falling back to client-side filter/sort:", err);
+      console.warn(
+        "Prisma findMany with year/orderBy failed, falling back to client-side filter/sort:",
+        err,
+      );
       // Try querying without year first (some DBs may have incompatible column types)
       try {
-        evals = await prisma.employeeEvaluation.findMany({ where: { employeeId }, orderBy: { submittedAt: "desc" } });
+        evals = await prisma.employeeEvaluation.findMany({
+          where: { employeeId },
+          orderBy: { submittedAt: "desc" },
+        });
       } catch (err2) {
-        console.warn("Prisma ordering by submittedAt failed as well, falling back to client-side sort:", err2);
+        console.warn(
+          "Prisma ordering by submittedAt failed as well, falling back to client-side sort:",
+          err2,
+        );
         evals = await prisma.employeeEvaluation.findMany({ where: { employeeId } });
         const getTime = (val: unknown) => {
           if (!val) return 0;
@@ -180,7 +198,9 @@ export async function GetLatestEmployeeEvalWithReviewers(employeeId: string, yea
     const normalizedLatest = latest ? { ...latest } : null;
 
     // gather distinct submitterIds (exclude null and the employee themself optional)
-    const submitterIds = Array.from(new Set(evals.map((e) => e.submitterId).filter((id): id is string => !!id)));
+    const submitterIds = Array.from(
+      new Set(evals.map((e) => e.submitterId).filter((id): id is string => !!id)),
+    );
 
     let reviewers: { id: string; initials: string }[] = [];
     if (submitterIds.length > 0) {
@@ -226,12 +246,19 @@ export async function UpdateEmployeeEval(id: string, data: EmployeeEval) {
           },
         });
       } catch (err) {
-        console.warn("Prisma findFirst with year failed in update, falling back to client-side filter:", err);
-        const candidates = await prisma.employeeEvaluation.findMany({ where: { employeeId: data.employeeId, submitterId: data.employeeId } });
+        console.warn(
+          "Prisma findFirst with year failed in update, falling back to client-side filter:",
+          err,
+        );
+        const candidates = await prisma.employeeEvaluation.findMany({
+          where: { employeeId: data.employeeId, submitterId: data.employeeId },
+        });
         self = candidates.find((c) => Number(c.year) === Number(data.year)) ?? null;
       }
       if (!self) {
-        throw new Error("Employee must submit their evaluation before manager/HR can submit for the same year.");
+        throw new Error(
+          "Employee must submit their evaluation before manager/HR can submit for the same year.",
+        );
       }
     }
 

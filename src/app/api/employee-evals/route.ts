@@ -33,7 +33,7 @@ export async function GET(req: Request) {
     console.error("/api/employee-evals GET error", err);
     let message: string;
     if (err && typeof err === "object" && "message" in err) {
-      message = ((err as unknown) as { message?: unknown }).message as string;
+      message = (err as unknown as { message?: unknown }).message as string;
     } else {
       message = String(err);
     }
@@ -57,7 +57,8 @@ export async function PUT(req: Request) {
     const body = await req.json();
     // expect { id: string, data: EmployeeEval }
     const { id, data } = body as { id?: string; data?: unknown };
-    if (!id || data === undefined) return NextResponse.json({ error: "id and data required" }, { status: 400 });
+    if (!id || data === undefined)
+      return NextResponse.json({ error: "id and data required" }, { status: 400 });
 
     // basic runtime type guard for EmployeeEval to avoid passing `any`
     function isEmployeeEval(obj: unknown): obj is EmployeeEval {

@@ -27,11 +27,7 @@ interface FetchedEval {
   submitterEmail?: string | null;
 }
 
-export default function PerfEvalHR({
-  userId: _userId,
-  username,
-  userRole,
-}: HRServicesProps) {
+export default function PerfEvalHR({ userId: _userId, username, userRole }: HRServicesProps) {
   const [employeeEvals, setEmployeeEvals] = useState<FetchedEval[]>([]);
   const [selectedEval, setSelectedEval] = useState<FetchedEval>({
     id: "",
@@ -72,13 +68,9 @@ export default function PerfEvalHR({
         ...e,
         id: typeof e.id === "undefined" ? "" : String(e.id),
         employeeId:
-          e.employeeId === null || e.employeeId === undefined
-            ? null
-            : String(e.employeeId),
+          e.employeeId === null || e.employeeId === undefined ? null : String(e.employeeId),
         submitterId:
-          e.submitterId === null || e.submitterId === undefined
-            ? null
-            : String(e.submitterId),
+          e.submitterId === null || e.submitterId === undefined ? null : String(e.submitterId),
       })) as FetchedEval[];
       setEmployeeEvals(normalized ?? []);
     } catch (error) {

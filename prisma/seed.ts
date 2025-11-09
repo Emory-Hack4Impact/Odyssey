@@ -91,10 +91,9 @@ async function main() {
           "Communicates scope changes early",
           "Supports teammates proactively",
         ].join("\n"),
-        weaknesses: [
-          "Can overcommit during sprint planning",
-          "Occasional test flakiness",
-        ].join("\n"),
+        weaknesses: ["Can overcommit during sprint planning", "Occasional test flakiness"].join(
+          "\n",
+        ),
         improvements: [
           "Allocate buffer for integration tests",
           "Adopt test retry strategy where appropriate",
