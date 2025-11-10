@@ -4,15 +4,22 @@ import PerfEval from "@/components/hrservices/performance-evaluation/PerfEval";
 import PerfEvalEmployee from "@/components/hrservices/performance-evaluation/PerfEvalEmployee";
 import PerfEvalHR from "@/components/hrservices/performance-evaluation/PerfEvalHR";
 import TimeOff from "@/components/hrservices/time-off/TimeOff";
+import AdminDocuments from "@/components/hrservices/documents/AdminDocuments";
+import UserDocuments from "@/components/hrservices/documents/UserDocuments";
 import { useState } from "react";
 
 interface HRServicesProps {
   userId: string;
   username: string;
   userRole: string;
+  userMetadata: {
+    is_admin: boolean;
+    is_hr: boolean;
+    position: string;
+  } | null;
 }
 
-export const HRServices = ({ userId, username, userRole }: HRServicesProps) => {
+export const HRServices = ({ userId, username, userRole, userMetadata }: HRServicesProps) => {
   const getPerformanceEvaluationComponent = () => {
     switch (userRole) {
       case "Employee":
@@ -56,12 +63,7 @@ export const HRServices = ({ userId, username, userRole }: HRServicesProps) => {
     {
       key: "docs",
       label: "Documents",
-      component: (
-        <div>
-          <h2 className="mb-4 text-lg font-medium">Documents</h2>
-          {/* Insert content here */}
-        </div>
-      ),
+      component: userMetadata?.is_admin ? <AdminDocuments /> : <UserDocuments />,
     },
   ];
 
