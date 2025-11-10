@@ -36,7 +36,7 @@ const courses = [
     title: "Some Course",
     blurb: "Short description about course",
     href: "#",
-    image: { src: "/testingfiles/courses/course-3.jpg", alt: "Course 3 cover" },
+    image: { src: "/testingfiles/courses/flowers.png", alt: "Course 3 cover" },
   },
 ];
 
