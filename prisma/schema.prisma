@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -18,26 +12,19 @@ model UserMetadata {
   is_admin        Boolean          @default(false)
   is_hr           Boolean          @default(false)
   position        String           @default("")
-  TimeOffRequests TimeOffRequest[]
   Files           Files[]
-}
-
-enum FileTypes {
-  AVATAR
-  DOCUMENT
-  ATTACHMENT
-  ANNOUNCEMENT
+  TimeOffRequests TimeOffRequest[]
 }
 
 model Files {
   id         String       @id @default(dbgenerated("uuid_generate_v1()")) @db.Uuid
   userId     String
-  owner      UserMetadata @relation(fields: [userId], references: [id], onDelete: Cascade)
   bucket     String
   path       String
   type       FileTypes
   uploadedAt DateTime     @default(now())
   metadata   Json?
+  owner      UserMetadata @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, type])
 }
@@ -46,25 +33,33 @@ model TimeOffRequest {
   id             Int          @id @default(autoincrement())
   employeeId     String
   leaveType      String
-  otherLeaveType String       @default("")
   startDate      DateTime
   endDate        DateTime
   comments       String       @default("")
+  approved       Boolean      @default(false)
+  otherLeaveType String       @default("")
   UserMetadata   UserMetadata @relation(fields: [employeeId], references: [id])
 }
 
 model EmployeeEvaluation {
-  id              Int         @id @default(autoincrement())
-  employeeId      String
-  year            Int
-  strengths       String
-  weaknesses      String
-  improvements    String
-  notes           String
-  communication   String
-  leadership      String
-  timeliness      String
-  skill1          String
-  skill2          String
-  skill3          String
+  id            Int    @id @default(autoincrement())
+  employeeId    String
+  year          Int
+  strengths     String
+  weaknesses    String
+  improvements  String
+  notes         String
+  communication String
+  leadership    String
+  timeliness    String
+  skill1        String
+  skill2        String
+  skill3        String
+}
+
+enum FileTypes {
+  AVATAR
+  DOCUMENT
+  ATTACHMENT
+  ANNOUNCEMENT
 }

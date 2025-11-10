@@ -9,6 +9,7 @@ export interface SubmitTimeOffRequest {
   startDate: string;
   endDate: string;
   comments: string;
+  approved: boolean;
 }
 
 export async function SubmitTimeOff(data: SubmitTimeOffRequest) {
@@ -18,9 +19,21 @@ export async function SubmitTimeOff(data: SubmitTimeOffRequest) {
       employeeId: data.id,
       leaveType: data.leaveType,
       otherLeaveType: data.otherLeaveType,
-      startDate: data.startDate,
-      endDate: data.endDate,
+      startDate: new Date(data.startDate),
+      endDate: new Date(data.endDate),
       comments: data.comments,
+      approved: data.approved,
+    },
+  });
+}
+
+export async function FetchTimeOff(id: string) {
+  const prisma = new PrismaClient();
+  return await prisma.timeOffRequest.findMany({
+    where: {
+      employeeId: {
+        equals: id,
+      },
     },
   });
 }
