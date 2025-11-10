@@ -31,12 +31,12 @@ const Home = ({ userId }: { userId: string }) => {
 
   return (
     <section className="w-full py-6">
-      <div className="mr-auto grid w-full max-w-7xl xl:max-w-[100rem] items-start gap-6 px-3 sm:px-4 lg:grid-cols-12">
+      <div className="mr-auto grid w-full max-w-7xl items-start gap-6 px-3 sm:px-4 lg:grid-cols-12 xl:max-w-[100rem]">
         <div className="flex flex-col gap-6 lg:col-span-6 xl:col-span-5">
           <DaysInfo stats={requests} />
           <TimeOffForm setRequests={setRequests} requests={requests} userId={userId} />
         </div>
-        <div className="lg:col-span-6 xl:col-span-7 flex">
+        <div className="flex lg:col-span-6 xl:col-span-7">
           <div className="flex-1">
             <StatusTable requests={requests} />
           </div>

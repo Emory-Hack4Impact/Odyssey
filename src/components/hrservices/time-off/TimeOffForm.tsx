@@ -155,7 +155,7 @@ const TimeOffForm = ({
     <div className="card h-full w-full border border-base-content/5 bg-base-100 shadow-xl">
       <div className="card-body space-y-5">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-base-content/70">
+          <p className="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
             Submit a request
           </p>
           <h2 className="card-title text-2xl font-semibold">Request Time Off</h2>
@@ -171,7 +171,7 @@ const TimeOffForm = ({
               name="leaveType"
               value={formData.leaveType}
               onChange={handleChange}
-              className="select select-bordered w-full text-base"
+              className="select-bordered select w-full text-base"
             >
               <option value="">Select Leave Type</option>
               <option value="Annual Leave">Annual Leave</option>
@@ -198,7 +198,7 @@ const TimeOffForm = ({
                 name="otherLeaveType"
                 value={formData.otherLeaveType}
                 onChange={handleChange}
-                className="input input-bordered w-full"
+                className="input-bordered input w-full"
               />
             </div>
           )}
@@ -214,7 +214,7 @@ const TimeOffForm = ({
                 name="startDate"
                 value={formData.startDate}
                 onChange={handleChange}
-                className="input input-bordered w-full"
+                className="input-bordered input w-full"
               />
               {formErrors.startDate && (
                 <p className="mt-1 text-sm text-error">{formErrors.startDate}</p>
@@ -231,7 +231,7 @@ const TimeOffForm = ({
                 name="endDate"
                 value={formData.endDate}
                 onChange={handleChange}
-                className="input input-bordered w-full"
+                className="input-bordered input w-full"
               />
               {formErrors.endDate && (
                 <p className="mt-1 text-sm text-error">{formErrors.endDate}</p>
@@ -250,7 +250,7 @@ const TimeOffForm = ({
               onChange={handleChange}
               maxLength={150}
               rows={4}
-              className="textarea textarea-bordered w-full text-base"
+              className="textarea-bordered textarea w-full text-base"
             />
             <label className="label justify-end">
               <span className="label-text-alt text-base-content/70">
@@ -260,7 +260,7 @@ const TimeOffForm = ({
           </div>
 
           <div className="form-control pt-1">
-            <button type="submit" className="btn btn-primary text-base font-semibold">
+            <button type="submit" className="btn text-base font-semibold btn-primary">
               Submit Request
             </button>
           </div>

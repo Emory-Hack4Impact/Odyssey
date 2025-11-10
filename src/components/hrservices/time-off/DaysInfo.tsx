@@ -31,28 +31,28 @@ const DaysInfo = ({ stats }: { stats: TimeOffRequest[] }) => {
         <h2 className="text-xl font-semibold">Your PTO Snapshot</h2>
         <div className="mt-6 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
           <div className="rounded-2xl border border-base-content/5 bg-base-100 py-3 text-center shadow-lg">
-            <p className="text-xs font-semibold uppercase tracking-wide text-base-content/70">
+            <p className="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
               Days Available
             </p>
             <p className="text-3xl font-semibold text-base-content">{daysAvailable()}</p>
           </div>
 
           <div className="rounded-2xl border border-base-content/5 bg-base-100 py-3 text-center shadow-lg">
-            <p className="text-xs font-semibold uppercase tracking-wide text-base-content/70">
+            <p className="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
               Pending Requests
             </p>
             <p className="text-3xl font-semibold text-base-content">{pendingRequests()}</p>
           </div>
 
           <div className="rounded-2xl border border-base-content/5 bg-base-100 py-3 text-center shadow-lg">
-            <p className="text-xs font-semibold uppercase tracking-wide text-base-content/70">
+            <p className="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
               Days Taken Off
             </p>
             <p className="text-3xl font-semibold text-base-content">{daysTakenOff()}</p>
           </div>
 
           <div className="rounded-2xl border border-base-content/5 bg-base-100 py-3 text-center shadow-lg">
-            <p className="text-xs font-semibold uppercase tracking-wide text-base-content/70">
+            <p className="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
               Total PTO per Year
             </p>
             <p className="text-3xl font-semibold text-base-content">20</p>

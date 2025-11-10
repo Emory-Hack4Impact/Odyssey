@@ -18,15 +18,15 @@ const StatusTable = ({ requests }: { requests: TimeOffRequest[] }) => {
     <div className="card h-full w-full border border-base-content/5 bg-base-100 shadow-xl">
       <div className="card-body gap-5">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-base-content/70">
+          <p className="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
             Recent activity
           </p>
           <h2 className="card-title text-2xl font-semibold">Request History</h2>
         </div>
         <div className="rounded-box border border-base-200">
-          <table className="table w-full table-compact">
+          <table className="table-compact table w-full">
             <thead>
-              <tr className="bg-base-200 text-xs font-semibold uppercase tracking-wide text-base-content">
+              <tr className="bg-base-200 text-xs font-semibold tracking-wide text-base-content uppercase">
                 <th className="w-1/5">Leave Type</th>
                 <th className="w-1/6">Date From</th>
                 <th className="w-1/6">Date To</th>
@@ -48,15 +48,17 @@ const StatusTable = ({ requests }: { requests: TimeOffRequest[] }) => {
 
                   return (
                     <tr key={request.id} className="text-sm">
-                      <td className="align-top break-words font-medium">{leaveLabel}</td>
+                      <td className="align-top font-medium break-words">{leaveLabel}</td>
                       <td className="align-top whitespace-nowrap text-base-content/80">
                         {formatDate(request.startDate)}
                       </td>
                       <td className="align-top whitespace-nowrap text-base-content/80">
                         {formatDate(request.endDate)}
                       </td>
-                      <td className="align-top break-words text-base-content/80">{request.comments || "—"}</td>
-                      <td className="align-top text-center">
+                      <td className="align-top break-words text-base-content/80">
+                        {request.comments || "—"}
+                      </td>
+                      <td className="text-center align-top">
                         <span
                           className={`badge ${
                             request.approved
