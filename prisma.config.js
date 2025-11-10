@@ -7,7 +7,7 @@ dotenv.config();
 const config = defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
-    seed: "node -r ts-node/register --env-file=.env prisma/seed.ts",
+    seed: "tsx --env-file=.env prisma/seed.ts",
   },
 });
 

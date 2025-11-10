@@ -35,7 +35,7 @@ export const HRServices = ({ userId, username, userRole, userMetadata }: HRServi
   };
 
   const categories = [
-    { key: "timeOff", label: "Time Off", component: <TimeOff /> },
+    { key: "timeOff", label: "Time Off", component: <TimeOff userId={userId} /> },
     {
       key: "careerDev",
       label: "Career Development",
