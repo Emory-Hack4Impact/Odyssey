@@ -152,56 +152,61 @@ const TimeOffForm = ({
   };
 
   return (
-    <div className="mx-auto mt-10 w-full max-w-2xl">
-      <div className="card rounded-box border border-base-content/5 bg-base-100 shadow-lg">
-        <div className="card-body">
-          <h2 className="mb-4 card-title text-2xl">Request Time Off</h2>
+    <div className="card h-full w-full border border-base-content/5 bg-base-100 shadow-xl">
+      <div className="card-body space-y-5">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-base-content/70">
+            Submit a request
+          </p>
+          <h2 className="card-title text-2xl font-semibold">Request Time Off</h2>
+        </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text text-lg">Leave Type</span>
-              </label>
-              <select
-                id="leaveType"
-                name="leaveType"
-                value={formData.leaveType}
-                onChange={handleChange}
-                className="select-bordered select w-full"
-              >
-                <option value="">Select Leave Type</option>
-                <option value="Annual Leave">Annual Leave</option>
-                <option value="Sick Leave">Sick Leave</option>
-                <option value="Bereavement">Bereavement</option>
-                <option value="Maternity/Paternity Leave">Maternity/Paternity Leave</option>
-                <option value="Jury Duty">Jury Duty</option>
-                <option value="Optional Holiday">Optional Holiday</option>
-                <option value="Other">Other</option>
-              </select>
-              {formErrors.leaveType && (
-                <p className="mt-1 text-sm text-error">{formErrors.leaveType}</p>
-              )}
-            </div>
-
-            {showOtherLeaveTypeField && (
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text text-lg">Other Leave Type</span>
-                </label>
-                <input
-                  type="text"
-                  id="otherLeaveType"
-                  name="otherLeaveType"
-                  value={formData.otherLeaveType}
-                  onChange={handleChange}
-                  className="input-bordered input w-full"
-                />
-              </div>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text text-base font-semibold">Leave Type</span>
+            </label>
+            <select
+              id="leaveType"
+              name="leaveType"
+              value={formData.leaveType}
+              onChange={handleChange}
+              className="select select-bordered w-full text-base"
+            >
+              <option value="">Select Leave Type</option>
+              <option value="Annual Leave">Annual Leave</option>
+              <option value="Sick Leave">Sick Leave</option>
+              <option value="Bereavement">Bereavement</option>
+              <option value="Maternity/Paternity Leave">Maternity/Paternity Leave</option>
+              <option value="Jury Duty">Jury Duty</option>
+              <option value="Optional Holiday">Optional Holiday</option>
+              <option value="Other">Other</option>
+            </select>
+            {formErrors.leaveType && (
+              <p className="mt-1 text-sm text-error">{formErrors.leaveType}</p>
             )}
+          </div>
 
+          {showOtherLeaveTypeField && (
             <div className="form-control">
               <label className="label">
-                <span className="label-text text-lg">Start Date</span>
+                <span className="label-text text-base font-semibold">Other Leave Type</span>
+              </label>
+              <input
+                type="text"
+                id="otherLeaveType"
+                name="otherLeaveType"
+                value={formData.otherLeaveType}
+                onChange={handleChange}
+                className="input input-bordered w-full"
+              />
+            </div>
+          )}
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text text-base font-semibold">Start Date</span>
               </label>
               <input
                 type="date"
@@ -209,7 +214,7 @@ const TimeOffForm = ({
                 name="startDate"
                 value={formData.startDate}
                 onChange={handleChange}
-                className="input-bordered input w-full"
+                className="input input-bordered w-full"
               />
               {formErrors.startDate && (
                 <p className="mt-1 text-sm text-error">{formErrors.startDate}</p>
@@ -218,7 +223,7 @@ const TimeOffForm = ({
 
             <div className="form-control">
               <label className="label">
-                <span className="label-text text-lg">End Date</span>
+                <span className="label-text text-base font-semibold">End Date</span>
               </label>
               <input
                 type="date"
@@ -226,40 +231,40 @@ const TimeOffForm = ({
                 name="endDate"
                 value={formData.endDate}
                 onChange={handleChange}
-                className="input-bordered input w-full"
+                className="input input-bordered w-full"
               />
               {formErrors.endDate && (
                 <p className="mt-1 text-sm text-error">{formErrors.endDate}</p>
               )}
             </div>
+          </div>
 
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text text-lg">Additional Information</span>
-              </label>
-              <textarea
-                id="comments"
-                name="comments"
-                value={formData.comments}
-                onChange={handleChange}
-                maxLength={150}
-                rows={4}
-                className="textarea-bordered textarea w-full"
-              />
-              <label className="label justify-end">
-                <span className="label-text-alt text-gray-500">
-                  Characters remaining: {maxChars - characterCount}
-                </span>
-              </label>
-            </div>
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text text-base font-semibold">Additional Information</span>
+            </label>
+            <textarea
+              id="comments"
+              name="comments"
+              value={formData.comments}
+              onChange={handleChange}
+              maxLength={150}
+              rows={4}
+              className="textarea textarea-bordered w-full text-base"
+            />
+            <label className="label justify-end">
+              <span className="label-text-alt text-base-content/70">
+                Characters remaining: {maxChars - characterCount}
+              </span>
+            </label>
+          </div>
 
-            <div className="form-control mt-6">
-              <button type="submit" className="btn text-lg btn-primary">
-                Submit Request
-              </button>
-            </div>
-          </form>
-        </div>
+          <div className="form-control pt-1">
+            <button type="submit" className="btn btn-primary text-base font-semibold">
+              Submit Request
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

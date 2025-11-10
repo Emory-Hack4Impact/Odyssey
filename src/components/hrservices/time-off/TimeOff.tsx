@@ -30,21 +30,19 @@ const Home = ({ userId }: { userId: string }) => {
   }
 
   return (
-    <div className="min-h-screen w-full">
-      <div className="flex w-full flex-wrap">
-        <div className="flex w-full items-center justify-center lg:w-1/3 lg:justify-start lg:pl-20">
+    <section className="w-full py-6">
+      <div className="mr-auto grid w-full max-w-7xl xl:max-w-[100rem] items-start gap-6 px-3 sm:px-4 lg:grid-cols-12">
+        <div className="flex flex-col gap-6 lg:col-span-6 xl:col-span-5">
           <DaysInfo stats={requests} />
+          <TimeOffForm setRequests={setRequests} requests={requests} userId={userId} />
         </div>
-        <div className="w-full lg:mt-20 lg:mb-10 lg:w-2/3">
-          <div className="p-4">
-            <TimeOffForm setRequests={setRequests} requests={requests} userId={userId} />
-          </div>
-          <div className="overflow-x-scroll p-4">
+        <div className="lg:col-span-6 xl:col-span-7 flex">
+          <div className="flex-1">
             <StatusTable requests={requests} />
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

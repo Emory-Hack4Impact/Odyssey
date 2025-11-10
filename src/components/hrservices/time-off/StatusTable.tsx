@@ -15,49 +15,66 @@ const formatDate = (date: Date): string => {
 
 const StatusTable = ({ requests }: { requests: TimeOffRequest[] }) => {
   return (
-    <div className="mt-10 overflow-x-auto rounded-box border border-base-content/5 bg-base-100 shadow-lg">
-      <table className="table w-full">
-        <thead>
-          <tr className="bg-base-200 text-base-content">
-            <th>Leave Type</th>
-            <th>Date From</th>
-            <th>Date To</th>
-            <th>Additional Info</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {requests.length === 0 ? (
-            <tr>
-              <td colSpan={5} className="py-6 text-center text-base-content/60">
-                No time off requests submitted yet.
-              </td>
-            </tr>
-          ) : (
-            requests.map((request) => (
-              <tr key={request.id}>
-                <td>
-                  {request.leaveType === "Other" ? request.otherLeaveType : request.leaveType}
-                </td>
-                <td>{formatDate(request.startDate)}</td>
-                <td>{formatDate(request.endDate)}</td>
-                <td>{request.comments}</td>
-                <td>
-                  <span
-                    className={`badge ${
-                      request.approved
-                        ? "badge-outline badge-success"
-                        : "badge-outline badge-warning"
-                    }`}
-                  >
-                    {request.approved ? "Approved" : "Pending"}
-                  </span>
-                </td>
+    <div className="card h-full w-full border border-base-content/5 bg-base-100 shadow-xl">
+      <div className="card-body gap-5">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-base-content/70">
+            Recent activity
+          </p>
+          <h2 className="card-title text-2xl font-semibold">Request History</h2>
+        </div>
+        <div className="rounded-box border border-base-200">
+          <table className="table w-full table-compact">
+            <thead>
+              <tr className="bg-base-200 text-xs font-semibold uppercase tracking-wide text-base-content">
+                <th className="w-1/5">Leave Type</th>
+                <th className="w-1/6">Date From</th>
+                <th className="w-1/6">Date To</th>
+                <th className="w-2/5">Additional Info</th>
+                <th className="w-1/6 text-center">Status</th>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            </thead>
+            <tbody>
+              {requests.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-6 text-center text-base-content/60">
+                    No time off requests submitted yet.
+                  </td>
+                </tr>
+              ) : (
+                requests.map((request) => {
+                  const leaveLabel =
+                    request.leaveType === "Other" ? request.otherLeaveType : request.leaveType;
+
+                  return (
+                    <tr key={request.id} className="text-sm">
+                      <td className="align-top break-words font-medium">{leaveLabel}</td>
+                      <td className="align-top whitespace-nowrap text-base-content/80">
+                        {formatDate(request.startDate)}
+                      </td>
+                      <td className="align-top whitespace-nowrap text-base-content/80">
+                        {formatDate(request.endDate)}
+                      </td>
+                      <td className="align-top break-words text-base-content/80">{request.comments || "—"}</td>
+                      <td className="align-top text-center">
+                        <span
+                          className={`badge ${
+                            request.approved
+                              ? "badge-outline badge-success"
+                              : "badge-outline badge-warning"
+                          }`}
+                        >
+                          {request.approved ? "Approved" : "Pending"}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };
