@@ -4,6 +4,7 @@ import PerfEval from "@/components/hrservices/performance-evaluation/PerfEval";
 import PerfEvalEmployee from "@/components/hrservices/performance-evaluation/PerfEvalEmployee";
 import PerfEvalHR from "@/components/hrservices/performance-evaluation/PerfEvalHR";
 import TimeOff from "@/components/hrservices/time-off/TimeOff";
+import CareerDev from "@/components/hrservices/career-dev/CareerDev";
 import AdminDocuments from "@/components/hrservices/documents/AdminDocuments";
 import UserDocuments from "@/components/hrservices/documents/UserDocuments";
 import { useState } from "react";
@@ -38,12 +39,7 @@ export const HRServices = ({ userId, username, userRole, userMetadata }: HRServi
     {
       key: "careerDev",
       label: "Career Development",
-      component: (
-        <div>
-          <h2 className="mb-4 text-lg font-medium">Career Development</h2>
-          {/* Insert Career Dev Component */}
-        </div>
-      ),
+      component: <CareerDev />,
     },
     {
       key: "perfEvals",
