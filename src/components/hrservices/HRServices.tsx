@@ -25,12 +25,10 @@ export const HRServices = ({ userId, username, userRole, userMetadata }: HRServi
     switch (userRole) {
       case "Employee":
         return <PerfEvalEmployee userId={userId} username={username} userRole={userRole} />;
-      case "HR":
+      case "Admin":
         return <PerfEvalHR userId={userId} username={username} userRole={userRole} />;
-      case "Manager":
-        return <PerfEval />;
       default:
-        return <PerfEval />;
+        return <PerfEvalHR userId={userId} username={username} userRole={userRole}  />;
     }
   };
 
