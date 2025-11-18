@@ -53,7 +53,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
 
   const filteredEvals = employeeEvals.filter((evalItem) => {
     if (!search) return true;
-    return evalItem.submitterId?.toLowerCase().includes(search.toLowerCase());
+    return JSON.stringify(evalItem).toLowerCase().includes(search.toLowerCase());
   });
 
   //   console.log(selectedEmployee)
@@ -66,7 +66,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
     [key: string]: unknown;
   };
 
-  const fetchEvals = async () => {
+  const fetchEvals = async () => { // TODO: fetch only eval meta data rather than entire eval obj
     try {
       const resp = await fetch("/api/employee-evals");
       const res = await resp.json();
@@ -121,9 +121,6 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
       )}
       {!isOpened && (
         <div>
-          <div className="relative mb-6 flex w-full items-center justify-center">
-            <h1 className="text-xl">Performance Evaluations</h1>
-          </div>
           <div className="flex gap-6">
             <label className="input">
               <svg
