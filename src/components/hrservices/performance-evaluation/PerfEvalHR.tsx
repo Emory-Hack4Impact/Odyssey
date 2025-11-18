@@ -113,7 +113,6 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
           />
         </>
       )}
-
       {!isOpened && (
         <div>
           <div className="relative mb-6 flex w-full items-center justify-center">
@@ -140,21 +139,53 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
               <input type="search" required placeholder="Search" />
             </label>
 
-            <div className="flex w-full flex-col">
-              <div>
-                <div className="ml-4 text-lg">
-                  {employeeEvals.map((employeeEval, index) => (
-                    <div
-                      key={index}
-                      className="cursor-pointer border-2 px-3 py-2 hover:border-black"
-                      onClick={() => {
-                        setSelectedEval(employeeEval);
-                        setIsOpened(true);
-                      }}
-                    >
-                      {employeeEval.employeeFirstName} {employeeEval.employeeLastName}
-                    </div>
-                  ))}
+            <div className="card h-full w-full border border-base-content/5 bg-base-100 shadow-xl">
+              <div className="card-body gap-5">
+                <div>
+                  <p className="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
+                    Employees
+                  </p>
+                  <h2 className="card-title text-2xl font-semibold">Evaluation List</h2>
+                </div>
+
+                <div className="rounded-box border border-base-200">
+                  <table className="table-compact table w-full">
+                    <thead>
+                      <tr className="bg-base-200 text-xs font-semibold tracking-wide text-base-content uppercase">
+                        <th className="w-1/2">Name</th>
+                        <th className="w-1/2 text-center">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {employeeEvals.length === 0 ? (
+                        <tr>
+                          <td colSpan={2} className="py-6 text-center text-base-content/60">
+                            No employee evaluations found.
+                          </td>
+                        </tr>
+                      ) : (
+                        employeeEvals.map((employeeEval, index) => (
+                          <tr key={index} className="text-sm">
+                            <td className="align-top font-medium">
+                              {employeeEval.submitterId}
+                              {/* {employeeEval.employeeLastName}, {employeeEval.employeeFirstName} */}
+                            </td>
+                            <td className="text-center align-top">
+                              <button
+                                className="btn btn-outline btn-sm"
+                                onClick={() => {
+                                  setSelectedEval(employeeEval);
+                                  setIsOpened(true);
+                                }}
+                              >
+                                View
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
