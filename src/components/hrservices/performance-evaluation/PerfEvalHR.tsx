@@ -49,6 +49,12 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
     submitterEmail: null,
   });
   const [isOpened, setIsOpened] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const filteredEvals = employeeEvals.filter((evalItem) => {
+    if (!search) return true;
+    return evalItem.submitterId?.toLowerCase().includes(search.toLowerCase());
+  });
 
   //   console.log(selectedEmployee)
   //   console.log(isOpened)
@@ -136,7 +142,12 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                   <path d="m21 21-4.3-4.3"></path>
                 </g>
               </svg>
-              <input type="search" required placeholder="Search" />
+              <input
+                type="search"
+                placeholder="Search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </label>
 
             <div className="card h-full w-full border border-base-content/5 bg-base-100 shadow-xl">
@@ -157,14 +168,14 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                       </tr>
                     </thead>
                     <tbody>
-                      {employeeEvals.length === 0 ? (
+                      {filteredEvals.length === 0 ? (
                         <tr>
                           <td colSpan={2} className="py-6 text-center text-base-content/60">
                             No employee evaluations found.
                           </td>
                         </tr>
                       ) : (
-                        employeeEvals.map((employeeEval, index) => (
+                        filteredEvals.map((employeeEval, index) => (
                           <tr key={index} className="text-sm">
                             <td className="align-top font-medium">
                               {employeeEval.submitterId}
