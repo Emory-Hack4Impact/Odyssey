@@ -119,33 +119,43 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
           <div className="relative mb-6 flex w-full items-center justify-center">
             <h1 className="text-xl">Performance Evaluations</h1>
           </div>
+          <div className="flex gap-6">
+            <label className="input">
+              <svg
+                className="h-[1em] opacity-50"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+              >
+                <g
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  strokeWidth="2.5"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.3-4.3"></path>
+                </g>
+              </svg>
+              <input type="search" required placeholder="Search" />
+            </label>
 
-          <div className="mb-6 flex gap-4">
-            <input
-              type="text"
-              placeholder="Search Employee Evaluations"
-              className="w-80 rounded-3xl border-2 bg-white px-3 py-2"
-            />
-            <button className="rounded-3xl border-2 border-gray-400 bg-white px-3 py-2 text-gray-400 transition-all hover:border-black hover:text-black">
-              Go
-            </button>
-          </div>
-
-          <div className="space-y-6">
-            <div>
-              <div className="ml-4 text-lg">
-                {employeeEvals.map((employeeEval, index) => (
-                  <div
-                    key={index}
-                    className="cursor-pointer border-2 px-3 py-2 hover:border-black"
-                    onClick={() => {
-                      setSelectedEval(employeeEval);
-                      setIsOpened(true);
-                    }}
-                  >
-                    {employeeEval.employeeFirstName} {employeeEval.employeeLastName}
-                  </div>
-                ))}
+            <div className="flex w-full flex-col">
+              <div>
+                <div className="ml-4 text-lg">
+                  {employeeEvals.map((employeeEval, index) => (
+                    <div
+                      key={index}
+                      className="cursor-pointer border-2 px-3 py-2 hover:border-black"
+                      onClick={() => {
+                        setSelectedEval(employeeEval);
+                        setIsOpened(true);
+                      }}
+                    >
+                      {employeeEval.employeeFirstName} {employeeEval.employeeLastName}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
