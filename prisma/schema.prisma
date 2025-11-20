@@ -8,7 +8,7 @@ datasource db {
 }
 
 model UserMetadata {
-  id                String           @id
+  id                String           @id @default(uuid()) @db.Uuid
   is_admin          Boolean          @default(false)
   is_hr             Boolean          @default(false)
   position          String           @default("")
@@ -29,8 +29,8 @@ enum FileTypes {
 }
 
 model Files {
-  id         String       @id @default(dbgenerated("uuid_generate_v1()")) @db.Uuid
-  userId     String
+  id         String       @id @default(uuid()) @db.Uuid
+  userId     String       @db.Uuid
   bucket     String
   path       String
   type       FileTypes
@@ -42,8 +42,8 @@ model Files {
 }
 
 model TimeOffRequest {
-  id             Int          @id @default(autoincrement())
-  employeeId     String
+  id             String          @id @default(uuid()) @db.Uuid
+  employeeId     String       @db.Uuid
   leaveType      String
   startDate      DateTime
   endDate        DateTime
@@ -55,7 +55,7 @@ model TimeOffRequest {
 
 model EmployeeEvaluation {
   // evaluation submission id (unique per submission)
-  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id String @id @default(uuid()) @db.Uuid
 
   // denormalized snapshot of employee name at time of submission
   // denormalized snapshot of employee name at time of submission (removed — use relation)
@@ -71,24 +71,22 @@ model EmployeeEvaluation {
   skill2        Int
   skill3        Int
 
-  submittedAt DateTime @default(now())
-
-  metadataId String                     @unique
-  metadata   EmployeeEvaluationMetadata @relation(fields: [metadataId], references: [id], onDelete: Cascade)
+  metadata EmployeeEvaluationMetadata?
 }
 
 model EmployeeEvaluationMetadata {
   // evaluation submission id (unique per submission)
-  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id String @id @default(uuid()) @db.Uuid
 
-  evaluation EmployeeEvaluation?
+  evaluationId String             @unique @db.Uuid
+  evaluation   EmployeeEvaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
 
   // reviewed employee (FK to UserMetadata)
-  employeeId       String
+  employeeId       String   @db.Uuid
   reviewedEmployee UserMetadata? @relation("ReviewedEmployeeMetadata", fields: [employeeId], references: [id])
 
   // id of the person who submitted this evaluation (FK to UserMetadata)
-  submitterId String
+  submitterId String  @db.Uuid
   submitter   UserMetadata? @relation("SubmitterMetadata", fields: [submitterId], references: [id])
 
   year Int

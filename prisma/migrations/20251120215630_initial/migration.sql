@@ -3,7 +3,7 @@ CREATE TYPE "FileTypes" AS ENUM ('AVATAR', 'DOCUMENT', 'ATTACHMENT', 'ANNOUNCEME
 
 -- CreateTable
 CREATE TABLE "UserMetadata" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "is_admin" BOOLEAN NOT NULL DEFAULT false,
     "is_hr" BOOLEAN NOT NULL DEFAULT false,
     "position" TEXT NOT NULL DEFAULT '',
@@ -15,8 +15,8 @@ CREATE TABLE "UserMetadata" (
 
 -- CreateTable
 CREATE TABLE "Files" (
-    "id" UUID NOT NULL DEFAULT uuid_generate_v1(),
-    "userId" TEXT NOT NULL,
+    "id" UUID NOT NULL,
+    "userId" UUID NOT NULL,
     "bucket" TEXT NOT NULL,
     "path" TEXT NOT NULL,
     "type" "FileTypes" NOT NULL,
@@ -28,8 +28,8 @@ CREATE TABLE "Files" (
 
 -- CreateTable
 CREATE TABLE "TimeOffRequest" (
-    "id" SERIAL NOT NULL,
-    "employeeId" TEXT NOT NULL,
+    "id" UUID NOT NULL,
+    "employeeId" UUID NOT NULL,
     "leaveType" TEXT NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
     "endDate" TIMESTAMP(3) NOT NULL,
@@ -42,8 +42,7 @@ CREATE TABLE "TimeOffRequest" (
 
 -- CreateTable
 CREATE TABLE "EmployeeEvaluation" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
-    "year" INTEGER NOT NULL,
+    "id" UUID NOT NULL,
     "strengths" TEXT NOT NULL,
     "weaknesses" TEXT NOT NULL,
     "improvements" TEXT NOT NULL,
@@ -54,7 +53,6 @@ CREATE TABLE "EmployeeEvaluation" (
     "skill1" INTEGER NOT NULL,
     "skill2" INTEGER NOT NULL,
     "skill3" INTEGER NOT NULL,
-    "submittedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "EmployeeEvaluation_pkey" PRIMARY KEY ("id")
 );
@@ -62,8 +60,9 @@ CREATE TABLE "EmployeeEvaluation" (
 -- CreateTable
 CREATE TABLE "EmployeeEvaluationMetadata" (
     "id" UUID NOT NULL,
-    "employeeId" TEXT,
-    "submitterId" TEXT,
+    "evaluationId" UUID NOT NULL,
+    "employeeId" UUID NOT NULL,
+    "submitterId" UUID NOT NULL,
     "year" INTEGER NOT NULL,
     "submittedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -72,6 +71,9 @@ CREATE TABLE "EmployeeEvaluationMetadata" (
 
 -- CreateIndex
 CREATE INDEX "Files_userId_type_idx" ON "Files"("userId", "type");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "EmployeeEvaluationMetadata_evaluationId_key" ON "EmployeeEvaluationMetadata"("evaluationId");
 
 -- CreateIndex
 CREATE INDEX "EmployeeEvaluationMetadata_employeeId_idx" ON "EmployeeEvaluationMetadata"("employeeId");
@@ -86,10 +88,10 @@ ALTER TABLE "Files" ADD CONSTRAINT "Files_userId_fkey" FOREIGN KEY ("userId") RE
 ALTER TABLE "TimeOffRequest" ADD CONSTRAINT "TimeOffRequest_employeeId_fkey" FOREIGN KEY ("employeeId") REFERENCES "UserMetadata"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "EmployeeEvaluationMetadata" ADD CONSTRAINT "EmployeeEvaluationMetadata_id_fkey" FOREIGN KEY ("id") REFERENCES "EmployeeEvaluation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "EmployeeEvaluationMetadata" ADD CONSTRAINT "EmployeeEvaluationMetadata_evaluationId_fkey" FOREIGN KEY ("evaluationId") REFERENCES "EmployeeEvaluation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "EmployeeEvaluationMetadata" ADD CONSTRAINT "EmployeeEvaluationMetadata_employeeId_fkey" FOREIGN KEY ("employeeId") REFERENCES "UserMetadata"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "EmployeeEvaluationMetadata" ADD CONSTRAINT "EmployeeEvaluationMetadata_employeeId_fkey" FOREIGN KEY ("employeeId") REFERENCES "UserMetadata"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "EmployeeEvaluationMetadata" ADD CONSTRAINT "EmployeeEvaluationMetadata_submitterId_fkey" FOREIGN KEY ("submitterId") REFERENCES "UserMetadata"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "EmployeeEvaluationMetadata" ADD CONSTRAINT "EmployeeEvaluationMetadata_submitterId_fkey" FOREIGN KEY ("submitterId") REFERENCES "UserMetadata"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

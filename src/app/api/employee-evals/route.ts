@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import type { EmployeeEval } from "./index";
+import type { EmployeeEvaluation, EmployeeEvaluationMetadata } from "@prisma/client";
 import {
   GetEmployeeEvals,
   GetLatestEmployeeEvalWithReviewers,
@@ -43,8 +43,17 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const body = (await req.json()) as EmployeeEval;
-    const created = await SubmitEmployeeEval(body);
+    const body = (await req.json()) as {
+      data: EmployeeEvaluation;
+      metadata: EmployeeEvaluationMetadata;
+    };
+    const { data, metadata } = body;
+
+    if (!data || !metadata) {
+      return NextResponse.json({ error: "data and metadata required" }, { status: 400 });
+    }
+
+    const created = await SubmitEmployeeEval(data, metadata);
     return NextResponse.json(created);
   } catch (err) {
     console.error("/api/employee-evals POST error", err);
@@ -54,14 +63,20 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
-    const body = await req.json();
-    // expect { id: string, data: EmployeeEval }
-    const { id, data } = body as { id?: string; data?: unknown };
-    if (!id || data === undefined)
-      return NextResponse.json({ error: "id and data required" }, { status: 400 });
+    const body = (await req.json()) as {
+      id: string;
+      data: EmployeeEvaluation;
+      metadata: EmployeeEvaluationMetadata;
+    };
+
+    const { id, data, metadata } = body;
+
+    if (!id || !data || !metadata) {
+      return NextResponse.json({ error: "id and data and metadata required" }, { status: 400 });
+    }
 
     // basic runtime type guard for EmployeeEval to avoid passing `any`
-    function isEmployeeEval(obj: unknown): obj is EmployeeEval {
+    function isEmployeeEval(obj: unknown): obj is EmployeeEvaluation {
       return typeof obj === "object" && obj !== null;
     }
 
@@ -69,7 +84,7 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "invalid data" }, { status: 400 });
     }
 
-    const updated = await UpdateEmployeeEval(id, data);
+    const updated = await UpdateEmployeeEval(id, data, metadata);
     return NextResponse.json(updated);
   } catch (err) {
     console.error("/api/employee-evals PUT error", err);
