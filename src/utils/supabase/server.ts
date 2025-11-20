@@ -39,3 +39,30 @@ export const getUser = async () => {
 
   return user;
 };
+
+export async function uploadFileToStorage(
+  bucket: string,
+  path: string,
+  // file body, in bytes
+  fileBody: ArrayBuffer,
+  contentType?: string,
+): Promise<{ bucket: string; path: string }> {
+  const supabase = createClient();
+  
+  // TODO (Sprint 2): call supabase.storage.from(bucket).upload(path, fileBody, { contentType })
+  // and handle errors. For now, we just return the inputs as a placeholder.
+
+  const { data, error } = await supabase.storage
+    .from (bucket)
+    .upload (path, fileBody,{
+      contentType,
+      // not overwriting existing files for now; can be changed later
+      upsert: false, 
+    });
+
+    if (error) {
+      throw new Error (`Failed to upload file to Supabase: ${error.message}`);
+    }
+
+  return { bucket, path };
+}
