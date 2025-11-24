@@ -1,5 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY; 
 
 export function createClient() {
   const cookieStore = cookies();
@@ -7,8 +12,8 @@ export function createClient() {
   // Create a server's supabase client with newly configured cookie,
   // which could be used to maintain user's session
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl!,
+    supabaseAnonKey!,
     {
       cookies: {
         getAll() {
@@ -47,11 +52,21 @@ export async function uploadFileToStorage(
   fileBody: ArrayBuffer,
   contentType?: string,
 ): Promise<{ bucket: string; path: string }> {
-  const supabase = createClient();
+  if (!supabaseUrl) {
+    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL for storage upload");
+  }
+  if (!supabaseServiceRoleKey) {
+    throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY for storage upload");
+  }
+
+  // Service role key is required for authenticated storage writes on the server
+  const supabase = createSupabaseClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
   
   // call supabase helpers and upload file bytes
   // for now, just return basic info.
-  const { data, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from (bucket)
     .upload (path, fileBody,{
       contentType,

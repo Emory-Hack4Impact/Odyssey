@@ -13,6 +13,7 @@ type FolderOption = {
   label: string;
 };
 
+// for handling frontend UI
 type AdminDocument = {
   id: string;
   name: string;
@@ -21,6 +22,17 @@ type AdminDocument = {
   pathLabel: string;
   viewers: string[];
   updatedAt: string;
+};
+
+// for handling backend
+type UploadedDocumentResult = {
+  id: string;
+  bucket: string;
+  path: string;
+  fileName: string;
+  viewers: string[];
+  folderPath: string[];
+  uploadedAt: string;
 };
 
 type LocatedFile = {
@@ -573,25 +585,74 @@ export default function AdminDocuments() {
     setUploadRecipientQuery("");
   };
 
-  // Fake upload handler – simply pushes the files into local state.
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!uploadFiles.length || !selectedEmployee.trim() || !selectedFolderId) return;
 
     const targetOption =
       folderOptions.find((option) => option.id === selectedFolderId) ?? folderOptions[0];
-    const now = new Date().toISOString();
 
-    const newDocs: AdminDocument[] = uploadFiles.map((file) => ({
-      id: `${file.name}-${now}`,
-      name: file.name,
-      url: URL.createObjectURL(file),
-      pathIds: targetOption?.id === "root" ? [] : (targetOption?.id.split("/") ?? []),
-      pathLabel: targetOption?.label ?? "Shared Root",
-      viewers: uploadRecipients.length ? uploadRecipients : [selectedEmployee],
-      updatedAt: now,
-    }));
+    // Folder path for server side metadata.folderPath (in json) to use
+    const folderPath = targetOption?.label != null ? targetOption.label.split("/") : [];
 
-    setDocuments((prev) => [...newDocs, ...prev]);
+    // if chose upload recipients, use them; otherwise by default select selectedEmployee
+    const viewers = uploadRecipients.length ? uploadRecipients : [selectedEmployee];
+
+    // TODO: replace this with a real UserMetadata.id when employee selection is wired up
+    // only have test accounts "user1" ~ "user5" for now
+    const userIdForNow = selectedEmployee;
+
+    // TODO: for now still use local URLs so the admin can preview files immediately,
+    // but also call the server action to store everything in Supabase + Prisma.
+    const uploadedDocs: AdminDocument[] = [];
+
+    for (const file of uploadFiles) {
+      const formData = new FormData();
+      // build file itself + metadata to send to backend
+      formData.append("file", file);
+      formData.append("userId", userIdForNow);
+      formData.append("bucket", "files"); // TODO: set to actual Supabase bucket name in future sprints
+      formData.append("viewers", JSON.stringify(viewers));
+      formData.append("folderPath", JSON.stringify(folderPath));
+      formData.append("contentType", file.type);
+
+      // call API route
+      const res = await fetch("/api/documents", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        console.error("Failed to upload document", await res.text());
+        continue;
+      }
+
+      // parse backend result + map into AdminDocument
+      const result: UploadedDocumentResult = await res.json();
+
+      uploadedDocs.push({
+        id: result.id,
+        name: result.fileName,
+        // use a local blob URL so the admin can preview immediately
+        url: URL.createObjectURL(file),
+        pathIds: targetOption?.id === "root" ? [] : (targetOption?.id.split("/") ?? []),
+        pathLabel: targetOption?.label ?? "Shared Root",
+        viewers: result.viewers,
+        updatedAt: result.uploadedAt,
+      });
+      // fake file upload for tests ////////////////////////
+      // const now = new Date().toISOString();
+      // uploadedDocs.push({
+      //   id: `${file.name}-${now}`,
+      //   name: file.name,
+      //   url: URL.createObjectURL(file),
+      //   pathIds: targetOption?.id === "root" ? [] : (targetOption?.id.split("/") ?? []),
+      //   pathLabel: targetOption?.label ?? "Shared Root",
+      //   viewers,
+      //   updatedAt: now,
+      // });
+      ///////////////////////////////////////////////////////
+    }
+
+    setDocuments((prev) => [...uploadedDocs, ...prev]);
     resetUploadForm();
   };
 

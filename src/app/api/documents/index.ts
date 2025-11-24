@@ -1,4 +1,4 @@
-"user server";
+"use server";
 
 import { PrismaClient, FileTypes } from "@prisma/client";
 import { uploadFileToStorage } from "@/utils/supabase/server";
@@ -13,6 +13,7 @@ export type UploadDocumentInput = {
   folderPath: string[];
   bucket: string;
   contentType?: string;
+  fileBody: ArrayBuffer; // plain array of bytes of file
 };
 
 // data returned to the frontend after upload
@@ -28,11 +29,11 @@ export type UploadedDocumentResult = {
 
 // server function handling upload
 
-export async function uploadDocument(
+export async function uploadDocumentCore(
   input: UploadDocumentInput,
-  fileBody: ArrayBuffer,
 ): Promise<UploadedDocumentResult> {
-  const { userId, fileName, viewers, folderPath, bucket, contentType } = input;
+  const { userId, fileName, viewers, folderPath, bucket, contentType, fileBody } = input;
+
   // build storage path inside the bucket
   const safeFileName = fileName.replace(/\s+/g, "_"); // replace spaces
   const timestamp = Date.now(); // timestamp gives uniqueness to filepaths
@@ -63,7 +64,7 @@ export async function uploadDocument(
     },
   });
 
-  // return UploadedDocumentResult
+  // return clean result for API route
   return {
     id: created.id, // id handled by prisma
     bucket: created.bucket,
