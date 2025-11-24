@@ -84,7 +84,7 @@ export async function SubmitEmployeeEval(
           },
         });
         if (existing) {
-          return await prisma.employeeEvaluation.update({
+          const updatedEval = await prisma.employeeEvaluation.update({
             where: { id: existing.evaluationId },
             data: {
               strengths: data.strengths,
@@ -99,6 +99,7 @@ export async function SubmitEmployeeEval(
               skill3: data.skill3,
             },
           });
+          return { evaluation: updatedEval, metadata: existing };
         }
       }
       // rethrow if it's not a handled case
@@ -185,7 +186,35 @@ export async function GetLatestEmployeeEvalWithReviewers(employeeId: string, yea
 
     const latest = evalsMeta.length > 0 ? evalsMeta[0] : null;
     // normalize reviewer/evaluation numeric fields before returning
-    const normalizedLatest = latest ? { ...latest } : null;
+    let normalizedLatest: (EmployeeEvaluation & Partial<EmployeeEvaluationMetadata>) | null = null;
+    if (latest) {
+      try {
+        const evalRow = await prisma.employeeEvaluation.findUnique({
+          where: { id: latest.evaluationId },
+        });
+        if (evalRow) {
+          normalizedLatest = {
+            ...evalRow,
+            year: latest.year as unknown as number,
+            submitterId: latest.submitterId,
+            employeeId: latest.employeeId,
+            submittedAt: latest.submittedAt,
+          };
+        } else {
+          normalizedLatest = {
+            ...(latest as unknown as EmployeeEvaluation & Partial<EmployeeEvaluationMetadata>),
+          };
+        }
+      } catch (err) {
+        console.warn(
+          "Failed to fetch evaluation row for metadata, falling back to metadata-only response:",
+          err,
+        );
+        normalizedLatest = {
+          ...(latest as unknown as EmployeeEvaluation & Partial<EmployeeEvaluationMetadata>),
+        };
+      }
+    }
 
     // gather distinct submitterIds (exclude null and the employee themself optional)
     const submitterIds = Array.from(
