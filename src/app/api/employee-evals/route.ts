@@ -43,30 +43,17 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const body = (await req.json()) as unknown;
-    if (!body || typeof body !== "object") {
-      return NextResponse.json({ error: "invalid request body" }, { status: 400 });
-    }
-    const maybe = body as { data?: unknown; metadata?: unknown };
-    const { data, metadata } = maybe;
+    const body = (await req.json()) as {
+      data: EmployeeEvaluation;
+      metadata: EmployeeEvaluationMetadata;
+    };
+    const { data, metadata } = body;
 
-    if (!data || !metadata || typeof metadata !== "object") {
+    if (!data || !metadata) {
       return NextResponse.json({ error: "data and metadata required" }, { status: 400 });
     }
 
-    // Basic runtime checks for required metadata fields that our API relies on
-    const metaAny = metadata as { employeeId?: unknown; submitterId?: unknown; year?: unknown };
-    if (!metaAny.employeeId || !metaAny.submitterId || metaAny.year == null) {
-      return NextResponse.json(
-        { error: "metadata.employeeId, submitterId and year are required" },
-        { status: 400 },
-      );
-    }
-
-    const created = await SubmitEmployeeEval(
-      data as unknown as EmployeeEvaluation,
-      metadata as unknown as EmployeeEvaluationMetadata,
-    );
+    const created = await SubmitEmployeeEval(data, metadata);
     return NextResponse.json(created);
   } catch (err) {
     console.error("/api/employee-evals POST error", err);
