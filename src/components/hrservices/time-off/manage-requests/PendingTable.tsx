@@ -14,7 +14,7 @@ const PendingTable: React.FC = () => {
   const [processing, setProcessing] = useState<number | null>(null);
 
   useEffect(() => {
-    fetchRequests();
+    void fetchRequests();
   }, []);
 
   const fetchRequests = async () => {
@@ -91,7 +91,7 @@ const PendingTable: React.FC = () => {
             return (
               <tr key={request.id}>
                 <td className="border-b border-gray-200 px-4 py-2">
-                  {request.employeeName || request.employeeEmail}
+                  {request.employeeName ?? request.employeeEmail}
                 </td>
                 <td className="border-b border-gray-200 px-4 py-2">{leaveTypeDisplay}</td>
                 <td className="border-b border-gray-200 px-4 py-2">

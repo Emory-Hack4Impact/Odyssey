@@ -14,7 +14,7 @@ export default function TimeOffRequests() {
   const [selectedDateRequests, setSelectedDateRequests] = useState<TimeOffRequestWithUser[]>([]);
 
   useEffect(() => {
-    fetchRequests();
+    void fetchRequests();
   }, []);
 
   const fetchRequests = async () => {
@@ -50,7 +50,6 @@ export default function TimeOffRequests() {
   // Function to mark dates with requests
   const tileClassName = ({ date, view }: { date: Date; view: string }) => {
     if (view === "month") {
-      const dateStr = date.toDateString();
       const hasRequest = requests.some((request) => {
         const startDate = new Date(request.startDate);
         const endDate = new Date(request.endDate);
@@ -163,7 +162,7 @@ export default function TimeOffRequests() {
                       : "text-red-600";
                 return (
                   <li key={request.id} className="mb-1">
-                    <span className="font-medium">{request.employeeName || request.employeeEmail}</span>
+                        <span className="font-medium">{request.employeeName ?? request.employeeEmail}</span>
                     {" - "}
                     <span>{leaveTypeDisplay}</span>
                     {" ("}
