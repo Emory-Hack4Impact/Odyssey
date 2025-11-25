@@ -19,14 +19,14 @@ const TimeOffHR: React.FC<TimeOffHRProps> = ({ employeeId }) => {
   return (
     <div className="min-h-screen w-full p-6">
       {/* Top Section: Calendar on Left, Pending Requests on Right */}
-      <div className="mb-10 flex w-full flex-wrap gap-0 lg:gap-0">
+      <div className="mb-6 flex w-full flex-col gap-2 lg:flex-row lg:flex-nowrap lg:gap-0">
         {/* Left Side - Calendar */}
-        <div className="w-full lg:w-auto lg:min-w-[640px] lg:flex-shrink-0 flex justify-center">
+        <div className="w-full lg:w-auto lg:min-w-[400px] lg:flex-shrink-0">
           <Calendar refreshTrigger={refreshTrigger} />
         </div>
 
         {/* Right Side - Pending Requests */}
-        <div className="flex-1">
+        <div className="flex-1 lg:ml-2">
           <PendingRequests
             approverId={employeeId}
             refreshTrigger={refreshTrigger}

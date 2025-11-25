@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import HRPerfEvalForm from "./HRPerfEvalForm";
-import { GetAllEmployeeEvals } from "@/app/api/employee-evals";
 
 interface HRServicesProps {
   userId: string;
@@ -9,8 +8,11 @@ interface HRServicesProps {
 }
 
 interface FetchedEval {
-  id: number;
-  employeeId: string;
+  id: string;
+  employeeId?: string | null;
+  submitterId?: string | null;
+  employeeFirstName: string;
+  employeeLastName: string;
   year: number;
   strengths: string;
   weaknesses: string;
@@ -22,17 +24,17 @@ interface FetchedEval {
   skill1: string;
   skill2: string;
   skill3: string;
+  submitterEmail?: string | null;
 }
 
-export default function PerfEvalHR({
-  userId: _userId,
-  username: _username,
-  userRole: _userRole,
-}: HRServicesProps) {
+export default function PerfEvalHR({ userId: _userId, username, userRole }: HRServicesProps) {
   const [employeeEvals, setEmployeeEvals] = useState<FetchedEval[]>([]);
   const [selectedEval, setSelectedEval] = useState<FetchedEval>({
-    id: 0,
-    employeeId: "",
+    id: "",
+    employeeId: null,
+    submitterId: null,
+    employeeFirstName: "",
+    employeeLastName: "",
     year: 2025,
     strengths: "",
     weaknesses: "",
@@ -44,17 +46,33 @@ export default function PerfEvalHR({
     skill1: "",
     skill2: "",
     skill3: "",
+    submitterEmail: null,
   });
   const [isOpened, setIsOpened] = useState(false);
 
   //   console.log(selectedEmployee)
   //   console.log(isOpened)
 
+  type RawEval = {
+    id?: string | number;
+    employeeId?: string | number | null;
+    submitterId?: string | number | null;
+    [key: string]: unknown;
+  };
+
   const fetchEvals = async () => {
     try {
-      const res = await GetAllEmployeeEvals();
-      // console.log(res)
-      setEmployeeEvals(res);
+      const resp = await fetch("/api/employee-evals");
+      const res = await resp.json();
+      const normalized = (res as RawEval[]).map((e) => ({
+        ...e,
+        id: typeof e.id === "undefined" ? "" : String(e.id),
+        employeeId:
+          e.employeeId === null || e.employeeId === undefined ? null : String(e.employeeId),
+        submitterId:
+          e.submitterId === null || e.submitterId === undefined ? null : String(e.submitterId),
+      })) as FetchedEval[];
+      setEmployeeEvals(normalized ?? []);
     } catch (error) {
       console.error(error);
     }
@@ -76,7 +94,8 @@ export default function PerfEvalHR({
           </button>
           <HRPerfEvalForm
             id={selectedEval.id}
-            employeeId={selectedEval.employeeId}
+            employeeFirstName={selectedEval.employeeFirstName}
+            employeeLastName={selectedEval.employeeLastName}
             year={selectedEval.year}
             strengths={selectedEval.strengths}
             weaknesses={selectedEval.weaknesses}
@@ -88,6 +107,9 @@ export default function PerfEvalHR({
             skill1={selectedEval.skill1}
             skill2={selectedEval.skill2}
             skill3={selectedEval.skill3}
+            // pass submitter info so the HR action can be recorded
+            submitterUsername={username}
+            submitterRole={userRole}
           />
         </>
       )}
@@ -121,7 +143,7 @@ export default function PerfEvalHR({
                       setIsOpened(true);
                     }}
                   >
-                    {employeeEval.employeeId}
+                    {employeeEval.employeeFirstName} {employeeEval.employeeLastName}
                   </div>
                 ))}
               </div>

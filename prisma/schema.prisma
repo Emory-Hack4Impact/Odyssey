@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,15 +8,21 @@ datasource db {
 }
 
 model UserMetadata {
-  id               String           @id
-  is_admin         Boolean          @default(false)
-  is_hr            Boolean          @default(false)
-  position         String           @default("")
-  TimeOffRequests  TimeOffRequest[]
-  ApprovedRequests TimeOffRequest[] @relation("ApprovedRequests")
-  Files            Files[]
-  EmployeeEvaluations  EmployeeEvaluation[] @relation("EmployeeEvaluations")
-  SubmittedEvaluations EmployeeEvaluation[] @relation("SubmittedEvaluations")
+  id              String           @id
+  is_admin        Boolean          @default(false)
+  is_hr           Boolean          @default(false)
+  position        String           @default("")
+  employeeFirstName String?
+  employeeLastName  String?
+  TimeOffRequests TimeOffRequest[]
+  Files           Files[]
+  // NOTE: Prisma requires opposite relation fields when a model has multiple relations
+  // to the same target model. These two fields are present to satisfy Prisma's
+  // relation mapping and are not intended for direct use in app logic.
+  // Evaluations this user is the subject of (reviewed employee) — internal relation field
+  evaluationsReceivedRelation EmployeeEvaluation[] @relation("ReviewedEmployee")
+  // Evaluations submitted by this user — internal relation field
+  evaluationsSubmittedRelation EmployeeEvaluation[] @relation("Submitter")
 }
 
 enum FileTypes {
@@ -35,60 +35,57 @@ enum FileTypes {
 model Files {
   id         String       @id @default(dbgenerated("uuid_generate_v1()")) @db.Uuid
   userId     String
-  owner      UserMetadata @relation(fields: [userId], references: [id], onDelete: Cascade)
   bucket     String
   path       String
   type       FileTypes
   uploadedAt DateTime     @default(now())
   metadata   Json?
+  owner      UserMetadata @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, type])
 }
 
-enum RequestStatus {
-  PENDING
-  APPROVED
-  DECLINED
-}
-
 model TimeOffRequest {
-  id             Int           @id @default(autoincrement())
+  id             Int          @id @default(autoincrement())
   employeeId     String
   leaveType      String
-  otherLeaveType String        @default("")
   startDate      DateTime
   endDate        DateTime
-  comments       String        @default("")
-  status         RequestStatus @default(PENDING)
-  approvedBy     String?
-  requestDate    DateTime      @default(now())
-  approvedDate   DateTime?
-  UserMetadata   UserMetadata  @relation(fields: [employeeId], references: [id])
-  Approver       UserMetadata? @relation("ApprovedRequests", fields: [approvedBy], references: [id])
-
-  @@index([status])
-  @@index([employeeId, status])
+  comments       String       @default("")
+  approved       Boolean      @default(false)
+  otherLeaveType String       @default("")
+  UserMetadata   UserMetadata @relation(fields: [employeeId], references: [id])
 }
 
 model EmployeeEvaluation {
-  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  employeeId   String?
-  submitterId  String?
-  year         Int
-  strengths    String
-  weaknesses   String
-  improvements String
-  notes        String
-  submittedAt  DateTime      @default(now())
-  communication Int
-  leadership    Int
-  timeliness    Int
-  skill1        Int
-  skill2        Int
-  skill3        Int
-  Employee      UserMetadata? @relation("EmployeeEvaluations", fields: [employeeId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  Submitter     UserMetadata? @relation("SubmittedEvaluations", fields: [submitterId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  // evaluation submission id (unique per submission)
+  id                String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
-  @@index([employeeId], name: "EmployeeEvaluation_employeeId_idx")
-  @@index([submitterId], name: "EmployeeEvaluation_submitterId_idx")
+  // reviewed employee (FK to UserMetadata)
+  employeeId         String?
+  reviewedEmployee   UserMetadata? @relation("ReviewedEmployee", fields: [employeeId], references: [id])
+
+  // id of the person who submitted this evaluation (FK to UserMetadata)
+  submitterId       String?
+  submitter         UserMetadata? @relation("Submitter", fields: [submitterId], references: [id])
+
+  // denormalized snapshot of employee name at time of submission
+  // denormalized snapshot of employee name at time of submission (removed — use relation)
+
+  year              Int
+  strengths         String
+  weaknesses        String
+  improvements      String
+  notes             String
+  communication     Int
+  leadership        Int
+  timeliness        Int
+  skill1            Int
+  skill2            Int
+  skill3            Int
+
+  submittedAt       DateTime      @default(now())
+
+  @@index([employeeId])
+  @@index([submitterId])
 }
