@@ -144,7 +144,9 @@ export async function GetTimeOffStats(employeeId: string) {
       return total + calculateDays(new Date(request.startDate), new Date(request.endDate));
     }, 0);
 
-    const pendingRequests = allRequests.filter((req) => req.status === RequestStatus.PENDING).length;
+    const pendingRequests = allRequests.filter(
+      (req) => req.status === RequestStatus.PENDING,
+    ).length;
     const totalPTOPerYear = 20; // This could be fetched from user settings
     const daysAvailable = totalPTOPerYear - daysTaken;
 

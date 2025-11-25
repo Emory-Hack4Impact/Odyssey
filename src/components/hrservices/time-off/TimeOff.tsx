@@ -39,12 +39,20 @@ const Home: React.FC<TimeOffProps> = ({ employeeId, userMetadata }) => {
       <div className="flex flex-col gap-6 lg:flex-row">
         {/* Time Off Statistics - Left */}
         <div className="w-full lg:w-2/5 lg:pr-4">
-          <DaysInfo key={`stats-${refreshKey}`} employeeId={employeeId} refreshTrigger={refreshKey} />
+          <DaysInfo
+            key={`stats-${refreshKey}`}
+            employeeId={employeeId}
+            refreshTrigger={refreshKey}
+          />
         </div>
 
         {/* Status of Requests Table - Right (takes up more space) */}
         <div className="w-full lg:w-3/5 lg:pl-4">
-          <StatusTable key={`table-${refreshKey}`} employeeId={employeeId} refreshTrigger={refreshKey} />
+          <StatusTable
+            key={`table-${refreshKey}`}
+            employeeId={employeeId}
+            refreshTrigger={refreshKey}
+          />
         </div>
       </div>
     </div>

@@ -101,7 +101,7 @@ const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
         console.log("Submitting form data:", formData);
         const result = await SubmitTimeOff(formData);
         console.log(`Successfully submitted time off request: ${result.id}`);
-        
+
         // Reset form
         setFormData({
           id: employeeId,
@@ -114,7 +114,7 @@ const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
         setShowOtherLeaveTypeField(false);
         setFormErrors({});
         setCharacterCount(0);
-        
+
         // Trigger refresh callback
         if (onSuccess) {
           onSuccess();
@@ -133,7 +133,7 @@ const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
     <div className="mx-auto w-full max-w-3xl">
       <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-md">
         <h2 className="mb-6 text-lg font-semibold text-gray-800">Request Time Off</h2>
-        
+
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label htmlFor="leaveType" className="mb-1 block text-sm font-medium text-gray-700">
@@ -144,7 +144,7 @@ const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
               name="leaveType"
               value={formData.leaveType}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-1 ${
+              className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:outline-none ${
                 formErrors.leaveType
                   ? "border-red-300 focus:border-red-500 focus:ring-red-200"
                   : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
@@ -166,7 +166,10 @@ const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
 
           {showOtherLeaveTypeField && (
             <div>
-              <label htmlFor="otherLeaveType" className="mb-1 block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="otherLeaveType"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
                 Specify Leave Type
               </label>
               <input
@@ -176,7 +179,7 @@ const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
                 value={formData.otherLeaveType}
                 onChange={handleChange}
                 placeholder="Enter leave type"
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-200"
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none"
               />
             </div>
           )}
@@ -192,7 +195,7 @@ const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
                 name="startDate"
                 value={formData.startDate}
                 onChange={handleChange}
-                className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-1 ${
+                className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:outline-none ${
                   formErrors.startDate
                     ? "border-red-300 focus:border-red-500 focus:ring-red-200"
                     : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
@@ -212,7 +215,7 @@ const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
                 name="endDate"
                 value={formData.endDate}
                 onChange={handleChange}
-                className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-1 ${
+                className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:outline-none ${
                   formErrors.endDate
                     ? "border-red-300 focus:border-red-500 focus:ring-red-200"
                     : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
@@ -236,10 +239,12 @@ const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
               maxLength={150}
               placeholder="Notes"
               rows={3}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-200"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none"
             />
             <div className="mt-1 flex justify-end">
-              <p className={`text-xs ${characterCount >= maxChars ? "text-red-500" : "text-gray-500"}`}>
+              <p
+                className={`text-xs ${characterCount >= maxChars ? "text-red-500" : "text-gray-500"}`}
+              >
                 {characterCount}/{maxChars}
               </p>
             </div>
@@ -248,7 +253,7 @@ const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
           <div className="flex justify-end pt-2">
             <button
               type="submit"
-              className="rounded-md bg-blue-600 px-6 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="rounded-md bg-blue-600 px-6 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
             >
               Submit Request
             </button>

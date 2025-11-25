@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { GetAllRequestsForCalendar, UpdateRequestStatus, type TimeOffRequestWithUser } from "@/app/api/time-off-req";
+import {
+  GetAllRequestsForCalendar,
+  UpdateRequestStatus,
+  type TimeOffRequestWithUser,
+} from "@/app/api/time-off-req";
 import { RequestStatus } from "@prisma/client";
 
 const ManageStatusTable: React.FC = () => {
@@ -52,17 +56,11 @@ const ManageStatusTable: React.FC = () => {
   const getStatusBadge = (status: RequestStatus) => {
     const baseClasses = "px-3 py-1 rounded-full text-sm font-semibold";
     if (status === RequestStatus.APPROVED) {
-      return (
-        <span className={`${baseClasses} bg-green-100 text-green-800`}>Approved</span>
-      );
+      return <span className={`${baseClasses} bg-green-100 text-green-800`}>Approved</span>;
     } else if (status === RequestStatus.DECLINED) {
-      return (
-        <span className={`${baseClasses} bg-red-100 text-red-800`}>Declined</span>
-      );
+      return <span className={`${baseClasses} bg-red-100 text-red-800`}>Declined</span>;
     } else if (status === RequestStatus.PENDING) {
-      return (
-        <span className={`${baseClasses} bg-yellow-100 text-yellow-800`}>Pending</span>
-      );
+      return <span className={`${baseClasses} bg-yellow-100 text-yellow-800`}>Pending</span>;
     }
     return <span className={`${baseClasses} bg-gray-100 text-gray-800`}>{status}</span>;
   };
@@ -116,20 +114,22 @@ const ManageStatusTable: React.FC = () => {
                   {formatDate(request.endDate)}
                 </td>
                 <td className="border-b border-gray-200 px-4 py-2">{request.comments || "-"}</td>
-                <td className="border-b border-gray-200 px-4 py-2">{getStatusBadge(request.status)}</td>
+                <td className="border-b border-gray-200 px-4 py-2">
+                  {getStatusBadge(request.status)}
+                </td>
                 <td className="border-b border-gray-200 px-4 py-2">
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleStatusUpdate(request.id, RequestStatus.APPROVED)}
                       disabled={isProcessing || request.status === RequestStatus.APPROVED}
-                      className="rounded-md bg-green-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      className="rounded-md bg-green-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-600 focus:ring-2 focus:ring-green-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-300"
                     >
                       {isProcessing ? "Processing..." : "Approve"}
                     </button>
                     <button
                       onClick={() => handleStatusUpdate(request.id, RequestStatus.DECLINED)}
                       disabled={isProcessing || request.status === RequestStatus.DECLINED}
-                      className="rounded-md bg-red-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      className="rounded-md bg-red-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-300"
                     >
                       {isProcessing ? "Processing..." : "Decline"}
                     </button>

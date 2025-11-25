@@ -22,7 +22,7 @@ export default function NavBar() {
           <li>
             <Link
               href="/dashboard"
-              className={`btn rounded-full bg-white text-gray-800 hover:bg-gray-100 hover:text-gray-800 border-none font-normal ${isActive("/dashboard", true) ? "!bg-black !text-white hover:!bg-gray-800 hover:!text-white" : ""}`}
+              className={`btn rounded-full border-none bg-white font-normal text-gray-800 hover:bg-gray-100 hover:text-gray-800 ${isActive("/dashboard", true) ? "!bg-black !text-white hover:!bg-gray-800 hover:!text-white" : ""}`}
             >
               Dashboard
             </Link>
@@ -30,7 +30,7 @@ export default function NavBar() {
           <li>
             <Link
               href="/dashboard/hrservices"
-              className={`btn rounded-full bg-white text-gray-800 hover:bg-gray-100 hover:text-gray-800 border-none font-normal ${isActive("/dashboard/hrservices") ? "!bg-black !text-white hover:!bg-gray-800 hover:!text-white" : ""}`}
+              className={`btn rounded-full border-none bg-white font-normal text-gray-800 hover:bg-gray-100 hover:text-gray-800 ${isActive("/dashboard/hrservices") ? "!bg-black !text-white hover:!bg-gray-800 hover:!text-white" : ""}`}
             >
               HR Services
             </Link>
@@ -38,14 +38,16 @@ export default function NavBar() {
           <li>
             <Link
               href="/dashboard/bulletin"
-              className={`btn rounded-full bg-white text-gray-800 hover:bg-gray-100 hover:text-gray-800 border-none font-normal ${isActive("/dashboard/bulletin") ? "!bg-black !text-white hover:!bg-gray-800 hover:!text-white" : ""}`}
+              className={`btn rounded-full border-none bg-white font-normal text-gray-800 hover:bg-gray-100 hover:text-gray-800 ${isActive("/dashboard/bulletin") ? "!bg-black !text-white hover:!bg-gray-800 hover:!text-white" : ""}`}
             >
               Events & Announcements
             </Link>
           </li>
           <li>
             <form action="/api/auth/signout" method="post" className="">
-              <button className="btn rounded-full bg-white text-gray-800 hover:bg-gray-100 border-none font-normal">Sign out</button>
+              <button className="btn rounded-full border-none bg-white font-normal text-gray-800 hover:bg-gray-100">
+                Sign out
+              </button>
             </form>
           </li>
         </ul>

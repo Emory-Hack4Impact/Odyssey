@@ -29,21 +29,21 @@ export default function TimeOffRequests() {
   const onChange = (newDate: Value) => {
     const selectedDate = newDate as Date;
     setDate(selectedDate);
-    
+
     // Find requests that overlap with the selected date
     const overlappingRequests = requests.filter((request) => {
       const startDate = new Date(request.startDate);
       const endDate = new Date(request.endDate);
       const selected = new Date(selectedDate);
-      
+
       // Reset time to compare dates only
       startDate.setHours(0, 0, 0, 0);
       endDate.setHours(23, 59, 59, 999);
       selected.setHours(0, 0, 0, 0);
-      
+
       return selected >= startDate && selected <= endDate;
     });
-    
+
     setSelectedDateRequests(overlappingRequests);
   };
 
@@ -54,12 +54,12 @@ export default function TimeOffRequests() {
         const startDate = new Date(request.startDate);
         const endDate = new Date(request.endDate);
         const checkDate = new Date(date);
-        
+
         // Reset time to compare dates only
         startDate.setHours(0, 0, 0, 0);
         endDate.setHours(23, 59, 59, 999);
         checkDate.setHours(0, 0, 0, 0);
-        
+
         return checkDate >= startDate && checkDate <= endDate;
       });
 
@@ -69,11 +69,11 @@ export default function TimeOffRequests() {
           const startDate = new Date(request.startDate);
           const endDate = new Date(request.endDate);
           const checkDate = new Date(date);
-          
+
           startDate.setHours(0, 0, 0, 0);
           endDate.setHours(23, 59, 59, 999);
           checkDate.setHours(0, 0, 0, 0);
-          
+
           return (
             checkDate >= startDate &&
             checkDate <= endDate &&
@@ -85,11 +85,11 @@ export default function TimeOffRequests() {
           const startDate = new Date(request.startDate);
           const endDate = new Date(request.endDate);
           const checkDate = new Date(date);
-          
+
           startDate.setHours(0, 0, 0, 0);
           endDate.setHours(23, 59, 59, 999);
           checkDate.setHours(0, 0, 0, 0);
-          
+
           return (
             checkDate >= startDate &&
             checkDate <= endDate &&
@@ -147,9 +147,7 @@ export default function TimeOffRequests() {
         </div>
         {selectedDateRequests.length > 0 && (
           <div className="mt-4 rounded-lg border border-gray-200 bg-white p-4 shadow-md">
-            <h3 className="mb-2 font-semibold">
-              Requests for {formatDate(date)}:
-            </h3>
+            <h3 className="mb-2 font-semibold">Requests for {formatDate(date)}:</h3>
             <ul className="list-disc pl-5 text-sm">
               {selectedDateRequests.map((request) => {
                 const leaveTypeDisplay =
@@ -162,7 +160,9 @@ export default function TimeOffRequests() {
                       : "text-red-600";
                 return (
                   <li key={request.id} className="mb-1">
-                        <span className="font-medium">{request.employeeName ?? request.employeeEmail}</span>
+                    <span className="font-medium">
+                      {request.employeeName ?? request.employeeEmail}
+                    </span>
                     {" - "}
                     <span>{leaveTypeDisplay}</span>
                     {" ("}
