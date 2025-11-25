@@ -47,7 +47,7 @@ const StatusOfEmployeeRequests: React.FC<StatusOfEmployeeRequestsProps> = ({
       }
     };
 
-    fetchRequests();
+    void fetchRequests();
   }, [refreshTrigger]);
 
   const formatDate = (date: Date): string => {

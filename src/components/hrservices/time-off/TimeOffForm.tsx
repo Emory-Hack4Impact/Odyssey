@@ -12,11 +12,13 @@ export interface FormData {
 }
 
 interface TimeOffFormProps {
+  employeeId: string;
   onSuccess?: () => void;
 }
 
-const TimeOffForm: React.FC<TimeOffFormProps> = ({ onSuccess }) => {
+const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
   const [formData, setFormData] = useState<SubmitTimeOffRequest>({
+    id: employeeId,
     leaveType: "",
     otherLeaveType: "",
     startDate: "",
@@ -102,6 +104,7 @@ const TimeOffForm: React.FC<TimeOffFormProps> = ({ onSuccess }) => {
         
         // Reset form
         setFormData({
+          id: employeeId,
           leaveType: "",
           otherLeaveType: "",
           startDate: "",

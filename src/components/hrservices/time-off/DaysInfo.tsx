@@ -7,8 +7,15 @@ interface DaysInfoProps {
   refreshTrigger?: number;
 }
 
+type TimeOffStats = {
+  daysAvailable: number;
+  pendingRequests: number;
+  daysTaken: number;
+  totalPTOPerYear: number;
+};
+
 const DaysInfo: React.FC<DaysInfoProps> = ({ employeeId, refreshTrigger = 0 }) => {
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<TimeOffStats>({
     daysAvailable: 0,
     pendingRequests: 0,
     daysTaken: 0,
@@ -21,7 +28,7 @@ const DaysInfo: React.FC<DaysInfoProps> = ({ employeeId, refreshTrigger = 0 }) =
     const fetchStats = async () => {
       setLoading(true);
       try {
-        const data = await GetTimeOffStats(employeeId);
+        const data: TimeOffStats = await GetTimeOffStats(employeeId);
         setStats(data);
       } catch (error) {
         console.error("Error fetching time off stats:", error);
@@ -30,7 +37,7 @@ const DaysInfo: React.FC<DaysInfoProps> = ({ employeeId, refreshTrigger = 0 }) =
       }
     };
 
-    fetchStats();
+    void fetchStats();
   }, [employeeId, refreshTrigger]);
 
   const gridstyle =

@@ -1,3 +1,6 @@
+-- Ensure UUID extension exists for uuid_generate_v1()
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 -- CreateEnum
 CREATE TYPE "FileTypes" AS ENUM ('AVATAR', 'DOCUMENT', 'ATTACHMENT', 'ANNOUNCEMENT');
 

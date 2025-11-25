@@ -34,7 +34,7 @@ const StatusTable: React.FC<StatusTableProps> = ({ employeeId, refreshTrigger = 
       }
     };
 
-    fetchRequests();
+    void fetchRequests();
   }, [employeeId, refreshTrigger]);
 
   const formatDate = (date: Date): string => {

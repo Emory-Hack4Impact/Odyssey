@@ -55,9 +55,9 @@ const ManageStatusTable: React.FC = () => {
       return (
         <span className={`${baseClasses} bg-green-100 text-green-800`}>Approved</span>
       );
-    } else if (status === RequestStatus.DENIED) {
+    } else if (status === RequestStatus.DECLINED) {
       return (
-        <span className={`${baseClasses} bg-red-100 text-red-800`}>Denied</span>
+        <span className={`${baseClasses} bg-red-100 text-red-800`}>Declined</span>
       );
     } else if (status === RequestStatus.PENDING) {
       return (
@@ -127,11 +127,11 @@ const ManageStatusTable: React.FC = () => {
                       {isProcessing ? "Processing..." : "Approve"}
                     </button>
                     <button
-                      onClick={() => handleStatusUpdate(request.id, RequestStatus.DENIED)}
-                      disabled={isProcessing || request.status === RequestStatus.DENIED}
+                      onClick={() => handleStatusUpdate(request.id, RequestStatus.DECLINED)}
+                      disabled={isProcessing || request.status === RequestStatus.DECLINED}
                       className="rounded-md bg-red-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
                     >
-                      {isProcessing ? "Processing..." : "Deny"}
+                      {isProcessing ? "Processing..." : "Decline"}
                     </button>
                   </div>
                 </td>

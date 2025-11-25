@@ -21,6 +21,8 @@ model UserMetadata {
   TimeOffRequests  TimeOffRequest[]
   ApprovedRequests TimeOffRequest[] @relation("ApprovedRequests")
   Files            Files[]
+  EmployeeEvaluations  EmployeeEvaluation[] @relation("EmployeeEvaluations")
+  SubmittedEvaluations EmployeeEvaluation[] @relation("SubmittedEvaluations")
 }
 
 enum FileTypes {
@@ -69,17 +71,24 @@ model TimeOffRequest {
 }
 
 model EmployeeEvaluation {
-  id              Int         @id @default(autoincrement())
-  employeeId      String
-  year            Int
-  strengths       String
-  weaknesses      String
-  improvements    String
-  notes           String
-  communication   String
-  leadership      String
-  timeliness      String
-  skill1          String
-  skill2          String
-  skill3          String
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employeeId   String?
+  submitterId  String?
+  year         Int
+  strengths    String
+  weaknesses   String
+  improvements String
+  notes        String
+  submittedAt  DateTime      @default(now())
+  communication Int
+  leadership    Int
+  timeliness    Int
+  skill1        Int
+  skill2        Int
+  skill3        Int
+  Employee      UserMetadata? @relation("EmployeeEvaluations", fields: [employeeId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  Submitter     UserMetadata? @relation("SubmittedEvaluations", fields: [submitterId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([employeeId], name: "EmployeeEvaluation_employeeId_idx")
+  @@index([submitterId], name: "EmployeeEvaluation_submitterId_idx")
 }

@@ -102,7 +102,7 @@ const PendingTable: React.FC = () => {
                 </td>
                 <td className="border-b border-gray-200 px-4 py-2">{request.comments || "-"}</td>
                 <td className="border-b border-gray-200 px-4 py-2">
-                  {formatDate(request.createdAt)}
+                  {formatDate(request.requestDate)}
                 </td>
                 <td className="border-b border-gray-200 px-4 py-2">
                   <div className="flex gap-2">
@@ -114,11 +114,11 @@ const PendingTable: React.FC = () => {
                       {isProcessing ? "Processing..." : "Approve"}
                     </button>
                     <button
-                      onClick={() => handleStatusUpdate(request.id, RequestStatus.DENIED)}
+                      onClick={() => handleStatusUpdate(request.id, RequestStatus.DECLINED)}
                       disabled={isProcessing}
                       className="rounded-md bg-red-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
-                      {isProcessing ? "Processing..." : "Deny"}
+                      {isProcessing ? "Processing..." : "Decline"}
                     </button>
                   </div>
                 </td>

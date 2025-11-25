@@ -142,7 +142,7 @@ export default function TimeOffRequests() {
             </div>
             <div className="flex items-center gap-2">
               <div className="h-4 w-4 rounded bg-red-200"></div>
-              <span>Denied Requests</span>
+              <span>Declined Requests</span>
             </div>
           </div>
         </div>

@@ -37,7 +37,7 @@ const PendingRequests: React.FC<PendingRequestsProps> = ({
   const [processingId, setProcessingId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetchRequests();
+    void fetchRequests();
   }, [refreshTrigger]);
 
   const fetchRequests = async () => {

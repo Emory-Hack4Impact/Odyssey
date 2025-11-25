@@ -28,7 +28,7 @@ const Calendar: React.FC<CalendarProps> = ({ refreshTrigger = 0 }) => {
       }
     };
 
-    fetchApprovedRequests();
+    void fetchApprovedRequests();
   }, [currentDate, refreshTrigger]);
 
   const monthNames = [
