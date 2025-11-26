@@ -117,6 +117,31 @@ export async function GetAllEmployeeEvals() {
   }
 }
 
+export async function GetAllEmployeeEvalsMetadata() {
+  try {
+    // Fetch all evaluation metadata with related evaluation and user data
+    const rows = await prisma.employeeEvaluationMetadata.findMany({
+      orderBy: { submittedAt: "desc" },
+      include: { evaluation: true, submitter: true, reviewedEmployee: true },
+    });
+
+    // Flatten and normalize into a shape convenient for the admin listing
+    return rows.map((r) => ({
+      id: r.id,
+      evaluationId: r.evaluationId,
+      employeeId: r.employeeId ?? null,
+      submitterId: r.submitterId ?? null,
+      year: r.year,
+      submittedAt: r.submittedAt,
+      employeeFirstName: r.reviewedEmployee?.employeeFirstName ?? "",
+      employeeLastName: r.reviewedEmployee?.employeeLastName ?? "",
+    }));
+  } catch (err) {
+    console.error("GetAllEmployeeEvalsMetadata error", err);
+    throw err;
+  }
+}
+
 export async function GetEmployeeEvals(employeeId: string) {
   try {
     try {

@@ -7,13 +7,16 @@ interface HRServicesProps {
   userRole: string;
 }
 
-interface FetchedEval {
+interface FetchedEvalMeta {
   id: string;
   employeeId?: string | null;
   submitterId?: string | null;
   employeeFirstName: string;
   employeeLastName: string;
   year: number;
+}
+
+interface FetchedEval {
   strengths: string;
   weaknesses: string;
   improvements: string;
@@ -28,14 +31,8 @@ interface FetchedEval {
 }
 
 export default function PerfEvalHR({ userId: _userId, username, userRole }: HRServicesProps) {
-  const [employeeEvals, setEmployeeEvals] = useState<FetchedEval[]>([]);
+  const [employeeEvalsMeta, setEmployeeEvalsMeta] = useState<FetchedEvalMeta[]>([]);
   const [selectedEval, setSelectedEval] = useState<FetchedEval>({
-    id: "",
-    employeeId: null,
-    submitterId: null,
-    employeeFirstName: "",
-    employeeLastName: "",
-    year: 2025,
     strengths: "",
     weaknesses: "",
     improvements: "",
@@ -51,7 +48,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
   const [isOpened, setIsOpened] = useState(false);
   const [search, setSearch] = useState("");
 
-  const filteredEvals = employeeEvals.filter((evalItem) => {
+  const filteredEvals = employeeEvalsMeta.filter((evalItem) => {
     if (!search) return true;
     return JSON.stringify(evalItem).toLowerCase().includes(search.toLowerCase());
   });
@@ -66,26 +63,26 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
     [key: string]: unknown;
   };
 
-  const fetchEvals = async () => { // TODO: fetch only eval meta data rather than entire eval obj
+  const fetchEvalMeta = async () => {
     try {
-      const resp = await fetch("/api/employee-evals");
+      const resp = await fetch("/api/employee-evals?meta=true");
       const res = await resp.json();
-      const normalized = (res as RawEval[]).map((e) => ({
-        ...e,
-        id: typeof e.id === "undefined" ? "" : String(e.id),
-        employeeId:
-          e.employeeId === null || e.employeeId === undefined ? null : String(e.employeeId),
-        submitterId:
-          e.submitterId === null || e.submitterId === undefined ? null : String(e.submitterId),
-      })) as FetchedEval[];
-      setEmployeeEvals(normalized ?? []);
+      const normalized = (res as RawEval[]).map((meta) => ({
+        id: String(meta.id),
+        employeeId: String(meta.employeeId),
+        submitterId: String(meta.submitterId),
+        employeeFirstName: meta.employeeFirstName,
+        employeeLastName: meta.employeeLastName,
+        year: Number(meta.year ?? 0),
+      })) as FetchedEvalMeta[];
+      setEmployeeEvalsMeta(normalized ?? []);
     } catch (error) {
       console.error(error);
     }
   };
 
   useEffect(() => {
-    void fetchEvals();
+    void fetchEvalMeta();
   }, []);
 
   return (
@@ -175,8 +172,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                         filteredEvals.map((employeeEval, index) => (
                           <tr key={index} className="text-sm">
                             <td className="align-top font-medium">
-                              {employeeEval.submitterId}
-                              {/* {employeeEval.employeeLastName}, {employeeEval.employeeFirstName} */}
+                              {employeeEval.employeeLastName}, {employeeEval.employeeFirstName}
                             </td>
                             <td className="text-center align-top">
                               <button
