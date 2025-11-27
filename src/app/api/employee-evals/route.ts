@@ -4,6 +4,7 @@ import {
   GetEmployeeEvals,
   GetLatestEmployeeEvalWithReviewers,
   GetAllEmployeeEvals,
+  GetEmployeeEvalByID,
   GetAllEmployeeEvalsMetadata,
   SubmitEmployeeEval,
   UpdateEmployeeEval,
@@ -31,6 +32,12 @@ export async function GET(req: Request) {
     if (metaParam) {
       const metaRows = await GetAllEmployeeEvalsMetadata();
       return NextResponse.json(metaRows);
+    }
+
+    const idParam = url.searchParams.get("id");
+    if (idParam) {
+      const evalByID = await GetEmployeeEvalByID(idParam);
+      return NextResponse.json(evalByID);
     }
 
     // no employeeId -> return all evaluations

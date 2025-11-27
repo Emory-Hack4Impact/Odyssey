@@ -9,6 +9,7 @@ interface HRServicesProps {
 
 interface FetchedEvalMeta {
   id: string;
+  evaluationId: string;
   employeeId?: string | null;
   submitterId?: string | null;
   employeeFirstName: string;
@@ -63,12 +64,27 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
     [key: string]: unknown;
   };
 
+  const fetchEvalByID = async (id: string) => {
+    try {
+      const resp = await fetch(`/api/employee-evals?id=${id}`);
+      if (!resp.ok) {
+        throw new Error(`Failed to fetch evaluation: ${resp.status}`);
+      }
+      const res = await resp.json();
+      return res as FetchedEval;
+    } catch (error) {
+      console.error("Error fetching evaluation:", error);
+      return null;
+    }
+  };
+
   const fetchEvalMeta = async () => {
     try {
       const resp = await fetch("/api/employee-evals?meta=true");
       const res = await resp.json();
       const normalized = (res as RawEval[]).map((meta) => ({
         id: String(meta.id),
+        evaluationId: String(meta.evaluationId),
         employeeId: String(meta.employeeId),
         submitterId: String(meta.submitterId),
         employeeFirstName: meta.employeeFirstName,
@@ -177,9 +193,15 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                             <td className="text-center align-top">
                               <button
                                 className="btn btn-outline btn-sm"
-                                onClick={() => {
-                                  setSelectedEval(employeeEval);
-                                  setIsOpened(true);
+                                onClick={async () => {
+                                  const evalData = await fetchEvalByID(employeeEval.evaluationId);
+                                  if (evalData) {
+                                    alert(JSON.stringify(evalData));
+                                    setSelectedEval({ ...employeeEval, ...evalData });
+                                    setIsOpened(true);
+                                  } else {
+                                    alert("Failed to load evaluation");
+                                  }
                                 }}
                               >
                                 View

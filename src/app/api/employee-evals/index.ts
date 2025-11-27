@@ -142,6 +142,19 @@ export async function GetAllEmployeeEvalsMetadata() {
   }
 }
 
+export async function GetEmployeeEvalByID(evaluationId: string) {
+  try {
+    // Fetch all evaluation metadata with related evaluation and user data
+    const employeeEval = await prisma.employeeEvaluation.findUnique({
+      where: { id: evaluationId },
+    });
+    return employeeEval;
+  } catch (err) {
+    console.error("GetEmployeeEval error", err);
+    throw err;
+  }
+}
+
 export async function GetEmployeeEvals(employeeId: string) {
   try {
     try {
