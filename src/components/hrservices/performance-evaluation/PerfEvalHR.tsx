@@ -17,7 +17,7 @@ interface FetchedEvalMeta {
   year: number;
 }
 
-interface FetchedEval {
+interface FetchedEval extends FetchedEvalMeta {
   strengths: string;
   weaknesses: string;
   improvements: string;
@@ -34,6 +34,13 @@ interface FetchedEval {
 export default function PerfEvalHR({ userId: _userId, username, userRole }: HRServicesProps) {
   const [employeeEvalsMeta, setEmployeeEvalsMeta] = useState<FetchedEvalMeta[]>([]);
   const [selectedEval, setSelectedEval] = useState<FetchedEval>({
+    id: "",
+    evaluationId: "",
+    employeeId: "",
+    submitterId: "",
+    employeeFirstName: "",
+    employeeLastName: "",
+    year: 2025,
     strengths: "",
     weaknesses: "",
     improvements: "",
@@ -196,7 +203,6 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                                 onClick={async () => {
                                   const evalData = await fetchEvalByID(employeeEval.evaluationId);
                                   if (evalData) {
-                                    alert(JSON.stringify(evalData));
                                     setSelectedEval({ ...employeeEval, ...evalData });
                                     setIsOpened(true);
                                   } else {
