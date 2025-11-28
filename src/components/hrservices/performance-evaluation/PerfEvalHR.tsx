@@ -55,10 +55,15 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
   });
   const [isOpened, setIsOpened] = useState(false);
   const [search, setSearch] = useState("");
+  const [yearSearch, setYearSearch] = useState(0);
 
   const filteredEvals = employeeEvalsMeta.filter((evalItem) => {
-    if (!search) return true;
-    return JSON.stringify(evalItem).toLowerCase().includes(search.toLowerCase());
+    if (!search && !yearSearch) return true;
+    const matchesSearch =
+      !search || JSON.stringify(evalItem).toLowerCase().includes(search.toLowerCase());
+
+    const matchesYear = !yearSearch || evalItem.year === yearSearch;
+    return matchesSearch && matchesYear;
   });
 
   //   console.log(selectedEmployee)
@@ -142,30 +147,86 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
       {!isOpened && (
         <div>
           <div className="flex gap-6">
-            <label className="input">
-              <svg
-                className="h-[1em] opacity-50"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-              >
-                <g
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                  strokeWidth="2.5"
-                  fill="none"
-                  stroke="currentColor"
+            <div className="flex w-90 flex-col gap-4">
+              <label className="input">
+                <svg
+                  className="h-[1em] opacity-50"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
                 >
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <path d="m21 21-4.3-4.3"></path>
-                </g>
-              </svg>
-              <input
-                type="search"
-                placeholder="Search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </label>
+                  <g
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                    strokeWidth="2.5"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.3-4.3"></path>
+                  </g>
+                </svg>
+                <input
+                  type="search"
+                  placeholder="Search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </label>
+
+              <label className="input flex cursor-pointer items-center justify-between">
+                <div className="dropdown w-full">
+                  <div
+                    tabIndex={0}
+                    role="button"
+                    className="flex w-full items-center justify-between gap-2"
+                  >
+                    {/* Calendar icon */}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-[1em] opacity-50"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="16" y1="2" x2="16" y2="6"></line>
+                      <line x1="8" y1="2" x2="8" y2="6"></line>
+                      <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+
+                    {/* Text */}
+                    <span className="flex-1 opacity-60">
+                      {yearSearch ? yearSearch : "Search by year"}
+                    </span>
+
+                    {/* Dropdown caret */}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 opacity-60"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+                    </svg>
+                  </div>
+
+                  {/* Dropdown menu */}
+                  <ul
+                    tabIndex={0}
+                    className="dropdown-content menu mt-4 w-full rounded-md bg-base-100 p-2 shadow-xl"
+                  >
+                    {[2020, 2021, 2022, 2023, 2024, 2025].map((year) => (
+                      <li key={year}>
+                        <a onClick={() => setYearSearch(year)}>{year}</a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </label>
+            </div>
 
             <div className="card h-full w-full border border-base-content/5 bg-base-100 shadow-xl">
               <div className="card-body gap-5">
@@ -181,6 +242,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                     <thead>
                       <tr className="bg-base-200 text-xs font-semibold tracking-wide text-base-content uppercase">
                         <th className="w-1/2">Name</th>
+                        <th className="w-1/4">Year</th>
                         <th className="w-1/2 text-center">Action</th>
                       </tr>
                     </thead>
@@ -197,6 +259,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                             <td className="align-top font-medium">
                               {employeeEval.employeeLastName}, {employeeEval.employeeFirstName}
                             </td>
+                            <td className="align-top font-medium">{employeeEval.year}</td>
                             <td className="text-center align-top">
                               <button
                                 className="btn btn-outline btn-sm"
