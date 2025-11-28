@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { TextAreaWithDescription } from "../../Textarea";
 import { PerformanceRatingSlider } from "./PerformanceRatingSliders";
-import { metadata } from "framer-motion/client";
 
 interface Props {
   id: string;

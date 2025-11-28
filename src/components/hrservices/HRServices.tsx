@@ -21,11 +21,11 @@ interface HRServicesProps {
 
 export const HRServices = ({ userId, username, userRole, userMetadata }: HRServicesProps) => {
   const getPerformanceEvaluationComponent = () => {
-      if (userMetadata?.is_hr || userMetadata?.is_admin) {
-        return <PerfEvalHR userId={userId} username={username} userRole={userRole} />;
-      }
-        return <PerfEvalEmployee userId={userId} username={username} userRole={userRole} />;
+    if (userMetadata?.is_hr || userMetadata?.is_admin) {
+      return <PerfEvalHR userId={userId} username={username} userRole={userRole} />;
     }
+    return <PerfEvalEmployee userId={userId} username={username} userRole={userRole} />;
+  };
 
   const categories = [
     { key: "timeOff", label: "Time Off", component: <TimeOff userId={userId} /> },

@@ -2,7 +2,6 @@
 
 import Error from "@/components/Error";
 import { HRServices } from "@/components/hrservices/HRServices";
-import { createClient, getUser } from "@/utils/supabase/server";
 import { prisma } from "@/lib/prisma";
 
 export default async function HRServicesPage() {
