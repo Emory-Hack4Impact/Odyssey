@@ -173,7 +173,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                 />
               </label>
 
-              <label className="input flex cursor-pointer items-center justify-between">
+              <div className="input flex cursor-pointer items-center justify-between">
                 <div className="dropdown w-full">
                   <div
                     tabIndex={0}
@@ -212,20 +212,28 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
                     </svg>
                   </div>
-
-                  {/* Dropdown menu */}
                   <ul
                     tabIndex={0}
                     className="dropdown-content menu mt-4 w-full rounded-md bg-base-100 p-2 shadow-xl"
                   >
                     {[2020, 2021, 2022, 2023, 2024, 2025].map((year) => (
                       <li key={year}>
-                        <a onClick={() => setYearSearch(year)}>{year}</a>
+                        <a
+                          onClick={() => {
+                            setYearSearch((prev) => (prev === year ? 0 : year));
+                            const activeElement = document.activeElement as HTMLElement;
+                            if (activeElement) {
+                              activeElement.blur();
+                            }
+                          }}
+                        >
+                          {year}
+                        </a>
                       </li>
                     ))}
                   </ul>
                 </div>
-              </label>
+              </div>
             </div>
 
             <div className="card h-full w-full border border-base-content/5 bg-base-100 shadow-xl">
@@ -249,7 +257,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                     <tbody>
                       {filteredEvals.length === 0 ? (
                         <tr>
-                          <td colSpan={2} className="py-6 text-center text-base-content/60">
+                          <td colSpan={3} className="py-6 text-center text-base-content/60">
                             No employee evaluations found.
                           </td>
                         </tr>
