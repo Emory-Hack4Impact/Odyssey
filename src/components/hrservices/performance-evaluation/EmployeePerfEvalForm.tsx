@@ -223,21 +223,24 @@ export default function EmployeePerfEvalForm({
       try {
         // attach submitter info from props (username, userRole). Email may not be available here; leave blank unless the caller passes it later.
         const payload = {
-          // employee is submitting for themself
-          employeeId: _userId,
-          submitterId: _userId,
-          year: formData.year,
-          strengths: formData.strengths,
-          weaknesses: formData.weaknesses,
-          improvements: formData.improvements,
-          notes: formData.notes,
-          communication: formData.communication,
-          leadership: formData.leadership,
-          timeliness: formData.timeliness,
-          skill1: formData.skill1,
-          skill2: formData.skill2,
-          skill3: formData.skill3,
-          submittedAt: new Date(),
+          data: {
+            strengths: formData.strengths,
+            weaknesses: formData.weaknesses,
+            improvements: formData.improvements,
+            notes: formData.notes,
+            communication: formData.communication,
+            leadership: formData.leadership,
+            timeliness: formData.timeliness,
+            skill1: formData.skill1,
+            skill2: formData.skill2,
+            skill3: formData.skill3,
+          },
+          metadata: {
+            employeeId: _userId,
+            submitterId: _userId,
+            year: formData.year,
+            submittedAt: new Date(),
+          },
         };
 
         const resp = await fetch("/api/employee-evals", {

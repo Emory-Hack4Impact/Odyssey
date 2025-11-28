@@ -113,9 +113,6 @@ export default function HRPerfEvalForm(props: Props) {
 
     try {
       const payload = {
-        employeeId: formData.employeeId ?? undefined,
-        submitterId: formData.submitterId ?? undefined,
-        year: formData.year,
         strengths: formData.strengths,
         weaknesses: formData.weaknesses,
         improvements: formData.improvements,
@@ -129,10 +126,16 @@ export default function HRPerfEvalForm(props: Props) {
         submittedAt: new Date(),
       };
 
+      const metadata = {
+        employeeId: formData.employeeId ?? undefined,
+        submitterId: formData.submitterId ?? undefined,
+        year: formData.year,
+      };
+
       const resp = await fetch("/api/employee-evals", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, data: payload }),
+        body: JSON.stringify({ id, data: payload, metadata: metadata }),
       });
       const result = await resp.json();
       console.log("UpdateEmployeeEval result:", result);
