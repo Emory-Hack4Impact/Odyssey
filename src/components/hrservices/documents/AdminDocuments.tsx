@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { UploadCloud } from "lucide-react";
+import { useEffect, /*useMemo,*/ useState } from "react";
+import { /*ArrowDownAZ,*/ UploadCloud } from "lucide-react";
 import { ROOT } from "./mockData";
 import type { DocumentNode, FolderNode } from "./types";
 import { FileIcon } from "./icons";
@@ -13,6 +13,7 @@ type FolderOption = {
   label: string;
 };
 
+// for handling frontend UI
 type AdminDocument = {
   id: string;
   name: string;
@@ -23,6 +24,24 @@ type AdminDocument = {
   updatedAt: string;
 };
 
+// for handling backend
+type UploadedDocumentResult = {
+  id: string;
+  bucket: string;
+  path: string;
+  fileName: string;
+  viewers: string[];
+  folderPath: string[];
+  uploadedAt: string;
+  // for accessing db
+  metadata: {
+    fileName?: string;
+    viewers?: string[];
+    folderPath?: string[];
+  } | null;
+};
+
+/*
 type LocatedFile = {
   id: string;
   name: string;
@@ -31,6 +50,7 @@ type LocatedFile = {
   parents: string[];
   folderNames: string[];
 };
+*/
 
 type DocumentGridProps = {
   documents: AdminDocument[];
@@ -96,6 +116,8 @@ function flattenFolders(
 }
 
 // Flatten files while remembering the folder breadcrumb they live under.
+// for testing purpose only (?)
+/*
 function collectFiles(
   node: DocumentNode,
   pathIds: string[] = [],
@@ -120,6 +142,7 @@ function collectFiles(
 
   return node.children.flatMap((child) => collectFiles(child, nextIds, nextLabels));
 }
+*/
 
 function formatPath(doc: AdminDocument) {
   return doc.pathLabel || "Shared Root";
@@ -528,7 +551,9 @@ function EditDocumentModal({
 
 // Top-level admin surface combining upload, listing, and edit modal.
 export default function AdminDocuments() {
+  /* dummy files for testing purpose
   const initialDocuments = useMemo<AdminDocument[]>(() => {
+    // TODO for Sprint 2: read from database
     const files = collectFiles(ROOT);
     return files.map((file) => ({
       id: file.id,
@@ -540,8 +565,9 @@ export default function AdminDocuments() {
       updatedAt: new Date().toISOString(),
     }));
   }, []);
+  */
 
-  const [documents, setDocuments] = useState<AdminDocument[]>(initialDocuments);
+  const [documents, setDocuments] = useState<AdminDocument[]>([]);
   const [viewMode, setViewMode] = useState<"icons" | "list">("icons");
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState("");
@@ -554,6 +580,53 @@ export default function AdminDocuments() {
   const [editRecipients, setEditRecipients] = useState<string[]>([]);
   const [editRecipientQuery, setEditRecipientQuery] = useState("");
   const [replacementFile, setReplacementFile] = useState<File | null>(null);
+
+  // this is admin's id for testing for now
+  // TODO: change test id into real ones
+  const TEST_USER_ID = "00000000-0000-0000-0000-000000000001";
+
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      const res = await fetch(`/api/documents?userId=${TEST_USER_ID}`);
+      if (!res.ok) {
+        console.error("Failed to fetch documents", await res.text());
+        return;
+      }
+      const results: UploadedDocumentResult[] = await res.json();
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+
+      const docs: AdminDocument[] = results.map((doc) => {
+        const meta = doc.metadata ?? {};
+        const folderPath = Array.isArray(meta.folderPath) ? meta.folderPath : [];
+        const viewers = Array.isArray(meta.viewers) ? meta.viewers : ["Everyone"];
+        const name =
+          typeof meta.fileName === "string"
+            ? meta.fileName
+            : (doc.path.split("/").pop() ?? "Document");
+
+        return {
+          id: doc.id,
+          name,
+          // TODO: use signed URLs from server side
+          // currently requires bucket to be public
+          url: `${supabaseUrl}/storage/v1/object/public/${doc.bucket}/${doc.path}`,
+          pathIds: folderPath, // GET returns this as string[]
+          pathLabel: folderPath.length ? folderPath.join(" / ") : "Shared Root",
+          viewers: viewers,
+          updatedAt: doc.uploadedAt,
+        };
+      });
+      // for debugging /////////
+      console.log("Mapped docs for view:", docs);
+      console.log("NEXT_PUBLIC_SUPABASE_URL in client:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+      //////////////////////////
+      setDocuments(docs);
+    };
+    // call (and catch error if throws)
+    fetchDocuments().catch((error) => {
+      console.error("Unexpected error while fetching documents", error);
+    });
+  }, []);
 
   // When an employee is chosen, generate folder shortcuts from mock data.
   useEffect(() => {
@@ -573,25 +646,75 @@ export default function AdminDocuments() {
     setUploadRecipientQuery("");
   };
 
-  // Fake upload handler – simply pushes the files into local state.
-  const handleUpload = () => {
+  // handling file upload
+  const handleUpload = async () => {
     if (!uploadFiles.length || !selectedEmployee.trim() || !selectedFolderId) return;
 
     const targetOption =
       folderOptions.find((option) => option.id === selectedFolderId) ?? folderOptions[0];
-    const now = new Date().toISOString();
 
-    const newDocs: AdminDocument[] = uploadFiles.map((file) => ({
-      id: `${file.name}-${now}`,
-      name: file.name,
-      url: URL.createObjectURL(file),
-      pathIds: targetOption?.id === "root" ? [] : (targetOption?.id.split("/") ?? []),
-      pathLabel: targetOption?.label ?? "Shared Root",
-      viewers: uploadRecipients.length ? uploadRecipients : [selectedEmployee],
-      updatedAt: now,
-    }));
+    // Folder path for server side metadata.folderPath (in json) to use
+    const folderPath = targetOption?.label != null ? targetOption.label.split("/") : [];
 
-    setDocuments((prev) => [...newDocs, ...prev]);
+    // if chose upload recipients, use them; otherwise by default select selectedEmployee
+    const viewers = uploadRecipients.length ? uploadRecipients : [selectedEmployee];
+
+    // TODO: replace this with a real UserMetadata.id when employee selection is wired up
+    // only have account "00000000-0000-0000-0000-000000000001" for testing for now
+    const userIdForNow = selectedEmployee;
+
+    // TODO: for now still use local URLs so the admin can preview files immediately,
+    // but also call the server action to store everything in Supabase + Prisma.
+    const uploadedDocs: AdminDocument[] = [];
+
+    for (const file of uploadFiles) {
+      const formData = new FormData();
+      // build file itself + metadata to send to backend
+      formData.append("file", file);
+      formData.append("userId", userIdForNow);
+      formData.append("bucket", "files"); // TODO: set to actual Supabase bucket name in future sprints
+      formData.append("viewers", JSON.stringify(viewers));
+      formData.append("folderPath", JSON.stringify(folderPath));
+      formData.append("contentType", file.type);
+
+      // call API route
+      const res = await fetch("/api/documents", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        console.error("Failed to upload document", await res.text());
+        continue;
+      }
+
+      // parse backend result + map into AdminDocument
+      const result: UploadedDocumentResult = await res.json();
+
+      uploadedDocs.push({
+        id: result.id,
+        name: result.fileName,
+        // use a local blob URL so the admin can preview immediately
+        url: URL.createObjectURL(file),
+        pathIds: targetOption?.id === "root" ? [] : (targetOption?.id.split("/") ?? []),
+        pathLabel: targetOption?.label ?? "Shared Root",
+        viewers: result.viewers,
+        updatedAt: result.uploadedAt,
+      });
+      // fake file upload for tests ////////////////////////
+      // const now = new Date().toISOString();
+      // uploadedDocs.push({
+      //   id: `${file.name}-${now}`,
+      //   name: file.name,
+      //   url: URL.createObjectURL(file),
+      //   pathIds: targetOption?.id === "root" ? [] : (targetOption?.id.split("/") ?? []),
+      //   pathLabel: targetOption?.label ?? "Shared Root",
+      //   viewers,
+      //   updatedAt: now,
+      // });
+      ///////////////////////////////////////////////////////
+    }
+
+    setDocuments((prev) => [...uploadedDocs, ...prev]);
     resetUploadForm();
   };
 
@@ -609,6 +732,7 @@ export default function AdminDocuments() {
   };
 
   // Apply edits captured in the modal to local state.
+  // TODO: refactor to connect to backend
   const saveDocumentChanges = () => {
     if (!editingDoc) return;
     setDocuments((prev) =>
@@ -656,7 +780,9 @@ export default function AdminDocuments() {
             <div>
               <h3 className="text-lg font-semibold">Existing documents</h3>
               <p className="text-sm text-base-content/70">Review the files available to admins.</p>
-              {/* TODO: Replace local state with backend-powered document listing */}
+              {/* TODO: Replace local state with backend-powered document listing 
+              Sihao: a todo for Sprint 2
+              */}
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-base-content/70">View</span>
