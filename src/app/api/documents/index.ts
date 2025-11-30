@@ -1,9 +1,8 @@
 "use server";
 
-import { PrismaClient, FileTypes } from "@prisma/client";
+import { FileTypes } from "@prisma/client";
 import { uploadFileToStorage } from "@/utils/supabase/server";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 // Data we need from the frontend when uploading a document
 export type UploadDocumentInput = {

@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { uploadDocumentCore } from "./index";
+import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 // export const dynamic = "force-dynamic";
 
+// for uploading files
 export async function POST(req: Request) {
   try {
     // read data from request and pull out fields
@@ -50,4 +52,24 @@ export async function POST(req: Request) {
     console.error("/api/documents POST error", err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
+}
+
+// for fetching files
+export async function GET(req: NextResponse) {
+  // parse request url & extract userId query params
+  const { searchParams } = new URL(req.url);
+  const userId = searchParams.get("userId");
+
+  if (!userId) {
+    return NextResponse.json({ error: "Missing userId query parameter" }, { status: 400 });
+  }
+
+  // query all files for that user matched by params (may laster use filter)
+  const files = await prisma.files.findMany({
+    where: { userId },
+    orderBy: { uploadedAt: "desc" },
+  });
+
+  // return list of files as json
+  return NextResponse.json(files);
 }
