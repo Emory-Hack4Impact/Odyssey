@@ -135,6 +135,12 @@ export async function GetAllEmployeeEvalsMetadata() {
       submittedAt: r.submittedAt,
       employeeFirstName: r.reviewedEmployee?.employeeFirstName ?? "",
       employeeLastName: r.reviewedEmployee?.employeeLastName ?? "",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      approved: (r as any).approved ?? false,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      approvedAt: (r as any).approvedAt ?? null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      approvedBy: (r as any).approvedBy ?? null,
     }));
   } catch (err) {
     console.error("GetAllEmployeeEvalsMetadata error", err);
