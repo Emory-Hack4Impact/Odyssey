@@ -1,7 +1,7 @@
 // src/components/hrservices/Career-Development/CareerDev.tsx
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 // ---- tiny helpers ----
 function classNames(...xs: Array<string | false | null | undefined>) {
@@ -43,7 +43,7 @@ const courses = [
 const articles = [
   {
     id: 1,
-    title: "Some Article",
+    title: "Article Event Title",
     blurb:
       "A brief reflection on why hard work matters, how it builds resilience and confidence, and why effort is most powerful when balanced with rest, purpose, and thoughtful direction.",
     date: "2025-11-16",
@@ -54,8 +54,9 @@ const articles = [
   },
   {
     id: 2,
-    title: "Some Article",
-    blurb: "Short description about article",
+    title: "Article Event Title",
+    blurb:
+      "A brief reflection on why hard work matters, how it builds resilience and confidence, and why effort is most powerful when balanced with rest, purpose, and thoughtful direction.",
     date: "2025-11-16",
     time: "4:00 PM – 5:30 PM",
     location: "Zoom",
@@ -64,8 +65,9 @@ const articles = [
   },
   {
     id: 3,
-    title: "Some Article",
-    blurb: "Short description about article",
+    title: "Article Event Title",
+    blurb:
+      "A brief reflection on why hard work matters, how it builds resilience and confidence, and why effort is most powerful when balanced with rest, purpose, and thoughtful direction.",
     date: "2025-11-16",
     time: "4:00 PM – 5:30 PM",
     location: "Zoom",
@@ -290,6 +292,28 @@ export default function CareerDev() {
     body?: string;
   }>(null);
 
+  const [allArticles, setAllArticles] = useState<
+    {
+      id: number;
+      title: string;
+      date: string;
+      time: string;
+      location: string;
+      blurb: string;
+      image?: { src: string; alt: string };
+    }[]
+  >([]);
+
+  useEffect(() => {
+    // load articles from "DB" (issue #33)
+    // void currently silences lint about async in useEffect
+    async function load() {
+      const data = await fetchArticles();
+      setAllArticles(data);
+    }
+    void load();
+  }, []);
+
   return (
     <section className="px-4 py-4 md:px-6 lg:px-8">
       <h2 className="mb-6 text-xl font-semibold tracking-tight">Upcoming Workshops & Events</h2>
@@ -325,7 +349,7 @@ export default function CareerDev() {
               Featured Career Development Articles
             </h3>
             <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {articles.map((a) => (
+              {allArticles.map((a) => (
                 <button
                   key={a.id}
                   type="button"
