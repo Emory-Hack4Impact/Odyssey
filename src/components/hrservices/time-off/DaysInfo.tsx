@@ -1,80 +1,62 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import { GetTimeOffStats } from "@/app/api/time-off-req";
+import React from "react";
+import { type TimeOffRequest } from "./TimeOffForm";
 
-interface DaysInfoProps {
-  employeeId: string;
-  refreshTrigger?: number;
-}
+const DaysInfo = ({ stats }: { stats: TimeOffRequest[] }) => {
+  const daysAvailable = () => {
+    return 20 - daysTakenOff();
+  };
 
-type TimeOffStats = {
-  daysAvailable: number;
-  pendingRequests: number;
-  daysTaken: number;
-  totalPTOPerYear: number;
-};
+  const pendingRequests = () => {
+    return stats.filter((stats) => !stats.approved).length;
+  };
 
-const DaysInfo: React.FC<DaysInfoProps> = ({ employeeId, refreshTrigger = 0 }) => {
-  const [stats, setStats] = useState<TimeOffStats>({
-    daysAvailable: 0,
-    pendingRequests: 0,
-    daysTaken: 0,
-    totalPTOPerYear: 0,
-  });
+  const daysTakenOff = () => {
+    const approved = stats.filter((stats) => stats.approved);
 
-  const [loading, setLoading] = useState(true);
+    const totalDays = approved.reduce((total, request) => {
+      const start = new Date(request.startDate);
+      const end = new Date(request.endDate);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      setLoading(true);
-      try {
-        const data: TimeOffStats = await GetTimeOffStats(employeeId);
-        setStats(data);
-      } catch (error) {
-        console.error("Error fetching time off stats:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
-    void fetchStats();
-  }, [employeeId, refreshTrigger]);
+      return total + days;
+    }, 0);
 
-  const gridstyle =
-    "rounded-md border border-gray-300 p-1 text-center lg:h-32 flex justify-center items-center flex-col";
-
-  if (loading) {
-    return (
-      <div className="mx-auto mt-10 w-full max-w-lg p-10 text-black">
-        <div className="grid grid-cols-2 gap-5">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className={gridstyle}>
-              <div className="h-8 w-16 animate-pulse rounded bg-gray-200"></div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+    return totalDays;
+  };
 
   return (
-    <div className="mx-auto mt-10 w-full max-w-lg p-10 text-black">
-      <div className="grid grid-cols-2 gap-5">
-        <div className={gridstyle}>
-          <p className="text-2xl">{stats.daysAvailable}</p>
-          <h2 className="text-xl">Days Available</h2>
-        </div>
-        <div className={gridstyle}>
-          <p className="text-2xl">{stats.pendingRequests}</p>
-          <h2 className="text-xl">Pending Requests</h2>
-        </div>
-        <div className={gridstyle}>
-          <p className="text-2xl">{stats.daysTaken}</p>
-          <h2 className="text-xl">Days Taken Off</h2>
-        </div>
-        <div className={gridstyle}>
-          <p className="text-2xl">{stats.totalPTOPerYear}</p>
-          <h2 className="text-xl">Total PTO per Year</h2>
+    <div className="w-full">
+      <div className="rounded-2xl bg-base-100 p-6 shadow-xl">
+        <h2 className="text-xl font-semibold">Your PTO Snapshot</h2>
+        <div className="mt-6 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="rounded-2xl border border-base-content/5 bg-base-100 py-3 text-center shadow-lg">
+            <p className="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
+              Days Available
+            </p>
+            <p className="text-3xl font-semibold text-base-content">{daysAvailable()}</p>
+          </div>
+
+          <div className="rounded-2xl border border-base-content/5 bg-base-100 py-3 text-center shadow-lg">
+            <p className="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
+              Pending Requests
+            </p>
+            <p className="text-3xl font-semibold text-base-content">{pendingRequests()}</p>
+          </div>
+
+          <div className="rounded-2xl border border-base-content/5 bg-base-100 py-3 text-center shadow-lg">
+            <p className="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
+              Days Taken Off
+            </p>
+            <p className="text-3xl font-semibold text-base-content">{daysTakenOff()}</p>
+          </div>
+
+          <div className="rounded-2xl border border-base-content/5 bg-base-100 py-3 text-center shadow-lg">
+            <p className="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
+              Total PTO per Year
+            </p>
+            <p className="text-3xl font-semibold text-base-content">20</p>
+          </div>
         </div>
       </div>
     </div>
