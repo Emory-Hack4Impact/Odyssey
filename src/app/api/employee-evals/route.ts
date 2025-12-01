@@ -10,6 +10,58 @@ import {
   UpdateEmployeeEval,
 } from "./index";
 
+export async function PATCH(req: Request) {
+  try {
+    const body = (await req.json()) as {
+      evaluationId?: string;
+      approvedBy?: string;
+    };
+
+    if (!body.evaluationId || !body.approvedBy) {
+      return NextResponse.json(
+        { error: "evaluationId and approvedBy are required" },
+        { status: 400 },
+      );
+    }
+
+    const { prisma } = await import("@/lib/prisma");
+
+    const meta = await prisma.employeeEvaluationMetadata.findUnique({
+      where: { evaluationId: body.evaluationId },
+      select: { approved: true },
+    });
+
+    if (!meta) {
+      return NextResponse.json({ error: "metadata not found" }, { status: 404 });
+    }
+
+    if (meta.approved) {
+      await prisma.employeeEvaluationMetadata.update({
+        where: { evaluationId: body.evaluationId },
+        data: {
+          approved: false,
+          approvedAt: null,
+          approvedBy: null,
+        },
+      });
+    } else {
+      await prisma.employeeEvaluationMetadata.update({
+        where: { evaluationId: body.evaluationId },
+        data: {
+          approved: true,
+          approvedAt: new Date(),
+          approvedBy: body.approvedBy,
+        },
+      });
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("/api/employee-evals PATCH error", err);
+    return NextResponse.json({ error: String(err) }, { status: 500 });
+  }
+}
+
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
