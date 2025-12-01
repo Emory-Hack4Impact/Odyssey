@@ -1,36 +1,87 @@
-"use client";
-
 import { SubmitTimeOff, type SubmitTimeOffRequest } from "@/app/api/time-off-req";
-import React, { useState } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 
 export interface FormData {
   leaveType: string;
   otherLeaveType: string;
-  startDate: string;
-  endDate: string;
+  startDate: Date;
+  endDate: Date;
   comments: string;
+  approved: boolean;
 }
 
-interface TimeOffFormProps {
+export type TimeOffRequest = FormData & {
+  id: number;
   employeeId: string;
-  onSuccess?: () => void;
-}
+  startDate: Date;
+  endDate: Date;
+};
 
-const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
+type FormError = Partial<
+  Omit<FormData, "startDate" | "endDate"> & { startDate: string; endDate: string }
+>;
+
+const validDate = (
+  startDate: string,
+  endDate: string,
+  daysAvailable: number,
+): { field: "startDate" | "endDate"; message: string } | null => {
+  const today = new Date();
+  const endOfYear = new Date(today.getFullYear(), 11, 31);
+
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  if (start < today) return { field: "startDate", message: "Start date must be in the future." };
+  if (end < start) return { field: "endDate", message: "End date cannot be before start date." };
+  if (end > endOfYear) return { field: "endDate", message: "End date must be before December 31." };
+
+  const diffDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  if (diffDays > daysAvailable)
+    return { field: "endDate", message: `You only have ${daysAvailable} day(s) remaining.` };
+
+  return null;
+};
+
+const TimeOffForm = ({
+  setRequests,
+  requests,
+  userId,
+}: {
+  setRequests: Dispatch<SetStateAction<TimeOffRequest[]>>;
+  requests: TimeOffRequest[];
+  userId: string;
+}) => {
   const [formData, setFormData] = useState<SubmitTimeOffRequest>({
-    id: employeeId,
+    id: userId,
     leaveType: "",
     otherLeaveType: "",
     startDate: "",
     endDate: "",
     comments: "",
+    approved: false,
   });
 
   const [showOtherLeaveTypeField, setShowOtherLeaveTypeField] = useState<boolean>(false);
-  const [formErrors, setFormErrors] = useState<Partial<FormData>>({});
+  const [formErrors, setFormErrors] = useState<FormError>({});
 
-  const [characterCount, setCharacterCount] = useState(0); // Track character count
-  const maxChars = 150; // Maximum character limit
+  const [characterCount, setCharacterCount] = useState(0);
+  const maxChars = 150;
+
+  const daysAvailable = () => {
+    const approved = requests.filter((requests) => requests.approved);
+
+    const totalDays = approved.reduce((total, request) => {
+      const start = new Date(request.startDate);
+      const end = new Date(request.endDate);
+
+      const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+      return total + days;
+    }, 0);
+
+    return 20 - totalDays;
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -48,7 +99,7 @@ const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
     }
 
     if (name === "comments") {
-      setCharacterCount(value.length); // Update character count
+      setCharacterCount(value.length);
     }
 
     setFormData((prevState) => ({
@@ -59,7 +110,7 @@ const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const errors: Partial<FormData> = {};
+    const errors: FormError = {};
 
     if (!formData.leaveType) {
       errors.leaveType = "*required";
@@ -67,90 +118,62 @@ const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
 
     if (!formData.startDate) {
       errors.startDate = "*required";
-    } else {
-      // Validate date format
-      const date = new Date(formData.startDate);
-      if (isNaN(date.getTime())) {
-        errors.startDate = "*invalid date";
-      }
     }
 
     if (!formData.endDate) {
       errors.endDate = "*required";
-    } else {
-      // Validate date format
-      const date = new Date(formData.endDate);
-      if (isNaN(date.getTime())) {
-        errors.endDate = "*invalid date";
-      }
     }
 
-    // Validate end date is after start date
-    if (formData.startDate && formData.endDate) {
-      const start = new Date(formData.startDate);
-      const end = new Date(formData.endDate);
-      if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && end < start) {
-        errors.endDate = "*end date must be after start date";
-      }
+    const dateError = validDate(formData.startDate, formData.endDate, daysAvailable());
+    if (dateError) {
+      errors[dateError.field] = dateError.message;
     }
 
     setFormErrors(errors);
 
     if (Object.keys(errors).length === 0) {
       try {
-        console.log("Submitting form data:", formData);
-        const result = await SubmitTimeOff(formData);
-        console.log(`Successfully submitted time off request: ${result.id}`);
-
-        // Reset form
+        const newRequest = await SubmitTimeOff(formData);
+        setRequests((prev) => [newRequest, ...prev]);
         setFormData({
-          id: employeeId,
+          id: formData.id,
           leaveType: "",
           otherLeaveType: "",
           startDate: "",
           endDate: "",
           comments: "",
+          approved: false,
         });
-        setShowOtherLeaveTypeField(false);
-        setFormErrors({});
         setCharacterCount(0);
-
-        // Trigger refresh callback
-        if (onSuccess) {
-          onSuccess();
-        }
       } catch (e) {
-        console.error("Error submitting request:", e);
-        const errorMessage = e instanceof Error ? e.message : "Unknown error occurred";
-        alert(`Failed to submit request: ${errorMessage}. Please try again.`);
+        console.error("Error submitting time off request:", e);
       }
-    } else {
-      console.log("Form validation errors:", errors);
     }
   };
 
   return (
-    <div className="mx-auto w-full max-w-3xl">
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-md">
-        <h2 className="mb-6 text-lg font-semibold text-gray-800">Request Time Off</h2>
+    <div className="card h-full w-full border border-base-content/5 bg-base-100 shadow-xl">
+      <div className="card-body space-y-5">
+        <div>
+          <p className="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
+            Submit a request
+          </p>
+          <h2 className="card-title text-2xl font-semibold">Request Time Off</h2>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label htmlFor="leaveType" className="mb-1 block text-sm font-medium text-gray-700">
-              Leave Type
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text text-base font-semibold">Leave Type</span>
             </label>
             <select
               id="leaveType"
               name="leaveType"
               value={formData.leaveType}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:outline-none ${
-                formErrors.leaveType
-                  ? "border-red-300 focus:border-red-500 focus:ring-red-200"
-                  : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
-              }`}
+              className="select-bordered select w-full text-base"
             >
-              <option value="">Select a Type</option>
+              <option value="">Select Leave Type</option>
               <option value="Annual Leave">Annual Leave</option>
               <option value="Sick Leave">Sick Leave</option>
               <option value="Bereavement">Bereavement</option>
@@ -160,17 +183,14 @@ const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
               <option value="Other">Other</option>
             </select>
             {formErrors.leaveType && (
-              <p className="mt-1 text-xs text-red-500">{formErrors.leaveType}</p>
+              <p className="mt-1 text-sm text-error">{formErrors.leaveType}</p>
             )}
           </div>
 
           {showOtherLeaveTypeField && (
-            <div>
-              <label
-                htmlFor="otherLeaveType"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
-                Specify Leave Type
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text text-base font-semibold">Other Leave Type</span>
               </label>
               <input
                 type="text"
@@ -178,16 +198,15 @@ const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
                 name="otherLeaveType"
                 value={formData.otherLeaveType}
                 onChange={handleChange}
-                placeholder="Enter leave type"
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none"
+                className="input-bordered input w-full"
               />
             </div>
           )}
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label htmlFor="startDate" className="mb-1 block text-sm font-medium text-gray-700">
-                Date From
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text text-base font-semibold">Start Date</span>
               </label>
               <input
                 type="date"
@@ -195,19 +214,16 @@ const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
                 name="startDate"
                 value={formData.startDate}
                 onChange={handleChange}
-                className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:outline-none ${
-                  formErrors.startDate
-                    ? "border-red-300 focus:border-red-500 focus:ring-red-200"
-                    : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
-                }`}
+                className="input-bordered input w-full"
               />
               {formErrors.startDate && (
-                <p className="mt-1 text-xs text-red-500">{formErrors.startDate}</p>
+                <p className="mt-1 text-sm text-error">{formErrors.startDate}</p>
               )}
             </div>
-            <div>
-              <label htmlFor="endDate" className="mb-1 block text-sm font-medium text-gray-700">
-                Date To
+
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text text-base font-semibold">End Date</span>
               </label>
               <input
                 type="date"
@@ -215,21 +231,17 @@ const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
                 name="endDate"
                 value={formData.endDate}
                 onChange={handleChange}
-                className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:outline-none ${
-                  formErrors.endDate
-                    ? "border-red-300 focus:border-red-500 focus:ring-red-200"
-                    : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
-                }`}
+                className="input-bordered input w-full"
               />
               {formErrors.endDate && (
-                <p className="mt-1 text-xs text-red-500">{formErrors.endDate}</p>
+                <p className="mt-1 text-sm text-error">{formErrors.endDate}</p>
               )}
             </div>
           </div>
 
-          <div>
-            <label htmlFor="comments" className="mb-1 block text-sm font-medium text-gray-700">
-              Additional Information
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text text-base font-semibold">Additional Information</span>
             </label>
             <textarea
               id="comments"
@@ -237,24 +249,18 @@ const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
               value={formData.comments}
               onChange={handleChange}
               maxLength={150}
-              placeholder="Notes"
-              rows={3}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none"
+              rows={4}
+              className="textarea-bordered textarea w-full text-base"
             />
-            <div className="mt-1 flex justify-end">
-              <p
-                className={`text-xs ${characterCount >= maxChars ? "text-red-500" : "text-gray-500"}`}
-              >
-                {characterCount}/{maxChars}
-              </p>
-            </div>
+            <label className="label justify-end">
+              <span className="label-text-alt text-base-content/70">
+                Characters remaining: {maxChars - characterCount}
+              </span>
+            </label>
           </div>
 
-          <div className="flex justify-end pt-2">
-            <button
-              type="submit"
-              className="rounded-md bg-blue-600 px-6 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
-            >
+          <div className="form-control pt-1">
+            <button type="submit" className="btn text-base font-semibold btn-primary">
               Submit Request
             </button>
           </div>

@@ -1,125 +1,81 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import { GetTimeOffRequests } from "@/app/api/time-off-req";
+import React from "react";
+import { type TimeOffRequest } from "./TimeOffForm";
 
-interface StatusTableProps {
-  employeeId: string;
-  refreshTrigger?: number;
-}
-
-interface TimeOffRequest {
-  id: number;
-  leaveType: string;
-  otherLeaveType: string;
-  startDate: Date;
-  endDate: Date;
-  comments: string;
-  status: string;
-}
-
-const StatusTable: React.FC<StatusTableProps> = ({ employeeId, refreshTrigger = 0 }) => {
-  const [requests, setRequests] = useState<TimeOffRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchRequests = async () => {
-      setLoading(true);
-      try {
-        const data = await GetTimeOffRequests(employeeId);
-        setRequests(data);
-      } catch (error) {
-        console.error("Error fetching time off requests:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    void fetchRequests();
-  }, [employeeId, refreshTrigger]);
-
-  const formatDate = (date: Date): string => {
-    const d = new Date(date);
-    return `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}/${d.getFullYear()}`;
-  };
-
-  const getStatusColor = (status: string): string => {
-    switch (status) {
-      case "APPROVED":
-        return "text-green-600";
-      case "DECLINED":
-        return "text-red-600";
-      case "PENDING":
-      default:
-        return "text-yellow-600";
-    }
-  };
-
-  const getStatusText = (status: string): string => {
-    switch (status) {
-      case "APPROVED":
-        return "Accepted";
-      case "DECLINED":
-        return "Declined";
-      case "PENDING":
-      default:
-        return "Pending";
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="w-full">
-        <h2 className="mb-4 text-xl font-semibold text-gray-800">Status of Requests</h2>
-        <div className="overflow-x-auto rounded-lg bg-gray-50 p-8">
-          <div className="flex items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600"></div>
-          </div>
-        </div>
-      </div>
-    );
+const formatDate = (date: Date): string => {
+  if (!(date instanceof Date) || isNaN(date.getTime())) {
+    return "N/A";
   }
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "UTC",
+  });
+};
 
-  if (requests.length === 0) {
-    return (
-      <div className="w-full">
-        <h2 className="mb-4 text-xl font-semibold text-gray-800">Status of Requests</h2>
-        <div className="overflow-x-auto rounded-lg bg-gray-50 p-8">
-          <p className="text-center text-gray-500">No time off requests yet</p>
-        </div>
-      </div>
-    );
-  }
-
+const StatusTable = ({ requests }: { requests: TimeOffRequest[] }) => {
   return (
-    <div className="w-full">
-      <h2 className="mb-4 text-xl font-semibold text-gray-800">Status of Requests</h2>
-      <div className="overflow-x-auto rounded-lg bg-gray-50">
-        <table className="w-full min-w-max border-collapse text-left text-sm">
-          <thead>
-            <tr className="border-b border-gray-200 bg-gray-100">
-              <th className="px-4 py-3 font-medium text-gray-700">Leave Type</th>
-              <th className="px-4 py-3 font-medium text-gray-700">Date From</th>
-              <th className="px-4 py-3 font-medium text-gray-700">Date To</th>
-              <th className="px-4 py-3 font-medium text-gray-700">Additional Info</th>
-              <th className="px-4 py-3 font-medium text-gray-700">Status</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white">
-            {requests.map((request) => (
-              <tr key={request.id} className="border-b border-gray-200 hover:bg-gray-50">
-                <td className="px-4 py-3 text-gray-900">
-                  {request.leaveType === "Other" ? request.otherLeaveType : request.leaveType}
-                </td>
-                <td className="px-4 py-3 text-gray-700">{formatDate(request.startDate)}</td>
-                <td className="px-4 py-3 text-gray-700">{formatDate(request.endDate)}</td>
-                <td className="px-4 py-3 text-gray-700">{request.comments || "-"}</td>
-                <td className={`px-4 py-3 font-medium ${getStatusColor(request.status)}`}>
-                  {getStatusText(request.status)}
-                </td>
+    <div className="card h-full w-full border border-base-content/5 bg-base-100 shadow-xl">
+      <div className="card-body gap-5">
+        <div>
+          <p className="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
+            Recent activity
+          </p>
+          <h2 className="card-title text-2xl font-semibold">Request History</h2>
+        </div>
+        <div className="rounded-box border border-base-200">
+          <table className="table-compact table w-full">
+            <thead>
+              <tr className="bg-base-200 text-xs font-semibold tracking-wide text-base-content uppercase">
+                <th className="w-1/5">Leave Type</th>
+                <th className="w-1/6">Date From</th>
+                <th className="w-1/6">Date To</th>
+                <th className="w-2/5">Additional Info</th>
+                <th className="w-1/6 text-center">Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {requests.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-6 text-center text-base-content/60">
+                    No time off requests submitted yet.
+                  </td>
+                </tr>
+              ) : (
+                requests.map((request) => {
+                  const leaveLabel =
+                    request.leaveType === "Other" ? request.otherLeaveType : request.leaveType;
+
+                  return (
+                    <tr key={request.id} className="text-sm">
+                      <td className="align-top font-medium break-words">{leaveLabel}</td>
+                      <td className="align-top whitespace-nowrap text-base-content/80">
+                        {formatDate(request.startDate)}
+                      </td>
+                      <td className="align-top whitespace-nowrap text-base-content/80">
+                        {formatDate(request.endDate)}
+                      </td>
+                      <td className="align-top break-words text-base-content/80">
+                        {request.comments || "—"}
+                      </td>
+                      <td className="text-center align-top">
+                        <span
+                          className={`badge ${
+                            request.approved
+                              ? "badge-outline badge-success"
+                              : "badge-outline badge-warning"
+                          }`}
+                        >
+                          {request.approved ? "Approved" : "Pending"}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

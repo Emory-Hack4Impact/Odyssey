@@ -8,46 +8,44 @@ import { usePathname } from "next/navigation";
 export default function NavBar() {
   const pathname = usePathname() || "/";
 
-  const isActive = (href: string, exact = false) => {
-    if (!href) return false;
+  const activeClass = (href: string, exact = false) => {
+    if (!href) return "";
     // exact match or href is a prefix of the pathname (e.g. /dashboard -> /dashboard/xyz)
-    return pathname === href || (!exact && pathname.startsWith(href + "/"));
+    return pathname === href || (!exact && pathname.startsWith(href + "/")) ? "btn-neutral" : "";
   };
 
   return (
-    <nav className="navbar bg-gray-100 px-5 shadow-sm">
-      <div className="flex items-center gap-6">
-        <Image width={125} height={125} src="/logo.png" alt="logo" />
-        <ul className="flex items-center gap-4 whitespace-pre">
-          <li>
+    <nav className="navbar justify-between bg-base-100 px-5 shadow-sm">
+      <Image width={125} height={125} src="/logo.png" alt="logo" />
+      <div className="flex flex-row items-center">
+        <ul className="flex h-full w-full items-center gap-8 whitespace-pre">
+          <li className="h-full w-full">
             <Link
               href="/dashboard"
-              className={`btn rounded-full border-none bg-white font-normal text-gray-800 hover:bg-gray-100 hover:text-gray-800 ${isActive("/dashboard", true) ? "!bg-black !text-white hover:!bg-gray-800 hover:!text-white" : ""}`}
+              className={`btn rounded-full ${activeClass("/dashboard", true)}`}
             >
               Dashboard
             </Link>
           </li>
-          <li>
+          <li className="h-full w-full">
             <Link
               href="/dashboard/hrservices"
-              className={`btn rounded-full border-none bg-white font-normal text-gray-800 hover:bg-gray-100 hover:text-gray-800 ${isActive("/dashboard/hrservices") ? "!bg-black !text-white hover:!bg-gray-800 hover:!text-white" : ""}`}
+              className={`btn rounded-full ${activeClass("/dashboard/hrservices")}`}
             >
               HR Services
             </Link>
           </li>
-          <li>
+          <li className="h-full w-full">
             <Link
               href="/dashboard/bulletin"
-              className={`btn rounded-full border-none bg-white font-normal text-gray-800 hover:bg-gray-100 hover:text-gray-800 ${isActive("/dashboard/bulletin") ? "!bg-black !text-white hover:!bg-gray-800 hover:!text-white" : ""}`}
+              className={`btn rounded-full ${activeClass("/dashboard/bulletin")}`}
             >
               Events & Announcements
             </Link>
           </li>
-          <li>
+          <li className="h-full w-full">
             <form action="/api/auth/signout" method="post" className="">
-              <button className="btn rounded-full border-none bg-white font-normal text-gray-800 hover:bg-gray-100">
-                Sign out
-              </button>
+              <button className="btn rounded-full">Sign out</button>
             </form>
           </li>
         </ul>
