@@ -15,6 +15,9 @@ interface FetchedEvalMeta {
   employeeFirstName: string;
   employeeLastName: string;
   year: number;
+  approved?: boolean;
+  approvedAt?: string | null;
+  approvedBy?: string | null;
 }
 
 interface FetchedEval extends FetchedEvalMeta {
@@ -102,6 +105,12 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
         employeeFirstName: meta.employeeFirstName,
         employeeLastName: meta.employeeLastName,
         year: Number(meta.year ?? 0),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        approved: Boolean((meta as any).approved ?? false),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        approvedAt: ((meta as any).approvedAt as string) ?? null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        approvedBy: ((meta as any).approvedBy as string) ?? null,
       })) as FetchedEvalMeta[];
       setEmployeeEvalsMeta(normalized ?? []);
     } catch (error) {
@@ -109,6 +118,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     void fetchEvalMeta();
   }, []);
@@ -250,7 +260,8 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                     <thead>
                       <tr className="bg-base-200 text-xs font-semibold tracking-wide text-base-content uppercase">
                         <th className="w-1/2">Name</th>
-                        <th className="w-1/4">Year</th>
+                        <th className="w-1/6">Year</th>
+                        <th className="w-1/6">Status</th>
                         <th className="w-1/2 text-center">Action</th>
                       </tr>
                     </thead>
@@ -268,21 +279,124 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                               {employeeEval.employeeLastName}, {employeeEval.employeeFirstName}
                             </td>
                             <td className="align-top font-medium">{employeeEval.year}</td>
+                            <td className="align-top">
+                              {employeeEval.approved ? (
+                                <span className="badge badge-success">Approved</span>
+                              ) : (
+                                <span className="badge">Submitted</span>
+                              )}
+                            </td>
                             <td className="text-center align-top">
-                              <button
-                                className="btn btn-outline btn-sm"
-                                onClick={async () => {
-                                  const evalData = await fetchEvalByID(employeeEval.evaluationId);
-                                  if (evalData) {
-                                    setSelectedEval({ ...employeeEval, ...evalData });
-                                    setIsOpened(true);
-                                  } else {
-                                    alert("Failed to load evaluation");
-                                  }
-                                }}
-                              >
-                                View
-                              </button>
+                              <div className="flex items-center justify-center gap-2">
+                                <button
+                                  className="btn btn-outline btn-sm"
+                                  onClick={async () => {
+                                    const evalData = await fetchEvalByID(employeeEval.evaluationId);
+                                    if (evalData) {
+                                      setSelectedEval({ ...employeeEval, ...evalData });
+                                      setIsOpened(true);
+                                    } else {
+                                      alert("Failed to load evaluation");
+                                    }
+                                  }}
+                                >
+                                  View
+                                </button>
+
+                                <button
+                                  className="btn btn-outline btn-sm"
+                                  onClick={async () => {
+                                    try {
+                                      const evalData = await fetchEvalByID(
+                                        employeeEval.evaluationId,
+                                      );
+                                      if (!evalData) {
+                                        alert("Failed to load evaluation");
+                                        return;
+                                      }
+                                      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                                      const reason =
+                                        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                                        window.prompt("Reason for resubmission:", "") || "";
+                                      const today = new Date().toISOString().slice(0, 10);
+                                      const tag = `[Resubmission Requested on ${today}]${reason ? ` Reason: ${reason}` : ""}`;
+                                      const newNotes = `${tag}\n\n${evalData.notes ?? ""}`;
+
+                                      const payload = {
+                                        strengths: evalData.strengths ?? "",
+                                        weaknesses: evalData.weaknesses ?? "",
+                                        improvements: evalData.improvements ?? "",
+                                        notes: newNotes,
+                                        communication: Number(evalData.communication ?? 0),
+                                        leadership: Number(evalData.leadership ?? 0),
+                                        timeliness: Number(evalData.timeliness ?? 0),
+                                        skill1: Number(evalData.skill1 ?? 0),
+                                        skill2: Number(evalData.skill2 ?? 0),
+                                        skill3: Number(evalData.skill3 ?? 0),
+                                      };
+
+                                      const metadata = {
+                                        employeeId: employeeEval.employeeId ?? undefined,
+                                        submitterId: employeeEval.submitterId ?? undefined,
+                                        year: employeeEval.year,
+                                      };
+
+                                      const resp = await fetch("/api/employee-evals", {
+                                        method: "PUT",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({
+                                          id: employeeEval.evaluationId,
+                                          data: payload,
+                                          metadata,
+                                        }),
+                                      });
+                                      const res = await resp.json();
+                                      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                                      if (!resp.ok)
+                                        throw new Error(
+                                          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                                          res?.error ?? "Failed to request resubmission",
+                                        );
+                                      alert("Resubmission requested");
+                                    } catch (err) {
+                                      console.error(err);
+                                      alert("Failed to request resubmission");
+                                    }
+                                  }}
+                                >
+                                  Resubmit
+                                </button>
+
+                                <button
+                                  className="btn btn-outline btn-sm"
+                                  onClick={async () => {
+                                    try {
+                                      const resp = await fetch("/api/employee-evals", {
+                                        method: "PATCH",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({
+                                          evaluationId: employeeEval.evaluationId,
+                                          approvedBy: _userId,
+                                        }),
+                                      });
+
+                                      const res = await resp.json();
+
+                                      if (!resp.ok) {
+                                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                                        throw new Error(res?.error ?? "Failed to toggle approval");
+                                      }
+
+                                      await fetchEvalMeta();
+                                    } catch (err) {
+                                      console.error(err);
+                                      alert("Failed to toggle approval");
+                                    }
+                                  }}
+                                >
+                                  {employeeEval.approved ? "Unapprove" : "Approve"}
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))
