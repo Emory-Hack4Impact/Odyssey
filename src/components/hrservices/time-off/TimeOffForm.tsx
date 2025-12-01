@@ -1,87 +1,36 @@
+"use client";
+
 import { SubmitTimeOff, type SubmitTimeOffRequest } from "@/app/api/time-off-req";
-import { type Dispatch, type SetStateAction, useState } from "react";
+import React, { useState } from "react";
 
 export interface FormData {
   leaveType: string;
   otherLeaveType: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: string;
+  endDate: string;
   comments: string;
-  approved: boolean;
 }
 
-export type TimeOffRequest = FormData & {
-  id: number;
+interface TimeOffFormProps {
   employeeId: string;
-  startDate: Date;
-  endDate: Date;
-};
+  onSuccess?: () => void;
+}
 
-type FormError = Partial<
-  Omit<FormData, "startDate" | "endDate"> & { startDate: string; endDate: string }
->;
-
-const validDate = (
-  startDate: string,
-  endDate: string,
-  daysAvailable: number,
-): { field: "startDate" | "endDate"; message: string } | null => {
-  const today = new Date();
-  const endOfYear = new Date(today.getFullYear(), 11, 31);
-
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-
-  if (start < today) return { field: "startDate", message: "Start date must be in the future." };
-  if (end < start) return { field: "endDate", message: "End date cannot be before start date." };
-  if (end > endOfYear) return { field: "endDate", message: "End date must be before December 31." };
-
-  const diffDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-  if (diffDays > daysAvailable)
-    return { field: "endDate", message: `You only have ${daysAvailable} day(s) remaining.` };
-
-  return null;
-};
-
-const TimeOffForm = ({
-  setRequests,
-  requests,
-  userId,
-}: {
-  setRequests: Dispatch<SetStateAction<TimeOffRequest[]>>;
-  requests: TimeOffRequest[];
-  userId: string;
-}) => {
+const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
   const [formData, setFormData] = useState<SubmitTimeOffRequest>({
-    id: userId,
+    id: employeeId,
     leaveType: "",
     otherLeaveType: "",
     startDate: "",
     endDate: "",
     comments: "",
-    approved: false,
   });
 
   const [showOtherLeaveTypeField, setShowOtherLeaveTypeField] = useState<boolean>(false);
-  const [formErrors, setFormErrors] = useState<FormError>({});
+  const [formErrors, setFormErrors] = useState<Partial<FormData>>({});
 
-  const [characterCount, setCharacterCount] = useState(0);
-  const maxChars = 150;
-
-  const daysAvailable = () => {
-    const approved = requests.filter((requests) => requests.approved);
-
-    const totalDays = approved.reduce((total, request) => {
-      const start = new Date(request.startDate);
-      const end = new Date(request.endDate);
-
-      const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-
-      return total + days;
-    }, 0);
-
-    return 20 - totalDays;
-  };
+  const [characterCount, setCharacterCount] = useState(0); // Track character count
+  const maxChars = 150; // Maximum character limit
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -99,7 +48,7 @@ const TimeOffForm = ({
     }
 
     if (name === "comments") {
-      setCharacterCount(value.length);
+      setCharacterCount(value.length); // Update character count
     }
 
     setFormData((prevState) => ({
@@ -110,7 +59,7 @@ const TimeOffForm = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const errors: FormError = {};
+    const errors: Partial<FormData> = {};
 
     if (!formData.leaveType) {
       errors.leaveType = "*required";
@@ -118,62 +67,90 @@ const TimeOffForm = ({
 
     if (!formData.startDate) {
       errors.startDate = "*required";
+    } else {
+      // Validate date format
+      const date = new Date(formData.startDate);
+      if (isNaN(date.getTime())) {
+        errors.startDate = "*invalid date";
+      }
     }
 
     if (!formData.endDate) {
       errors.endDate = "*required";
+    } else {
+      // Validate date format
+      const date = new Date(formData.endDate);
+      if (isNaN(date.getTime())) {
+        errors.endDate = "*invalid date";
+      }
     }
 
-    const dateError = validDate(formData.startDate, formData.endDate, daysAvailable());
-    if (dateError) {
-      errors[dateError.field] = dateError.message;
+    // Validate end date is after start date
+    if (formData.startDate && formData.endDate) {
+      const start = new Date(formData.startDate);
+      const end = new Date(formData.endDate);
+      if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && end < start) {
+        errors.endDate = "*end date must be after start date";
+      }
     }
 
     setFormErrors(errors);
 
     if (Object.keys(errors).length === 0) {
       try {
-        const newRequest = await SubmitTimeOff(formData);
-        setRequests((prev) => [newRequest, ...prev]);
+        console.log("Submitting form data:", formData);
+        const result = await SubmitTimeOff(formData);
+        console.log(`Successfully submitted time off request: ${result.id}`);
+
+        // Reset form
         setFormData({
-          id: formData.id,
+          id: employeeId,
           leaveType: "",
           otherLeaveType: "",
           startDate: "",
           endDate: "",
           comments: "",
-          approved: false,
         });
+        setShowOtherLeaveTypeField(false);
+        setFormErrors({});
         setCharacterCount(0);
+
+        // Trigger refresh callback
+        if (onSuccess) {
+          onSuccess();
+        }
       } catch (e) {
-        console.error("Error submitting time off request:", e);
+        console.error("Error submitting request:", e);
+        const errorMessage = e instanceof Error ? e.message : "Unknown error occurred";
+        alert(`Failed to submit request: ${errorMessage}. Please try again.`);
       }
+    } else {
+      console.log("Form validation errors:", errors);
     }
   };
 
   return (
-    <div className="card h-full w-full border border-base-content/5 bg-base-100 shadow-xl">
-      <div className="card-body space-y-5">
-        <div>
-          <p className="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
-            Submit a request
-          </p>
-          <h2 className="card-title text-2xl font-semibold">Request Time Off</h2>
-        </div>
+    <div className="mx-auto w-full max-w-3xl">
+      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-md">
+        <h2 className="mb-6 text-lg font-semibold text-gray-800">Request Time Off</h2>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text text-base font-semibold">Leave Type</span>
+          <div>
+            <label htmlFor="leaveType" className="mb-1 block text-sm font-medium text-gray-700">
+              Leave Type
             </label>
             <select
               id="leaveType"
               name="leaveType"
               value={formData.leaveType}
               onChange={handleChange}
-              className="select-bordered select w-full text-base"
+              className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:outline-none ${
+                formErrors.leaveType
+                  ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                  : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
+              }`}
             >
-              <option value="">Select Leave Type</option>
+              <option value="">Select a Type</option>
               <option value="Annual Leave">Annual Leave</option>
               <option value="Sick Leave">Sick Leave</option>
               <option value="Bereavement">Bereavement</option>
@@ -183,14 +160,17 @@ const TimeOffForm = ({
               <option value="Other">Other</option>
             </select>
             {formErrors.leaveType && (
-              <p className="mt-1 text-sm text-error">{formErrors.leaveType}</p>
+              <p className="mt-1 text-xs text-red-500">{formErrors.leaveType}</p>
             )}
           </div>
 
           {showOtherLeaveTypeField && (
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text text-base font-semibold">Other Leave Type</span>
+            <div>
+              <label
+                htmlFor="otherLeaveType"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
+                Specify Leave Type
               </label>
               <input
                 type="text"
@@ -198,15 +178,16 @@ const TimeOffForm = ({
                 name="otherLeaveType"
                 value={formData.otherLeaveType}
                 onChange={handleChange}
-                className="input-bordered input w-full"
+                placeholder="Enter leave type"
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none"
               />
             </div>
           )}
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text text-base font-semibold">Start Date</span>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <label htmlFor="startDate" className="mb-1 block text-sm font-medium text-gray-700">
+                Date From
               </label>
               <input
                 type="date"
@@ -214,16 +195,19 @@ const TimeOffForm = ({
                 name="startDate"
                 value={formData.startDate}
                 onChange={handleChange}
-                className="input-bordered input w-full"
+                className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:outline-none ${
+                  formErrors.startDate
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                    : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
+                }`}
               />
               {formErrors.startDate && (
-                <p className="mt-1 text-sm text-error">{formErrors.startDate}</p>
+                <p className="mt-1 text-xs text-red-500">{formErrors.startDate}</p>
               )}
             </div>
-
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text text-base font-semibold">End Date</span>
+            <div>
+              <label htmlFor="endDate" className="mb-1 block text-sm font-medium text-gray-700">
+                Date To
               </label>
               <input
                 type="date"
@@ -231,17 +215,21 @@ const TimeOffForm = ({
                 name="endDate"
                 value={formData.endDate}
                 onChange={handleChange}
-                className="input-bordered input w-full"
+                className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:outline-none ${
+                  formErrors.endDate
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                    : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
+                }`}
               />
               {formErrors.endDate && (
-                <p className="mt-1 text-sm text-error">{formErrors.endDate}</p>
+                <p className="mt-1 text-xs text-red-500">{formErrors.endDate}</p>
               )}
             </div>
           </div>
 
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text text-base font-semibold">Additional Information</span>
+          <div>
+            <label htmlFor="comments" className="mb-1 block text-sm font-medium text-gray-700">
+              Additional Information
             </label>
             <textarea
               id="comments"
@@ -249,18 +237,24 @@ const TimeOffForm = ({
               value={formData.comments}
               onChange={handleChange}
               maxLength={150}
-              rows={4}
-              className="textarea-bordered textarea w-full text-base"
+              placeholder="Notes"
+              rows={3}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none"
             />
-            <label className="label justify-end">
-              <span className="label-text-alt text-base-content/70">
-                Characters remaining: {maxChars - characterCount}
-              </span>
-            </label>
+            <div className="mt-1 flex justify-end">
+              <p
+                className={`text-xs ${characterCount >= maxChars ? "text-red-500" : "text-gray-500"}`}
+              >
+                {characterCount}/{maxChars}
+              </p>
+            </div>
           </div>
 
-          <div className="form-control pt-1">
-            <button type="submit" className="btn text-base font-semibold btn-primary">
+          <div className="flex justify-end pt-2">
+            <button
+              type="submit"
+              className="rounded-md bg-blue-600 px-6 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+            >
               Submit Request
             </button>
           </div>
