@@ -3,6 +3,7 @@
 import Error from "@/components/Error";
 import { HRServices } from "@/components/hrservices/HRServices";
 import { prisma } from "@/lib/prisma";
+import { getUser } from "@/utils/supabase/server";
 
 export default async function HRServicesPage() {
   const user = (await getUser())!;

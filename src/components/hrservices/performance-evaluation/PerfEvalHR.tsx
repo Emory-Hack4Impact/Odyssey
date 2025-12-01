@@ -111,7 +111,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
 
   useEffect(() => {
     void fetchEvalMeta();
-  }, []);
+  });
 
   return (
     <>
