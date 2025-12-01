@@ -16,6 +16,7 @@ model UserMetadata {
   employeeLastName  String?
   TimeOffRequests TimeOffRequest[]
   Files           Files[]
+  Articles        Article[]
   // NOTE: Prisma requires opposite relation fields when a model has multiple relations
   // to the same target model. These two fields are present to satisfy Prisma's
   // relation mapping and are not intended for direct use in app logic.
@@ -23,6 +24,8 @@ model UserMetadata {
   evaluationsReceivedRelation EmployeeEvaluation[] @relation("ReviewedEmployee")
   // Evaluations submitted by this user — internal relation field
   evaluationsSubmittedRelation EmployeeEvaluation[] @relation("Submitter")
+
+  @@map("UserMetadata")
 }
 
 enum FileTypes {
@@ -88,4 +91,19 @@ model EmployeeEvaluation {
 
   @@index([employeeId])
   @@index([submitterId])
+}
+
+model Article {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String
+  content     String   // Markdown content
+  blurb       String?  // Short description/preview
+  imageUrls   String[] @default([]) // Array of image URLs from Supabase storage
+  authorId    String
+  author      UserMetadata @relation(fields: [authorId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  published   Boolean  @default(false)
+
+  @@index([authorId])
 }
