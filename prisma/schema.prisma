@@ -93,6 +93,11 @@ model EmployeeEvaluationMetadata {
 
   submittedAt DateTime @default(now())
 
+  // admin approval
+  approved   Boolean  @default(false)
+  approvedAt DateTime?
+  approvedBy String?
+
   @@index([employeeId])
   @@index([submitterId])
 }
