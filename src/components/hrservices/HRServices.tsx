@@ -8,7 +8,6 @@ import CareerDev from "@/components/hrservices/career-dev/CareerDev";
 import AdminDocuments from "@/components/hrservices/documents/AdminDocuments";
 import UserDocuments from "@/components/hrservices/documents/UserDocuments";
 import { useState } from "react";
-import CareerDev from "./career-dev/CareerDev";
 
 interface HRServicesProps {
   userId: string;
