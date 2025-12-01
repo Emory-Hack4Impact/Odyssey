@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import HRPerfEvalForm from "./HRPerfEvalForm";
 
 interface HRServicesProps {
@@ -60,7 +60,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
     [key: string]: unknown;
   };
 
-  const fetchEvals = async () => {
+  const fetchEvals = useCallback(async () => {
     try {
       const resp = await fetch("/api/employee-evals");
       const res = await resp.json();
@@ -76,11 +76,11 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
     } catch (error) {
       console.error(error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     void fetchEvals();
-  }, []);
+  }, [fetchEvals]);
 
   return (
     <>
