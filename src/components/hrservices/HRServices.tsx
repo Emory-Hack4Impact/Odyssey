@@ -8,6 +8,7 @@ import TimeOffHR from "@/components/hrservices/time-off/TimeOffHR";
 import AdminDocuments from "@/components/hrservices/documents/AdminDocuments";
 import UserDocuments from "@/components/hrservices/documents/UserDocuments";
 import { useState } from "react";
+import CareerDev from "./career-dev/CareerDev";
 
 interface HRServicesProps {
   userId: string;
@@ -50,7 +51,7 @@ export const HRServices = ({ userId, username, userRole, userMetadata }: HRServi
       component: (
         <div>
           <h2 className="mb-4 text-lg font-medium">Career Development</h2>
-          {/* Insert Career Dev Component */}
+          <CareerDev />,
         </div>
       ),
     },
