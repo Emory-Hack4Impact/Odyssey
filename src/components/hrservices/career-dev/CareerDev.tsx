@@ -1,18 +1,14 @@
 // src/components/hrservices/Career-Development/CareerDev.tsx
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import ReactMarkdown from "react-markdown";
 
 // ---- tiny helpers ----
 function classNames(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
-}
-
-// ---- data access layer (DB later) ----
-// when #33 is complete, swap this with a real fetch
-export async function fetchArticles() {
-  // TODO: replace with DB call. return mock for now
-  return Promise.resolve(articles);
 }
 
 // ---- mock data (replace with live data when #33 ) ----
@@ -40,36 +36,19 @@ const courses = [
   },
 ];
 
-const articles = [
-  {
-    id: 1,
-    title: "Some Article",
-    blurb: "Short description about article",
-    href: "#",
-    image: { src: "/testingfiles/articles/flowers.png", alt: "Article 1 thumbnail" },
-  },
-  {
-    id: 2,
-    title: "Some Article",
-    blurb: "Short description about article",
-    href: "#",
-    image: { src: "/testingfiles/articles/flower2.jpeg", alt: "Article 2 thumbnail" },
-  },
-  {
-    id: 3,
-    title: "Some Article",
-    blurb: "Short description about article",
-    href: "#",
-    image: { src: "/testingfiles/articles/flowers.png", alt: "Article 3 thumbnail" },
-  },
-];
-
-// placeholder long bodies for the modal (mock content)
-const mockArticleBodies: Record<number, string> = {
-  1: "Hard work is often described as the foundation of success. Whether in academics, sports, or creative fields, consistent effort allows people to build knowledge and improve their abilities. Unlike talent, which may come naturally, hard work is a choice that anyone can make. It reflects discipline, focus, and determination. Working hard also builds resilience. When people encounter challenges or setbacks, their persistence helps them recover and learn from mistakes. Over time, this habit strengthens not only their skills but also their confidence. The ability to keep going, even when things are difficult, often separates success from failure. However, hard work should be balanced with rest and reflection. Working endlessly without direction can lead to burnout or frustration. True effort means working smart—setting goals, prioritizing tasks, and learning from feedback. When hard work is guided by purpose, it becomes a powerful tool for personal growth.",
-  2: "Some description about Article 2.",
-  3: "Some description about Article 3.",
-};
+// Article type from database
+interface Article {
+  id: string;
+  title: string;
+  content: string;
+  blurb: string | null;
+  imageUrls: string[];
+  createdAt: string;
+  author: {
+    employeeFirstName: string | null;
+    employeeLastName: string | null;
+  };
+}
 
 const demoEvents = [
   { date: "2025-11-07", label: "Coaching 1:1" },
@@ -225,8 +204,6 @@ function CalendarMini({ events = [] as { date: string; label?: string }[] }) {
   );
 }
 
-import Image from "next/image";
-
 function MediaCard({
   title,
   blurb,
@@ -242,15 +219,32 @@ function MediaCard({
     <div className="group block rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none">
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-2xl bg-gray-200">
         {image?.src ? (
-          <Image
+          <img
             src={image.src}
             alt={image.alt}
-            fill
-            sizes="(min-width:1024px) 33vw,(min-width:640px) 50vw,100vw"
-            className="object-cover"
-            priority={false}
+            className="h-full w-full object-cover"
+            onLoad={() => {
+              console.log("Image loaded successfully:", image.src);
+            }}
+            onError={(e) => {
+              console.error("Image failed to load:", {
+                src: image.src,
+                alt: image.alt,
+                error: e,
+              });
+              // Show a placeholder instead of hiding
+              e.currentTarget.style.display = "none";
+              const placeholder = document.createElement("div");
+              placeholder.className = "flex h-full w-full items-center justify-center bg-gray-300 text-xs text-gray-500";
+              placeholder.textContent = "Image not found";
+              e.currentTarget.parentElement?.appendChild(placeholder);
+            }}
           />
-        ) : null}
+        ) : (
+          <div className="flex h-full items-center justify-center bg-gray-200 text-xs text-gray-400">
+            No image
+          </div>
+        )}
       </div>
       <div className="p-3">
         <div className="text-sm font-medium text-gray-900 group-hover:underline">{title}</div>
@@ -268,18 +262,74 @@ function MediaCard({
   );
 }
 
-export default function CareerDev() {
-  // ---- article modal state ----
-  const [activeArticle, setActiveArticle] = useState<null | {
-    id: number;
-    title: string;
-    blurb: string;
-    body?: string;
-  }>(null);
+interface CareerDevProps {
+  userId: string;
+  userMetadata: {
+    is_admin: boolean;
+    is_hr: boolean;
+    position: string;
+  } | null;
+}
+
+export default function CareerDev({ userId, userMetadata }: CareerDevProps) {
+  // ---- article state ----
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loadingArticles, setLoadingArticles] = useState(true);
+  const [activeArticle, setActiveArticle] = useState<Article | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // Handle hydration by only rendering conditional content after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Fetch articles from API
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        setLoadingArticles(true);
+        const response = await fetch("/api/articles?published=true");
+        const data = await response.json();
+        console.log("Fetched articles:", data.articles);
+        if (data.articles) {
+          // Log each article's image URLs
+          data.articles.forEach((article: Article) => {
+            console.log(`Article "${article.title}":`, {
+              id: article.id,
+              imageUrls: article.imageUrls,
+              hasImages: article.imageUrls && article.imageUrls.length > 0,
+            });
+          });
+          setArticles(data.articles);
+        }
+      } catch (error) {
+        console.error("Error fetching articles:", error);
+      } finally {
+        setLoadingArticles(false);
+      }
+    };
+
+    if (mounted) {
+      fetchArticles();
+    }
+  }, [mounted]);
+
+  // Only user4 can create articles
+  const canCreateArticle = userId === "00000000-0000-0000-0000-000000000004";
 
   return (
     <section className="px-4 py-4 md:px-6 lg:px-8">
-      <h2 className="mb-6 text-xl font-semibold tracking-tight">Upcoming Workshops & Events</h2>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <h2 className="text-xl font-semibold tracking-tight">Upcoming Workshops & Events</h2>
+        {mounted && canCreateArticle && (
+          <Link
+            href="/dashboard/hrservices/career-dev/create"
+            className="btn-primary btn btn-sm whitespace-nowrap"
+          >
+            ➕ Create Article
+          </Link>
+        )}
+      </div>
 
       {/* content grid */}
       <div className="grid gap-6 lg:grid-cols-12">
@@ -311,18 +361,49 @@ export default function CareerDev() {
             <h3 className="text-base font-semibold text-gray-900">
               Featured Career Development Articles
             </h3>
-            <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {articles.map((a) => (
-                <button
-                  key={a.id}
-                  type="button"
-                  onClick={() => setActiveArticle({ ...a, body: mockArticleBodies[a.id] })}
-                  className="text-left"
-                >
-                  <MediaCard title={a.title} blurb={a.blurb} image={a.image} />
-                </button>
-              ))}
-            </div>
+            {loadingArticles ? (
+              <div className="mt-3 text-center text-sm text-gray-500">Loading articles...</div>
+            ) : articles.length === 0 ? (
+              <div className="mt-3 rounded-xl border border-dashed border-base-300 bg-base-100 p-10 text-center text-sm text-base-content/70">
+                No articles available yet. Check back soon!
+              </div>
+            ) : (
+              <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {articles.map((article) => {
+                  const imageUrl = article.imageUrls && article.imageUrls.length > 0 ? article.imageUrls[0] : null;
+                  if (imageUrl) {
+                    console.log(`Article "${article.title}":`, {
+                      imageUrl,
+                      allImageUrls: article.imageUrls,
+                    });
+                  } else {
+                    console.warn(`Article "${article.title}" has no images`);
+                  }
+                  
+                  return (
+                    <button
+                      key={article.id}
+                      type="button"
+                      onClick={() => setActiveArticle(article)}
+                      className="text-left"
+                    >
+                      <MediaCard
+                        title={article.title}
+                        blurb={article.blurb || ""}
+                        image={
+                          imageUrl
+                            ? {
+                                src: imageUrl,
+                                alt: `${article.title} thumbnail`,
+                              }
+                            : undefined
+                        }
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </section>
         </div>
       </div>
@@ -332,9 +413,13 @@ export default function CareerDev() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
           role="dialog"
           aria-modal
+          onClick={() => setActiveArticle(null)}
         >
-          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-xl">
-            <div className="flex items-start justify-between p-4">
+          <div
+            className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 flex items-start justify-between bg-white p-4 border-b">
               <h4 className="text-lg font-semibold">{activeArticle.title}</h4>
               <button
                 className="rounded-full p-1 text-gray-500 hover:bg-gray-100"
@@ -344,9 +429,13 @@ export default function CareerDev() {
                 ✕
               </button>
             </div>
-            <div className="px-4 pb-4 text-gray-700">
-              <p className="mb-2 text-sm text-gray-500">{activeArticle.blurb}</p>
-              <p className="leading-relaxed">{activeArticle.body ?? "Coming soon…"}</p>
+            <div className="px-4 pb-4 pt-4 text-gray-700">
+              {activeArticle.blurb && (
+                <p className="mb-4 text-sm text-gray-500">{activeArticle.blurb}</p>
+              )}
+              <div className="markdown-content">
+                <ReactMarkdown>{activeArticle.content}</ReactMarkdown>
+              </div>
             </div>
           </div>
         </div>
