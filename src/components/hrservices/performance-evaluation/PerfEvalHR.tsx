@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import HRPerfEvalForm from "./HRPerfEvalForm";
 
+// TODO: show when each eval was submitted
+
 interface HRServicesProps {
   userId: string;
   username: string;
@@ -15,6 +17,7 @@ interface FetchedEvalMeta {
   employeeFirstName: string;
   employeeLastName: string;
   year: number;
+  submittedAt: string;
 }
 
 interface FetchedEval extends FetchedEvalMeta {
@@ -41,6 +44,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
     employeeFirstName: "",
     employeeLastName: "",
     year: 2025,
+    submittedAt: "2025-01-01T00:00:00.000Z",
     strengths: "",
     weaknesses: "",
     improvements: "",
@@ -56,6 +60,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
   const [isOpened, setIsOpened] = useState(false);
   const [search, setSearch] = useState("");
   const [yearSearch, setYearSearch] = useState(0);
+  const [onlyRecent, setOnlyRecent] = useState(true);
 
   const filteredEvals = employeeEvalsMeta.filter((evalItem) => {
     if (!search && !yearSearch) return true;
@@ -102,6 +107,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
         employeeFirstName: meta.employeeFirstName,
         employeeLastName: meta.employeeLastName,
         year: Number(meta.year ?? 0),
+        submittedAt: String(meta.submittedAt),
       })) as FetchedEvalMeta[];
       setEmployeeEvalsMeta(normalized ?? []);
     } catch (error) {
@@ -235,6 +241,16 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                   </ul>
                 </div>
               </div>
+
+              <label className="label">
+                <input
+                  type="checkbox"
+                  checked={onlyRecent}
+                  className="checkbox"
+                  onChange={() => setOnlyRecent((prev) => !prev)}
+                />
+                Only show most recent
+              </label>
             </div>
 
             <div className="card h-full w-full border border-base-content/5 bg-base-100 shadow-xl">
@@ -252,6 +268,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                       <tr className="bg-base-200 text-xs font-semibold tracking-wide text-base-content uppercase">
                         <th className="w-1/2">Name</th>
                         <th className="w-1/4">Year</th>
+                        <th className="w-1/4">At</th>
                         <th className="w-1/2 text-center">Action</th>
                       </tr>
                     </thead>
@@ -263,30 +280,54 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                           </td>
                         </tr>
                       ) : (
-                        filteredEvals.map((employeeEval, index) => (
-                          <tr key={index} className="text-sm">
-                            <td className="align-top font-medium">
-                              {employeeEval.employeeLastName}, {employeeEval.employeeFirstName}
-                            </td>
-                            <td className="align-top font-medium">{employeeEval.year}</td>
-                            <td className="text-center align-top">
-                              <button
-                                className="btn btn-outline btn-sm"
-                                onClick={async () => {
-                                  const evalData = await fetchEvalByID(employeeEval.evaluationId);
-                                  if (evalData) {
-                                    setSelectedEval({ ...employeeEval, ...evalData });
-                                    setIsOpened(true);
-                                  } else {
-                                    alert("Failed to load evaluation");
+                        (() => {
+                          const display: FetchedEvalMeta[] = onlyRecent
+                            ? (() => {
+                                const latestByEmployeeYear = new Map<string, FetchedEvalMeta>();
+                                for (const ev of filteredEvals) {
+                                  const key = `${ev.employeeId ?? `${ev.employeeFirstName}_${ev.employeeLastName}`}_${
+                                    ev.year
+                                  }`;
+                                  const existing = latestByEmployeeYear.get(key);
+                                  if (!existing) {
+                                    latestByEmployeeYear.set(key, ev);
+                                    continue;
                                   }
-                                }}
-                              >
-                                View
-                              </button>
-                            </td>
-                          </tr>
-                        ))
+                                  const a = new Date(ev.submittedAt).getTime();
+                                  const b = new Date(existing.submittedAt).getTime();
+                                  if (isNaN(a) && isNaN(b)) continue;
+                                  if (isNaN(b) || a > b) latestByEmployeeYear.set(key, ev);
+                                }
+                                return Array.from(latestByEmployeeYear.values());
+                              })()
+                            : filteredEvals;
+
+                          return display.map((employeeEval, index) => (
+                            <tr key={index} className="text-sm">
+                              <td className="align-top font-medium">
+                                {employeeEval.employeeLastName}, {employeeEval.employeeFirstName}
+                              </td>
+                              <td className="align-top font-medium">{employeeEval.year}</td>
+                              <td className="align-top font-medium">{employeeEval.submittedAt}</td>
+                              <td className="text-center align-top">
+                                <button
+                                  className="btn btn-outline btn-sm"
+                                  onClick={async () => {
+                                    const evalData = await fetchEvalByID(employeeEval.evaluationId);
+                                    if (evalData) {
+                                      setSelectedEval({ ...employeeEval, ...evalData });
+                                      setIsOpened(true);
+                                    } else {
+                                      alert("Failed to load evaluation");
+                                    }
+                                  }}
+                                >
+                                  View
+                                </button>
+                              </td>
+                            </tr>
+                          ));
+                        })()
                       )}
                     </tbody>
                   </table>
