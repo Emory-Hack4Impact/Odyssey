@@ -111,7 +111,8 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
 
   useEffect(() => {
     void fetchEvalMeta();
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>

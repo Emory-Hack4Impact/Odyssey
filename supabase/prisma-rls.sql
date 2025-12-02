@@ -37,4 +37,4 @@ DROP POLICY IF EXISTS "Users can read own metadata" ON "UserMetadata";
 CREATE POLICY "Users can read own metadata"
 ON "UserMetadata"
 FOR SELECT
-USING (id = auth.uid()::text);
+USING (id = auth.uid());
