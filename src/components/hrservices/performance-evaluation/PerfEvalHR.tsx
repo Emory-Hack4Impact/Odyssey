@@ -285,18 +285,15 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                             ? (() => {
                                 const latestByEmployeeYear = new Map<string, FetchedEvalMeta>();
                                 for (const ev of filteredEvals) {
-                                  const key = `${ev.employeeId ?? `${ev.employeeFirstName}_${ev.employeeLastName}`}_${
-                                    ev.year
-                                  }`;
-                                  const existing = latestByEmployeeYear.get(key);
-                                  if (!existing) {
+                                  const key = `${ev.employeeId}_${ev.year}`;
+                                  if (
+                                    !latestByEmployeeYear.get(key) ||
+                                    Date.parse(latestByEmployeeYear.get(key)!.submittedAt) <
+                                      Date.parse(ev.submittedAt)
+                                  ) {
                                     latestByEmployeeYear.set(key, ev);
                                     continue;
                                   }
-                                  const a = new Date(ev.submittedAt).getTime();
-                                  const b = new Date(existing.submittedAt).getTime();
-                                  if (isNaN(a) && isNaN(b)) continue;
-                                  if (isNaN(b) || a > b) latestByEmployeeYear.set(key, ev);
                                 }
                                 return Array.from(latestByEmployeeYear.values());
                               })()
