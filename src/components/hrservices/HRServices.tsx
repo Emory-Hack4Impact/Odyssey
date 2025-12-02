@@ -1,6 +1,5 @@
 "use client";
 
-import PerfEval from "@/components/hrservices/performance-evaluation/PerfEval";
 import PerfEvalEmployee from "@/components/hrservices/performance-evaluation/PerfEvalEmployee";
 import PerfEvalHR from "@/components/hrservices/performance-evaluation/PerfEvalHR";
 import TimeOff from "@/components/hrservices/time-off/TimeOff";
@@ -22,16 +21,10 @@ interface HRServicesProps {
 
 export const HRServices = ({ userId, username, userRole, userMetadata }: HRServicesProps) => {
   const getPerformanceEvaluationComponent = () => {
-    switch (userRole) {
-      case "Employee":
-        return <PerfEvalEmployee userId={userId} username={username} userRole={userRole} />;
-      case "HR":
-        return <PerfEvalHR userId={userId} username={username} userRole={userRole} />;
-      case "Manager":
-        return <PerfEval />;
-      default:
-        return <PerfEval />;
+    if (userMetadata?.is_hr || userMetadata?.is_admin) {
+      return <PerfEvalHR userId={userId} username={username} userRole={userRole} />;
     }
+    return <PerfEvalEmployee userId={userId} username={username} userRole={userRole} />;
   };
 
   const categories = [
