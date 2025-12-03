@@ -78,7 +78,16 @@ const articles = [
 
 // placeholder long bodies for the modal (mock content)
 const mockArticleBodies: Record<number, string> = {
-  1: "Hard work is often described as the foundation of success. Whether in academics, sports, or creative fields, consistent effort allows people to build knowledge and improve their abilities. Unlike talent, which may come naturally, hard work is a choice that anyone can make. It reflects discipline, focus, and determination. Working hard also builds resilience. When people encounter challenges or setbacks, their persistence helps them recover and learn from mistakes. Over time, this habit strengthens not only their skills but also their confidence. The ability to keep going, even when things are difficult, often separates success from failure. However, hard work should be balanced with rest and reflection. Working endlessly without direction can lead to burnout or frustration. True effort means working smart—setting goals, prioritizing tasks, and learning from feedback. When hard work is guided by purpose, it becomes a powerful tool for personal growth. Hard work also creates opportunities. People who consistently show effort are more likely to gain trust from teachers, mentors, and peers. This trust can lead to new responsibilities, leadership roles, or chances to explore interests more deeply. In many ways, effort signals commitment, and others respond to that commitment by offering support and guidance. At the same time, it’s important to remember that hard work looks different for everyone. Some people may need more time to grasp certain skills, while others may face obstacles that make progress slower. What matters most is not how quickly someone improves, but how willing they are to stay engaged with the process. Growth rarely happens all at once; it builds gradually through small, steady steps. Ultimately, hard work is meaningful because it shapes a person’s character. The habits formed through sustained effort—patience, discipline, adaptability—carry into every part of life. These qualities help people navigate future challenges with confidence. Hard work is not simply a path to achievement; it is a way of developing the mindset needed to keep learning, keep improving, and keep moving forward.",
+  1: `Hard work is often described as the foundation of success. Whether in academics, sports, or creative fields, consistent effort allows people to build knowledge and improve their abilities.
+  Unlike talent, which may come naturally, hard work is a choice that anyone can make. 
+  
+  It reflects discipline, focus, and determination. Working hard also builds resilience. 
+  
+  When people encounter challenges or setbacks, their persistence helps them recover and learn from mistakes. Over time, this habit strengthens not only their skills but also their confidence. The ability to keep going, even when things are difficult, often separates success from failure. However, hard work should be balanced with rest and reflection. Working endlessly without direction can lead to burnout or frustration. 
+  
+  True effort means working smart—setting goals, prioritizing tasks, and learning from feedback. When hard work is guided by purpose, it becomes a powerful tool for personal growth. Hard work also creates opportunities. People who consistently show effort are more likely to gain trust from teachers, mentors, and peers. This trust can lead to new responsibilities, leadership roles, or chances to explore interests more deeply. In many ways, effort signals commitment, and others respond to that commitment by offering support and guidance. At the same time, it’s important to remember that hard work looks different for everyone. Some people may need more time to grasp certain skills, while others may face obstacles that make progress slower. What matters most is not how quickly someone improves, but how willing they are to stay engaged with the process. Growth rarely happens all at once; it builds gradually through small, steady steps. Ultimately, hard work is meaningful because it shapes a person’s character. The habits formed through sustained effort—patience, discipline, adaptability—carry into every part of life. These qualities help people navigate future challenges with confidence. 
+  
+  Hard work is not simply a path to achievement; it is a way of developing the mindset needed to keep learning, keep improving, and keep moving forward.`,
   2: "Some description about Article 2.",
   3: "Some description about Article 3.",
 };
@@ -400,7 +409,9 @@ export default function CareerDev() {
                 </p>
               </div>
 
-              <p className="leading-relaxed">{activeArticle.body ?? "Coming soon…"}</p>
+              <p className="leading-relaxed whitespace-pre-line">
+                {activeArticle.body ?? "Coming soon…"}
+              </p>
             </div>
           </div>
         </div>
