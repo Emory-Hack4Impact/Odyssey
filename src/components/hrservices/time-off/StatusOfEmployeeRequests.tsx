@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 
 interface StatusOfEmployeeRequestsProps {
   refreshTrigger?: number;
+  selectedDateIso?: string | null;
 }
 
 interface EmployeeRequest {
@@ -20,10 +21,21 @@ interface EmployeeRequest {
 
 const StatusOfEmployeeRequests: React.FC<StatusOfEmployeeRequestsProps> = ({
   refreshTrigger = 0,
+  selectedDateIso = null,
 }) => {
   const [requests, setRequests] = useState<EmployeeRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<
+    | "employeeName"
+    | "leaveType"
+    | "startDate"
+    | "endDate"
+    | "comments"
+    | "status"
+    | null
+  >(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -136,10 +148,78 @@ const StatusOfEmployeeRequests: React.FC<StatusOfEmployeeRequestsProps> = ({
     return request.employeeName ?? "Employee";
   };
 
+  const filteredRequests = (() => {
+    if (!selectedDateIso) return requests;
+    const selected = new Date(selectedDateIso);
+    selected.setHours(12, 0, 0, 0);
+    return requests.filter((r) => {
+      const start = new Date(r.startDate);
+      const end = new Date(r.endDate);
+      start.setHours(0, 0, 0, 0);
+      end.setHours(23, 59, 59, 999);
+      return selected >= start && selected <= end;
+    });
+  })();
+
+  const sortedRequests = (() => {
+    const arr = [...filteredRequests];
+    if (sortKey === null) {
+      return arr; // no sorting by default
+    }
+    const statusRank: Record<string, number> = { PENDING: 0, APPROVED: 1, DECLINED: 2 };
+    const compare = (a: EmployeeRequest, b: EmployeeRequest) => {
+      const av = (() => {
+        switch (sortKey) {
+          case "employeeName":
+            return getEmployeeName(a).toLowerCase();
+          case "leaveType":
+            return (a.leaveType === "Other" ? a.otherLeaveType : a.leaveType).toLowerCase();
+          case "startDate":
+            return new Date(a.startDate).getTime();
+          case "endDate":
+            return new Date(a.endDate).getTime();
+          case "comments":
+            return (a.comments || "").toLowerCase();
+          case "status":
+            return statusRank[a.status] ?? 99;
+          default:
+            return 0;
+        }
+      })();
+      const bv = (() => {
+        switch (sortKey) {
+          case "employeeName":
+            return getEmployeeName(b).toLowerCase();
+          case "leaveType":
+            return (b.leaveType === "Other" ? b.otherLeaveType : b.leaveType).toLowerCase();
+          case "startDate":
+            return new Date(b.startDate).getTime();
+          case "endDate":
+            return new Date(b.endDate).getTime();
+          case "comments":
+            return (b.comments || "").toLowerCase();
+          case "status":
+            return statusRank[b.status] ?? 99;
+          default:
+            return 0;
+        }
+      })();
+      if (av < bv) return sortDir === "asc" ? -1 : 1;
+      if (av > bv) return sortDir === "asc" ? 1 : -1;
+      return 0;
+    };
+    arr.sort(compare);
+    return arr;
+  })();
+
+  const toggleSort = (key: NonNullable<typeof sortKey>) => {
+    setSortKey((prev) => (prev === key ? prev : key));
+    setSortDir((prev) => (sortKey === key ? (prev === "asc" ? "desc" : "asc") : "asc"));
+  };
+
   if (loading) {
     return (
       <div className="w-full">
-        <h2 className="mb-4 text-xl font-semibold text-gray-800">Status of Employee Requests</h2>
         <div className="overflow-x-auto rounded-lg bg-gray-50 p-8">
           <div className="flex items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600"></div>
@@ -189,20 +269,72 @@ const StatusOfEmployeeRequests: React.FC<StatusOfEmployeeRequestsProps> = ({
         <table className="w-full min-w-max border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-gray-200 bg-gray-100">
-              <th className="px-4 py-3 font-medium text-gray-700">Name</th>
-              <th className="px-4 py-3 font-medium text-gray-700">Leave Type</th>
-              <th className="px-4 py-3 font-medium text-gray-700">Date From</th>
-              <th className="px-4 py-3 font-medium text-gray-700">Date To</th>
-              <th className="px-4 py-3 font-medium text-gray-700">Additional Info</th>
-              <th className="px-4 py-3 font-medium text-gray-700">Status</th>
+              <th className="px-4 py-3 font-medium text-gray-700">
+                <button
+                  type="button"
+                  className="underline decoration-dotted underline-offset-4"
+                  onClick={() => toggleSort("employeeName")}
+                  title="Sort by Name"
+                >
+                  Name {sortKey === "employeeName" ? (sortDir === "asc" ? "▲" : "▼") : ""}
+                </button>
+              </th>
+              <th className="px-4 py-3 font-medium text-gray-700">
+                <button
+                  type="button"
+                  className="underline decoration-dotted underline-offset-4"
+                  onClick={() => toggleSort("leaveType")}
+                  title="Sort by Leave Type"
+                >
+                  Leave Type {sortKey === "leaveType" ? (sortDir === "asc" ? "▲" : "▼") : ""}
+                </button>
+              </th>
+              <th className="px-4 py-3 font-medium text-gray-700">
+                <button
+                  type="button"
+                  className="underline decoration-dotted underline-offset-4"
+                  onClick={() => toggleSort("startDate")}
+                  title="Sort by Date From"
+                >
+                  Date From {sortKey === "startDate" ? (sortDir === "asc" ? "▲" : "▼") : ""}
+                </button>
+              </th>
+              <th className="px-4 py-3 font-medium text-gray-700">
+                <button
+                  type="button"
+                  className="underline decoration-dotted underline-offset-4"
+                  onClick={() => toggleSort("endDate")}
+                  title="Sort by Date To"
+                >
+                  Date To {sortKey === "endDate" ? (sortDir === "asc" ? "▲" : "▼") : ""}
+                </button>
+              </th>
+              <th className="px-4 py-3 font-medium text-gray-700">
+                <button
+                  type="button"
+                  className="underline decoration-dotted underline-offset-4"
+                  onClick={() => toggleSort("comments")}
+                  title="Sort by Additional Info"
+                >
+                  Additional Info {sortKey === "comments" ? (sortDir === "asc" ? "▲" : "▼") : ""}
+                </button>
+              </th>
+              <th className="px-4 py-3 font-medium text-gray-700">
+                <button
+                  type="button"
+                  className="underline decoration-dotted underline-offset-4"
+                  onClick={() => toggleSort("status")}
+                  title="Sort by Status"
+                >
+                  Status {sortKey === "status" ? (sortDir === "asc" ? "▲" : "▼") : ""}
+                </button>
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white">
-            {requests.map((request) => (
+            {sortedRequests.map((request) => (
               <tr key={request.id} className="border-b border-gray-200 hover:bg-gray-50">
-                <td className="px-4 py-3 text-gray-900">
-                  {getEmployeeName(request)}
-                </td>
+                <td className="px-4 py-3 text-gray-900">{getEmployeeName(request)}</td>
                 <td className="px-4 py-3 text-gray-700">
                   {request.leaveType === "Other" ? request.otherLeaveType : request.leaveType}
                 </td>

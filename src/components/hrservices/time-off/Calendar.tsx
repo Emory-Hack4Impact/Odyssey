@@ -1,34 +1,34 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { GetApprovedRequestsForCalendar } from "@/app/api/time-off-req";
+import { GetAllRequestsForCalendar } from "@/app/api/time-off-req";
 
 interface CalendarProps {
   refreshTrigger?: number;
+  selectedDateIso?: string | null;
+  onSelectDate?: (iso: string | null) => void;
 }
 
-interface ApprovedRequest {
+interface CalendarRequest {
   id: number;
   startDate: Date;
   endDate: Date;
 }
 
-const Calendar: React.FC<CalendarProps> = ({ refreshTrigger = 0 }) => {
+const Calendar: React.FC<CalendarProps> = ({ refreshTrigger = 0, selectedDateIso = null, onSelectDate }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [approvedRequests, setApprovedRequests] = useState<ApprovedRequest[]>([]);
+  const [allRequests, setAllRequests] = useState<CalendarRequest[]>([]);
 
   useEffect(() => {
-    const fetchApprovedRequests = async () => {
-      const month = currentDate.getMonth() + 1;
-      const year = currentDate.getFullYear();
+    const fetchAllRequests = async () => {
       try {
-        const data = await GetApprovedRequestsForCalendar(month, year);
-        setApprovedRequests(data);
+        const data = await GetAllRequestsForCalendar();
+        setAllRequests(data);
       } catch (error) {
-        console.error("Error fetching approved requests:", error);
+        console.error("Error fetching calendar requests:", error);
       }
     };
 
-    void fetchApprovedRequests();
+    void fetchAllRequests();
   }, [currentDate, refreshTrigger]);
 
   const monthNames = [
@@ -69,14 +69,19 @@ const Calendar: React.FC<CalendarProps> = ({ refreshTrigger = 0 }) => {
     return days;
   };
 
-  const isDateApproved = (day: number | null): boolean => {
+  const isDateRequested = (day: number | null): boolean => {
     if (!day) return false;
 
     const checkDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    // Normalize check date to avoid time component mismatches
+    checkDate.setHours(12, 0, 0, 0);
 
-    return approvedRequests.some((request) => {
+    return allRequests.some((request) => {
       const start = new Date(request.startDate);
       const end = new Date(request.endDate);
+      // Normalize range to be fully inclusive from start through end
+      start.setHours(0, 0, 0, 0);
+      end.setHours(23, 59, 59, 999);
       return checkDate >= start && checkDate <= end;
     });
   };
@@ -149,18 +154,33 @@ const Calendar: React.FC<CalendarProps> = ({ refreshTrigger = 0 }) => {
           <div
             key={index}
             className={`relative flex h-10 items-center justify-center text-sm ${
-              day === null ? "" : "hover:bg-gray-50"
+              day === null ? "" : "cursor-pointer hover:bg-gray-50"
             }`}
+            onClick={() => {
+              if (day === null) return;
+              const iso = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+                .toISOString()
+                .slice(0, 10);
+              onSelectDate?.(selectedDateIso === iso ? null : iso);
+            }}
           >
             {day !== null && (
               <>
                 <span
-                  className={`${isDateApproved(day) ? "font-semibold text-gray-900" : "text-gray-600"}`}
+                  className={
+                    isDateRequested(day) ? "font-semibold text-gray-900" : "text-gray-600"
+                  }
                 >
                   {day}
                 </span>
-                {isDateApproved(day) && (
+                {isDateRequested(day) && (
                   <div className="absolute bottom-1 h-1 w-1 rounded-full bg-blue-500"></div>
+                )}
+                {selectedDateIso ===
+                  new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+                    .toISOString()
+                    .slice(0, 10) && (
+                  <div className="absolute inset-0 rounded ring-2 ring-gray-500"></div>
                 )}
               </>
             )}

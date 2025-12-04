@@ -1,9 +1,11 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import TimeOffForm from "./TimeOffForm";
 import DaysInfo from "./DaysInfo";
 import StatusTable from "./StatusTable";
 import TimeOffRequests from "./manage-requests/page";
+import CalendarHighlights from "./CalendarHighlights";
+import { GetTimeOffRequests } from "@/app/api/time-off-req";
 
 interface TimeOffProps {
   employeeId: string;
@@ -16,11 +18,27 @@ interface TimeOffProps {
 
 const Home: React.FC<TimeOffProps> = ({ employeeId, userMetadata }) => {
   const [refreshKey, setRefreshKey] = useState(0);
+  const [calendarRanges, setCalendarRanges] = useState<Array<{ startDate: Date | string; endDate: Date | string }>>([]);
 
   const handleFormSubmit = () => {
     // Trigger refresh of statistics and table
     setRefreshKey((prev) => prev + 1);
   };
+
+  // Fetch all requests for employee to highlight on calendar
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const reqs = await GetTimeOffRequests(employeeId);
+        const ranges = (Array.isArray(reqs) ? reqs : []).map((r) => ({ startDate: r.startDate, endDate: r.endDate }));
+        setCalendarRanges(ranges);
+      } catch (e) {
+        console.error("Failed to load requests for calendar highlights", e);
+        setCalendarRanges([]);
+      }
+    };
+    void load();
+  }, [employeeId, refreshKey]);
 
   // Show admin view for HR users or admins
   if (userMetadata?.is_hr || userMetadata?.is_admin) {
@@ -39,6 +57,9 @@ const Home: React.FC<TimeOffProps> = ({ employeeId, userMetadata }) => {
       <div className="flex flex-col gap-6 lg:flex-row">
         {/* Time Off Statistics - Left */}
         <div className="w-full lg:w-2/5 lg:pr-4">
+          <div className="mb-6">
+            <CalendarHighlights ranges={calendarRanges} />
+          </div>
           <DaysInfo
             key={`stats-${refreshKey}`}
             employeeId={employeeId}
