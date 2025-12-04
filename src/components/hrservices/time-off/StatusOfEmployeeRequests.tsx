@@ -2,10 +2,7 @@
 import React, { useEffect, useState } from "react";
 // Use HTTP route to fetch non-pending requests
 
-interface StatusOfEmployeeRequestsProps {
-  refreshTrigger?: number;
-  selectedDateIso?: string | null;
-}
+// Props are typed inline in the component definition below
 
 interface EmployeeRequest {
   id: number;
@@ -19,10 +16,10 @@ interface EmployeeRequest {
   status: "PENDING" | "APPROVED" | "DECLINED";
 }
 
-const StatusOfEmployeeRequests: React.FC<StatusOfEmployeeRequestsProps> = ({
-  refreshTrigger = 0,
-  selectedDateIso = null,
-}) => {
+const StatusOfEmployeeRequests: React.FC<{
+  refreshTrigger?: number;
+  selectedDateIso?: string | null;
+}> = ({ refreshTrigger = 0, selectedDateIso = null }) => {
   const [requests, setRequests] = useState<EmployeeRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);

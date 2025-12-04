@@ -45,7 +45,7 @@ const ManageStatusTable: React.FC = () => {
   };
 
   const formatDate = (date: Date | string) => {
-    const d = typeof date === "string" ? new Date(date) : date;
+    const d: Date = typeof date === "string" ? new Date(date) : date;
     return d.toLocaleDateString("en-US", {
       month: "2-digit",
       day: "2-digit",
@@ -98,7 +98,7 @@ const ManageStatusTable: React.FC = () => {
         <tbody>
           {requests.map((request) => {
             const leaveTypeDisplay =
-              request.leaveType === "Other" ? request.otherLeaveType : request.leaveType;
+              request.leaveType === "Other" ? request.otherLeaveType ?? request.leaveType : request.leaveType;
             const isProcessing = processing === request.id;
 
             return (
@@ -108,26 +108,26 @@ const ManageStatusTable: React.FC = () => {
                 </td>
                 <td className="border-b border-gray-200 px-4 py-2">{leaveTypeDisplay}</td>
                 <td className="border-b border-gray-200 px-4 py-2">
-                  {formatDate(request.startDate)}
+                  {formatDate(request.startDate as Date | string)}
                 </td>
                 <td className="border-b border-gray-200 px-4 py-2">
-                  {formatDate(request.endDate)}
+                  {formatDate(request.endDate as Date | string)}
                 </td>
-                <td className="border-b border-gray-200 px-4 py-2">{request.comments || "-"}</td>
+                <td className="border-b border-gray-200 px-4 py-2">{request.comments ?? "-"}</td>
                 <td className="border-b border-gray-200 px-4 py-2">
-                  {getStatusBadge(request.status)}
+                  {getStatusBadge(request.status as RequestStatus)}
                 </td>
                 <td className="border-b border-gray-200 px-4 py-2">
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleStatusUpdate(request.id, RequestStatus.APPROVED)}
+                      onClick={() => handleStatusUpdate(request.id as number, RequestStatus.APPROVED)}
                       disabled={isProcessing || request.status === RequestStatus.APPROVED}
                       className="rounded-md bg-green-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-600 focus:ring-2 focus:ring-green-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-300"
                     >
                       {isProcessing ? "Processing..." : "Approve"}
                     </button>
                     <button
-                      onClick={() => handleStatusUpdate(request.id, RequestStatus.DECLINED)}
+                      onClick={() => handleStatusUpdate(request.id as number, RequestStatus.DECLINED)}
                       disabled={isProcessing || request.status === RequestStatus.DECLINED}
                       className="rounded-md bg-red-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-300"
                     >

@@ -2,10 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { GetTimeOffRequests } from "@/app/api/time-off-req";
 
-interface StatusTableProps {
-  employeeId: string;
-  refreshTrigger?: number;
-}
+// Props are typed inline in the component definition below
 
 interface TimeOffRequest {
   id: number;
@@ -17,7 +14,10 @@ interface TimeOffRequest {
   status: string;
 }
 
-const StatusTable: React.FC<StatusTableProps> = ({ employeeId, refreshTrigger = 0 }) => {
+const StatusTable: React.FC<{
+  employeeId: string;
+  refreshTrigger?: number;
+}> = ({ employeeId, refreshTrigger = 0 }) => {
   const [requests, setRequests] = useState<TimeOffRequest[]>([]);
   const [loading, setLoading] = useState(true);
 

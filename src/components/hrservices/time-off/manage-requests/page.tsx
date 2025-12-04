@@ -4,7 +4,7 @@ import ManageStatusTable from "./ManageStatusTable";
 import PendingTable from "./PendingTable";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import type { Value } from "node_modules/react-calendar/dist/esm/shared/types";
+type CalendarValue = Date | [Date, Date] | null;
 import { GetAllRequestsForCalendar, type TimeOffRequestWithUser } from "@/app/api/time-off-req";
 import { RequestStatus } from "@prisma/client";
 
@@ -26,15 +26,21 @@ export default function TimeOffRequests() {
     }
   };
 
-  const onChange = (newDate: Value) => {
-    const selectedDate = newDate as Date;
+  const toDate = (d: unknown): Date => new Date(d as string | number | Date);
+
+  const onChange = (newDate: CalendarValue) => {
+    const selectedDate: Date = newDate instanceof Date
+      ? newDate
+      : Array.isArray(newDate)
+        ? (newDate[0] ?? new Date())
+        : new Date();
     setDate(selectedDate);
 
     // Find requests that overlap with the selected date
     const overlappingRequests = requests.filter((request) => {
-      const startDate = new Date(request.startDate);
-      const endDate = new Date(request.endDate);
-      const selected = new Date(selectedDate);
+      const startDate = toDate(request.startDate);
+      const endDate = toDate(request.endDate);
+      const selected = selectedDate;
 
       // Reset time to compare dates only
       startDate.setHours(0, 0, 0, 0);
@@ -51,9 +57,9 @@ export default function TimeOffRequests() {
   const tileClassName = ({ date, view }: { date: Date; view: string }) => {
     if (view === "month") {
       const hasRequest = requests.some((request) => {
-        const startDate = new Date(request.startDate);
-        const endDate = new Date(request.endDate);
-        const checkDate = new Date(date);
+        const startDate = toDate(request.startDate);
+        const endDate = toDate(request.endDate);
+        const checkDate = toDate(date);
 
         // Reset time to compare dates only
         startDate.setHours(0, 0, 0, 0);
@@ -66,9 +72,9 @@ export default function TimeOffRequests() {
       if (hasRequest) {
         // Check if there are pending requests on this date
         const hasPending = requests.some((request) => {
-          const startDate = new Date(request.startDate);
-          const endDate = new Date(request.endDate);
-          const checkDate = new Date(date);
+          const startDate = toDate(request.startDate);
+          const endDate = toDate(request.endDate);
+          const checkDate = toDate(date);
 
           startDate.setHours(0, 0, 0, 0);
           endDate.setHours(23, 59, 59, 999);
@@ -82,9 +88,9 @@ export default function TimeOffRequests() {
         });
 
         const hasApproved = requests.some((request) => {
-          const startDate = new Date(request.startDate);
-          const endDate = new Date(request.endDate);
-          const checkDate = new Date(date);
+          const startDate = toDate(request.startDate);
+          const endDate = toDate(request.endDate);
+          const checkDate = toDate(date);
 
           startDate.setHours(0, 0, 0, 0);
           endDate.setHours(23, 59, 59, 999);
@@ -110,7 +116,7 @@ export default function TimeOffRequests() {
   };
 
   const formatDate = (date: Date | string) => {
-    const d = typeof date === "string" ? new Date(date) : date;
+    const d: Date = typeof date === "string" ? new Date(date) : date;
     return d.toLocaleDateString("en-US", {
       month: "2-digit",
       day: "2-digit",
@@ -123,7 +129,7 @@ export default function TimeOffRequests() {
       <div className="flex-1 p-4">
         <h1 className="mb-4 text-2xl font-semibold">Calendar</h1>
         <Calendar
-          onChange={onChange}
+          onChange={(val) => onChange(val as CalendarValue)}
           value={date}
           tileClassName={tileClassName}
           className="w-full"
@@ -151,7 +157,7 @@ export default function TimeOffRequests() {
             <ul className="list-disc pl-5 text-sm">
               {selectedDateRequests.map((request) => {
                 const leaveTypeDisplay =
-                  request.leaveType === "Other" ? request.otherLeaveType : request.leaveType;
+                  request.leaveType === "Other" ? request.otherLeaveType ?? request.leaveType : request.leaveType;
                 const statusColor =
                   request.status === RequestStatus.PENDING
                     ? "text-yellow-600"

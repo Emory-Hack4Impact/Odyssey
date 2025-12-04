@@ -2,12 +2,7 @@
 import React, { useEffect, useState } from "react";
 // Use HTTP API route to update status to ensure client-side compatibility
 
-interface PendingRequestsProps {
-  approverId: string;
-  refreshTrigger?: number;
-  onActionComplete?: () => void;
-  selectedDateIso?: string | null;
-}
+// Props are typed inline in the component definition below
 
 interface PendingRequest {
   id: number;
@@ -22,7 +17,12 @@ interface PendingRequest {
   requestDate?: Date | string;
 }
 
-const PendingRequests: React.FC<PendingRequestsProps> = ({
+const PendingRequests: React.FC<{
+  approverId: string;
+  refreshTrigger?: number;
+  onActionComplete?: () => void;
+  selectedDateIso?: string | null;
+}> = ({
   approverId: _approverId,
   refreshTrigger = 0,
   onActionComplete,

@@ -2,11 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { GetAllRequestsForCalendar } from "@/app/api/time-off-req";
 
-interface CalendarProps {
-  refreshTrigger?: number;
-  selectedDateIso?: string | null;
-  onSelectDate?: (iso: string | null) => void;
-}
 
 interface CalendarRequest {
   id: number;
@@ -14,7 +9,11 @@ interface CalendarRequest {
   endDate: Date;
 }
 
-const Calendar: React.FC<CalendarProps> = ({ refreshTrigger = 0, selectedDateIso = null, onSelectDate }) => {
+const Calendar: React.FC<{
+  refreshTrigger?: number;
+  selectedDateIso?: string | null;
+  onSelectDate?: (iso: string | null) => void;
+}> = ({ refreshTrigger = 0, selectedDateIso = null, onSelectDate }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [allRequests, setAllRequests] = useState<CalendarRequest[]>([]);
 
@@ -153,9 +152,8 @@ const Calendar: React.FC<CalendarProps> = ({ refreshTrigger = 0, selectedDateIso
         {days.map((day, index) => (
           <div
             key={index}
-            className={`relative flex h-10 items-center justify-center text-sm ${
-              day === null ? "" : "cursor-pointer hover:bg-gray-50"
-            }`}
+            className={`relative flex h-10 items-center justify-center text-sm ${day === null ? "" : "cursor-pointer hover:bg-gray-50"
+              }`}
             onClick={() => {
               if (day === null) return;
               const iso = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
@@ -180,8 +178,8 @@ const Calendar: React.FC<CalendarProps> = ({ refreshTrigger = 0, selectedDateIso
                   new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
                     .toISOString()
                     .slice(0, 10) && (
-                  <div className="absolute inset-0 rounded ring-2 ring-gray-500"></div>
-                )}
+                    <div className="absolute inset-0 rounded ring-2 ring-gray-500"></div>
+                  )}
               </>
             )}
           </div>

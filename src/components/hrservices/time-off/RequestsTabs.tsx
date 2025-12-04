@@ -3,12 +3,13 @@ import React, { useState } from "react";
 import PendingRequests from "./PendingRequests";
 import StatusOfEmployeeRequests from "./StatusOfEmployeeRequests";
 
-interface RequestsTabsProps {
+export default function RequestsTabs({
+  approverId,
+  selectedDateIso = null,
+}: {
   approverId: string;
   selectedDateIso?: string | null;
-}
-
-export default function RequestsTabs({ approverId, selectedDateIso = null }: RequestsTabsProps) {
+}) {
   const [activeTab, setActiveTab] = useState<"pending" | "status">("pending");
 
   return (

@@ -1,9 +1,10 @@
-import { NextRequest } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import type { NextRequest } from "next/server";
+import { PrismaClient, type RequestStatus } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-async function attachEmployeeNames(requests: any[]) {
+type WithEmployeeName<T> = T & { employeeName?: string };
+async function attachEmployeeNames<T extends { employeeId: string }>(requests: T[]): Promise<Array<WithEmployeeName<T>>> {
   const uniqueIds = Array.from(new Set(requests.map((r) => r.employeeId)));
   const metas = await prisma.userMetadata.findMany({
     where: { id: { in: uniqueIds } },
@@ -12,14 +13,15 @@ async function attachEmployeeNames(requests: any[]) {
   const nameById = new Map<string, string>();
   for (const m of metas) {
     const full = [m.employeeFirstName, m.employeeLastName].filter(Boolean).join(" ");
-    nameById.set(m.id, full || m.position || "Employee");
+    nameById.set(m.id, full ?? m.position ?? "Employee");
   }
   return requests.map((r) => ({ ...r, employeeName: nameById.get(r.employeeId) }));
 }
 
 export async function GET(req: NextRequest) {
-  const type = req.nextUrl.searchParams.get("type") || "all";
-  const employeeId = req.nextUrl.searchParams.get("employeeId") || undefined;
+  const type = req.nextUrl.searchParams.get("type") ?? "all";
+  const employeeIdParam = req.nextUrl.searchParams.get("employeeId");
+  const employeeId = employeeIdParam ?? undefined;
 
   try {
     if (type === "employee") {
@@ -46,7 +48,7 @@ export async function GET(req: NextRequest) {
     if (type === "pending") {
       try {
         const all = await prisma.timeOffRequest.findMany({ orderBy: { startDate: "asc" } });
-        const requests = all.filter((r) => r.status === "PENDING" || !r.status);
+        const requests = all.filter((r) => r.status === "PENDING" || r.status == null);
         const withNames = await attachEmployeeNames(requests);
         return Response.json(withNames);
       } catch (err) {
@@ -108,7 +110,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const prisma = new PrismaClient();
-    const { id, status } = await req.json();
+    const body: unknown = await req.json();
+    const { id, status } = body as { id: number; status: RequestStatus };
 
     if (typeof id !== "number" || !["APPROVED", "DECLINED", "PENDING"].includes(status)) {
       return Response.json({ error: "Invalid payload" }, { status: 400 });

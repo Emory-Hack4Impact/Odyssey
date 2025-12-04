@@ -3,18 +3,16 @@ import React, { useState } from "react";
 import Calendar from "./Calendar";
 import RequestsTabs from "./RequestsTabs";
 
-interface TimeOffHRProps {
-  employeeId: string;
-}
+// Props are typed inline in the component definition below
 
-const TimeOffHR: React.FC<TimeOffHRProps> = ({ employeeId }) => {
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+const TimeOffHR: React.FC<{ employeeId: string }> = ({ employeeId }) => {
+  const [refreshTrigger] = useState(0);
   const [selectedDateIso, setSelectedDateIso] = useState<string | null>(null);
 
-  const handleActionComplete = () => {
-    // Increment trigger to refresh all components
-    setRefreshTrigger((prev) => prev + 1);
-  };
+  // const handleActionComplete = () => {
+  //   // Increment trigger to refresh all components
+  //   setRefreshTrigger((prev) => prev + 1);
+  // };
 
   return (
     <div className="min-h-screen w-full p-6">
