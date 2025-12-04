@@ -35,8 +35,10 @@ export const HRServices = ({ userId, username, userRole, userMetadata }: HRServi
   };
 
   const getTimeOffComponent = () => {
-    // If user is HR or Admin, show the HR view, otherwise show employee view
-    if (userMetadata?.is_hr || userMetadata?.is_admin) {
+    // Show HR view for HR/Admin roles or metadata flags
+    const isHrRole = userRole === "HR" || userRole === "Manager";
+    const isHrMeta = Boolean(userMetadata?.is_hr) || Boolean(userMetadata?.is_admin);
+    if (isHrRole || isHrMeta) {
       return <TimeOffHR employeeId={userId} />;
     }
     return <TimeOff employeeId={userId} />;

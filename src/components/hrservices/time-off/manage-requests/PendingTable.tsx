@@ -1,17 +1,27 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {
-  GetPendingRequests,
-  UpdateRequestStatus,
-  type TimeOffRequestWithUser,
-} from "@/app/api/time-off-req";
-import { RequestStatus } from "@prisma/client";
+import { UpdateRequestStatus } from "@/app/api/time-off-req";
+import type { RequestStatus } from "@prisma/client";
+
+type PendingRow = {
+  id: number;
+  employeeId: string;
+  employeeName?: string;
+  leaveType: string;
+  otherLeaveType: string;
+  startDate: Date | string;
+  endDate: Date | string;
+  comments: string;
+  status: "PENDING" | "APPROVED" | "DECLINED";
+  requestDate?: Date | string;
+};
 
 const PendingTable: React.FC = () => {
-  const [requests, setRequests] = useState<TimeOffRequestWithUser[]>([]);
+  const [requests, setRequests] = useState<PendingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<number | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     void fetchRequests();
@@ -20,10 +30,26 @@ const PendingTable: React.FC = () => {
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const data = await GetPendingRequests();
-      setRequests(data);
+      setErrorMsg(null);
+      const res = await fetch("/api/time-off-req?type=pending", { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setRequests(data as PendingRow[]);
+      } else if (data && typeof data === "object" && "error" in data) {
+        const errObj = data as { error: unknown; details?: unknown };
+        const errText = [errObj.error, errObj.details]
+          .filter((v) => typeof v === "string")
+          .join(" — ") || "Unknown error";
+        setErrorMsg(errText);
+        setRequests([]);
+      } else {
+        setErrorMsg("Unexpected response format");
+        setRequests([]);
+      }
     } catch (error) {
       console.error("Error fetching pending requests:", error);
+      setErrorMsg(error instanceof Error ? error.message : String(error));
     } finally {
       setLoading(false);
     }
@@ -60,10 +86,27 @@ const PendingTable: React.FC = () => {
     );
   }
 
+  if (errorMsg) {
+    return (
+      <div className="mx-auto mt-2 rounded-lg border border-red-200 bg-red-50 p-6 text-center text-red-700 shadow-lg">
+        Error: {errorMsg}
+      </div>
+    );
+  }
+
   if (requests.length === 0) {
     return (
       <div className="mx-auto mt-2 rounded-lg border border-gray-200 p-6 text-center text-black shadow-lg">
         No pending requests
+      </div>
+    );
+  }
+
+  // Extra guard in case state is corrupted
+  if (!Array.isArray(requests)) {
+    return (
+      <div className="mx-auto mt-2 rounded-lg border border-red-200 bg-red-50 p-6 text-center text-red-700 shadow-lg">
+        Error: Unexpected requests state
       </div>
     );
   }
@@ -91,7 +134,7 @@ const PendingTable: React.FC = () => {
             return (
               <tr key={request.id}>
                 <td className="border-b border-gray-200 px-4 py-2">
-                  {request.employeeName ?? request.employeeEmail}
+                  {request.employeeName ?? request.employeeId}
                 </td>
                 <td className="border-b border-gray-200 px-4 py-2">{leaveTypeDisplay}</td>
                 <td className="border-b border-gray-200 px-4 py-2">
@@ -102,19 +145,19 @@ const PendingTable: React.FC = () => {
                 </td>
                 <td className="border-b border-gray-200 px-4 py-2">{request.comments || "-"}</td>
                 <td className="border-b border-gray-200 px-4 py-2">
-                  {formatDate(request.requestDate)}
+                  {formatDate(request.requestDate ?? request.startDate)}
                 </td>
                 <td className="border-b border-gray-200 px-4 py-2">
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleStatusUpdate(request.id, RequestStatus.APPROVED)}
+                      onClick={() => handleStatusUpdate(request.id, "APPROVED" as RequestStatus)}
                       disabled={isProcessing}
                       className="rounded-md bg-green-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-600 focus:ring-2 focus:ring-green-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-400"
                     >
                       {isProcessing ? "Processing..." : "Approve"}
                     </button>
                     <button
-                      onClick={() => handleStatusUpdate(request.id, RequestStatus.DECLINED)}
+                      onClick={() => handleStatusUpdate(request.id, "DECLINED" as RequestStatus)}
                       disabled={isProcessing}
                       className="rounded-md bg-red-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-400"
                     >

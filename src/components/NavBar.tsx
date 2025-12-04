@@ -16,7 +16,7 @@ export default function NavBar() {
 
   return (
     <nav className="navbar bg-gray-100 px-5 shadow-sm">
-      <div className="flex items-center gap-6">
+      <div className="flex w-full items-center justify-between gap-6">
         <Image width={125} height={125} src="/logo.png" alt="logo" />
         <ul className="flex items-center gap-4 whitespace-pre">
           <li>

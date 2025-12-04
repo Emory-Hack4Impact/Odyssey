@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { GetAllEmployeeRequests } from "@/app/api/time-off-req";
+// Use HTTP route to fetch non-pending requests
 
 interface StatusOfEmployeeRequestsProps {
   refreshTrigger?: number;
@@ -9,20 +9,13 @@ interface StatusOfEmployeeRequestsProps {
 interface EmployeeRequest {
   id: number;
   employeeId: string;
+  employeeName?: string;
   leaveType: string;
   otherLeaveType: string;
   startDate: Date;
   endDate: Date;
   comments: string;
-  status: string;
-  approvedBy: string | null;
-  UserMetadata: {
-    id: string;
-    position: string;
-  };
-  Approver: {
-    id: string;
-  } | null;
+  status: "PENDING" | "APPROVED" | "DECLINED";
 }
 
 const StatusOfEmployeeRequests: React.FC<StatusOfEmployeeRequestsProps> = ({
@@ -30,24 +23,51 @@ const StatusOfEmployeeRequests: React.FC<StatusOfEmployeeRequestsProps> = ({
 }) => {
   const [requests, setRequests] = useState<EmployeeRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchRequests = async () => {
       setLoading(true);
+      setErrorMsg(null);
       try {
-        console.log("Fetching all employee requests...");
-        const data = await GetAllEmployeeRequests();
-        console.log("Employee requests data:", data);
-        console.log("Number of employee requests:", data.length);
-        setRequests(data);
+        const res = await fetch("/api/time-off-req?type=nonpending", { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setRequests(data as EmployeeRequest[]);
+        } else if (data && typeof data === "object" && "error" in data) {
+          const errObj = data as { error: unknown; details?: unknown };
+          const errText = [errObj.error, errObj.details]
+            .filter((v) => typeof v === "string")
+            .join(" — ") || "Unknown error";
+          setErrorMsg(errText);
+          setRequests([]);
+        } else {
+          setErrorMsg("Unexpected response format");
+          setRequests([]);
+        }
       } catch (error) {
         console.error("Error fetching employee requests:", error);
+        setErrorMsg(error instanceof Error ? error.message : String(error));
       } finally {
         setLoading(false);
       }
     };
 
     void fetchRequests();
+
+    // Listen for status updates triggered from PendingRequests
+    const handler = () => {
+      void fetchRequests();
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("timeoff:status-updated", handler);
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("timeoff:status-updated", handler);
+      }
+    };
   }, [refreshTrigger]);
 
   const formatDate = (date: Date): string => {
@@ -79,8 +99,41 @@ const StatusOfEmployeeRequests: React.FC<StatusOfEmployeeRequestsProps> = ({
     }
   };
 
+  const updateStatus = async (requestId: number, nextStatus: "PENDING" | "APPROVED" | "DECLINED") => {
+    try {
+      const res = await fetch(`/api/time-off-req`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: requestId, status: nextStatus }),
+      });
+      let payload: unknown = null;
+      try {
+        payload = await res.json();
+      } catch { }
+      if (!res.ok) {
+        console.error("Status update failed:", payload);
+        return;
+      }
+      // Optimistic local update: if moved back to PENDING, remove from non-pending view
+      setRequests((prev) =>
+        nextStatus === "PENDING"
+          ? prev.filter((r) => r.id !== requestId)
+          : prev.map((r) => (r.id === requestId ? { ...r, status: nextStatus } : r)),
+      );
+      // Notify other views and refetch via event listeners
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("timeoff:status-updated"));
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent("timeoff:status-updated"));
+        }, 200);
+      }
+    } catch (e) {
+      console.error("Error updating status:", e);
+    }
+  };
+
   const getEmployeeName = (request: EmployeeRequest): string => {
-    return request.UserMetadata?.position || "Employee";
+    return request.employeeName ?? "Employee";
   };
 
   if (loading) {
@@ -96,12 +149,34 @@ const StatusOfEmployeeRequests: React.FC<StatusOfEmployeeRequestsProps> = ({
     );
   }
 
+  if (errorMsg) {
+    return (
+      <div className="w-full">
+        <h2 className="mb-4 text-xl font-semibold text-gray-800">Status of Employee Requests</h2>
+        <div className="overflow-x-auto rounded-lg bg-red-50 p-8 text-center text-red-700">
+          Error: {errorMsg}
+        </div>
+      </div>
+    );
+  }
+
   if (requests.length === 0) {
     return (
       <div className="w-full">
         <h2 className="mb-4 text-xl font-semibold text-gray-800">Status of Employee Requests</h2>
         <div className="overflow-x-auto rounded-lg bg-gray-50 p-8">
           <p className="text-center text-gray-500">No employee requests yet</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!Array.isArray(requests)) {
+    return (
+      <div className="w-full">
+        <h2 className="mb-4 text-xl font-semibold text-gray-800">Status of Employee Requests</h2>
+        <div className="overflow-x-auto rounded-lg bg-red-50 p-8 text-center text-red-700">
+          Error: Unexpected requests state
         </div>
       </div>
     );
@@ -126,17 +201,7 @@ const StatusOfEmployeeRequests: React.FC<StatusOfEmployeeRequestsProps> = ({
             {requests.map((request) => (
               <tr key={request.id} className="border-b border-gray-200 hover:bg-gray-50">
                 <td className="px-4 py-3 text-gray-900">
-                  <div className="flex items-center gap-2">
-                    {getEmployeeName(request)}
-                    {request.status === "APPROVED" && request.Approver && (
-                      <div
-                        className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-xs text-white"
-                        title="Approved"
-                      >
-                        ✓
-                      </div>
-                    )}
-                  </div>
+                  {getEmployeeName(request)}
                 </td>
                 <td className="px-4 py-3 text-gray-700">
                   {request.leaveType === "Other" ? request.otherLeaveType : request.leaveType}
@@ -145,7 +210,19 @@ const StatusOfEmployeeRequests: React.FC<StatusOfEmployeeRequestsProps> = ({
                 <td className="px-4 py-3 text-gray-700">{formatDate(request.endDate)}</td>
                 <td className="px-4 py-3 text-gray-700">{request.comments || "-"}</td>
                 <td className={`px-4 py-3 font-medium ${getStatusColor(request.status)}`}>
-                  {getStatusText(request.status)}
+                  <select
+                    aria-label="Change status"
+                    className="bg-transparent p-0 underline decoration-dotted underline-offset-4 focus:outline-none"
+                    value={request.status}
+                    onChange={(e) => {
+                      const val = e.target.value as "PENDING" | "APPROVED" | "DECLINED";
+                      void updateStatus(request.id, val);
+                    }}
+                  >
+                    <option value="PENDING">{getStatusText("PENDING")}</option>
+                    <option value="APPROVED">{getStatusText("APPROVED")}</option>
+                    <option value="DECLINED">{getStatusText("DECLINED")}</option>
+                  </select>
                 </td>
               </tr>
             ))}

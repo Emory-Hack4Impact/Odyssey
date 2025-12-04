@@ -1,6 +1,6 @@
 "use server";
 
-import { PrismaClient, RequestStatus, type Prisma } from "@prisma/client";
+import { PrismaClient, type RequestStatus, type TimeOffRequest } from "@prisma/client";
 
 export interface SubmitTimeOffRequest {
   id: string;
@@ -14,53 +14,18 @@ export interface SubmitTimeOffRequest {
 export interface TimeOffRequestData {
   id: number;
   employeeId: string;
+  employeeName?: string;
   leaveType: string;
   otherLeaveType: string;
   startDate: Date;
   endDate: Date;
   comments: string;
-  status: RequestStatus;
-  approvedBy: string | null;
   requestDate: Date;
-  approvedDate: Date | null;
+  status: RequestStatus;
 }
 
-export interface TimeOffRequestWithUser extends TimeOffRequestData {
-  employeeEmail?: string;
-  employeeName?: string;
-}
-
-type TimeOffRequestWithRelations = {
-  Approver?: {
-    id: string;
-    is_hr?: boolean;
-    is_admin?: boolean;
-    position?: string;
-  } | null;
-  UserMetadata?: {
-    id: string;
-    is_hr?: boolean;
-    is_admin?: boolean;
-    position?: string;
-  } | null;
-} & Pick<
-  Prisma.TimeOffRequestGetPayload<{
-    include: { UserMetadata: true; Approver: true };
-  }>,
-  | "id"
-  | "employeeId"
-  | "leaveType"
-  | "otherLeaveType"
-  | "startDate"
-  | "endDate"
-  | "comments"
-  | "status"
-  | "approvedBy"
-  | "requestDate"
-  | "approvedDate"
->;
-
-const mapRequestWithUser = (request: TimeOffRequestWithRelations): TimeOffRequestWithUser => {
+type TimeOffRequestWithDate = TimeOffRequest & { requestDate?: Date };
+const mapRequestWithUser = (request: TimeOffRequestWithDate): TimeOffRequestData => {
   return {
     id: request.id,
     employeeId: request.employeeId,
@@ -69,15 +34,27 @@ const mapRequestWithUser = (request: TimeOffRequestWithRelations): TimeOffReques
     startDate: request.startDate,
     endDate: request.endDate,
     comments: request.comments,
+    requestDate: request.requestDate ?? request.startDate,
     status: request.status,
-    approvedBy: request.approvedBy ?? null,
-    requestDate: request.requestDate,
-    approvedDate: request.approvedDate ?? null,
-    employeeEmail: request.UserMetadata?.id,
-    // Name is not available in the current schema; fall back to email when rendering
-    employeeName: undefined,
   };
 };
+
+async function attachEmployeeNames<T extends TimeOffRequest>(
+  prisma: PrismaClient,
+  requests: T[],
+): Promise<TimeOffRequestData[]> {
+  const uniqueIds = Array.from(new Set(requests.map((r) => r.employeeId)));
+  const metas = await prisma.userMetadata.findMany({
+    where: { id: { in: uniqueIds } },
+    select: { id: true, employeeFirstName: true, employeeLastName: true, position: true },
+  });
+  const nameById = new Map<string, string>();
+  for (const m of metas) {
+    const full = [m.employeeFirstName, m.employeeLastName].filter(Boolean).join(" ");
+    nameById.set(m.id, full || m.position || "Employee");
+  }
+  return requests.map((r) => ({ ...mapRequestWithUser(r), employeeName: nameById.get(r.employeeId) }));
+}
 
 export async function SubmitTimeOff(data: SubmitTimeOffRequest) {
   const prisma = new PrismaClient();
@@ -139,14 +116,12 @@ export async function GetTimeOffStats(employeeId: string) {
     };
 
     // Only count approved requests as "taken"
-    const approvedRequests = allRequests.filter((req) => req.status === RequestStatus.APPROVED);
+    const approvedRequests = allRequests.filter((req) => req.status === "APPROVED");
     const daysTaken = approvedRequests.reduce((total, request) => {
       return total + calculateDays(new Date(request.startDate), new Date(request.endDate));
     }, 0);
 
-    const pendingRequests = allRequests.filter(
-      (req) => req.status === RequestStatus.PENDING,
-    ).length;
+    const pendingRequests = allRequests.filter((req) => req.status === "PENDING").length;
     const totalPTOPerYear = 20; // This could be fetched from user settings
     const daysAvailable = totalPTOPerYear - daysTaken;
 
@@ -168,18 +143,14 @@ export async function GetPendingRequests() {
   try {
     const requests = await prisma.timeOffRequest.findMany({
       where: {
-        status: RequestStatus.PENDING,
-      },
-      include: {
-        UserMetadata: true,
-        Approver: true,
+        status: "PENDING",
       },
       orderBy: {
-        requestDate: "asc",
+        startDate: "asc",
       },
     });
 
-    return requests.map(mapRequestWithUser);
+    return await attachEmployeeNames(prisma, requests);
   } finally {
     await prisma.$disconnect();
   }
@@ -191,32 +162,29 @@ export async function GetAllEmployeeRequests() {
 
   try {
     const requests = await prisma.timeOffRequest.findMany({
-      include: {
-        UserMetadata: true,
-        Approver: true,
+      where: {
+        NOT: { status: "PENDING" },
       },
       orderBy: {
-        requestDate: "desc",
+        startDate: "desc",
       },
     });
 
-    return requests.map(mapRequestWithUser);
+    return await attachEmployeeNames(prisma, requests);
   } finally {
     await prisma.$disconnect();
   }
 }
 
 // Approve a time-off request
-export async function ApproveTimeOffRequest(requestId: number, approverId: string) {
+export async function ApproveTimeOffRequest(requestId: number, _approverId: string) {
   const prisma = new PrismaClient();
 
   try {
     return await prisma.timeOffRequest.update({
       where: { id: requestId },
       data: {
-        status: RequestStatus.APPROVED,
-        approvedBy: approverId,
-        approvedDate: new Date(),
+        status: "APPROVED",
       },
     });
   } finally {
@@ -225,16 +193,14 @@ export async function ApproveTimeOffRequest(requestId: number, approverId: strin
 }
 
 // Decline a time-off request
-export async function DeclineTimeOffRequest(requestId: number, approverId: string) {
+export async function DeclineTimeOffRequest(requestId: number, _approverId: string) {
   const prisma = new PrismaClient();
 
   try {
     return await prisma.timeOffRequest.update({
       where: { id: requestId },
       data: {
-        status: RequestStatus.DECLINED,
-        approvedBy: approverId,
-        approvedDate: new Date(),
+        status: "DECLINED",
       },
     });
   } finally {
@@ -245,23 +211,15 @@ export async function DeclineTimeOffRequest(requestId: number, approverId: strin
 export async function UpdateRequestStatus(
   requestId: number,
   status: RequestStatus,
-  approverId?: string,
+  _approverId?: string,
 ) {
   const prisma = new PrismaClient();
 
   try {
-    const shouldStamp = status === RequestStatus.APPROVED || status === RequestStatus.DECLINED;
-
     const request = await prisma.timeOffRequest.update({
       where: { id: requestId },
       data: {
         status,
-        approvedBy: approverId ?? null,
-        approvedDate: shouldStamp ? new Date() : null,
-      },
-      include: {
-        UserMetadata: true,
-        Approver: true,
       },
     });
 
@@ -277,16 +235,12 @@ export async function GetAllRequestsForCalendar() {
 
   try {
     const requests = await prisma.timeOffRequest.findMany({
-      include: {
-        UserMetadata: true,
-        Approver: true,
-      },
       orderBy: {
         startDate: "asc",
       },
     });
 
-    return requests.map(mapRequestWithUser);
+    return await attachEmployeeNames(prisma, requests);
   } finally {
     await prisma.$disconnect();
   }
@@ -300,9 +254,9 @@ export async function GetApprovedRequestsForCalendar(month: number, year: number
     const startOfMonth = new Date(year, month - 1, 1);
     const endOfMonth = new Date(year, month, 0, 23, 59, 59);
 
+    // Avoid using `status` in Prisma where clause to bypass client/schema mismatch at runtime.
     const requests = await prisma.timeOffRequest.findMany({
       where: {
-        status: RequestStatus.APPROVED,
         OR: [
           {
             startDate: {
@@ -318,16 +272,12 @@ export async function GetApprovedRequestsForCalendar(month: number, year: number
           },
         ],
       },
-      include: {
-        UserMetadata: {
-          select: {
-            id: true,
-          },
-        },
-      },
+      orderBy: { startDate: "asc" },
     });
 
-    return requests.map(mapRequestWithUser);
+    const approvedOnly = requests.filter((r) => r.status === "APPROVED");
+
+    return await attachEmployeeNames(prisma, approvedOnly);
   } finally {
     await prisma.$disconnect();
   }

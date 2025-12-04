@@ -1,10 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import {
-  GetPendingRequests,
-  ApproveTimeOffRequest,
-  DeclineTimeOffRequest,
-} from "@/app/api/time-off-req";
+// Use HTTP API route to update status to ensure client-side compatibility
 
 interface PendingRequestsProps {
   approverId: string;
@@ -15,41 +11,66 @@ interface PendingRequestsProps {
 interface PendingRequest {
   id: number;
   employeeId: string;
+  employeeName?: string;
   leaveType: string;
   otherLeaveType: string;
   startDate: Date;
   endDate: Date;
   comments: string;
-  requestDate: Date;
-  UserMetadata: {
-    id: string;
-    position: string;
-  };
+  status: "PENDING" | "APPROVED" | "DECLINED";
+  requestDate?: Date | string;
 }
 
 const PendingRequests: React.FC<PendingRequestsProps> = ({
-  approverId,
+  approverId: _approverId,
   refreshTrigger = 0,
   onActionComplete,
 }) => {
   const [requests, setRequests] = useState<PendingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<number | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     void fetchRequests();
+
+    // Listen for global status updates to refresh pending list
+    const handler = () => {
+      void fetchRequests();
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("timeoff:status-updated", handler);
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("timeoff:status-updated", handler);
+      }
+    };
   }, [refreshTrigger]);
 
   const fetchRequests = async () => {
     setLoading(true);
+    setErrorMsg(null);
     try {
-      console.log("Fetching pending requests...");
-      const data = await GetPendingRequests();
-      console.log("Pending requests data:", data);
-      console.log("Number of requests:", data.length);
-      setRequests(data);
+      const res = await fetch("/api/time-off-req?type=pending", { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setRequests(data as PendingRequest[]);
+      } else if (data && typeof data === "object" && "error" in data) {
+        const errObj = data as { error: unknown; details?: unknown };
+        const errText = [errObj.error, errObj.details]
+          .filter((v) => typeof v === "string")
+          .join(" — ") || "Unknown error";
+        setErrorMsg(errText);
+        setRequests([]);
+      } else {
+        setErrorMsg("Unexpected response format");
+        setRequests([]);
+      }
     } catch (error) {
       console.error("Error fetching pending requests:", error);
+      setErrorMsg(error instanceof Error ? error.message : String(error));
     } finally {
       setLoading(false);
     }
@@ -58,8 +79,30 @@ const PendingRequests: React.FC<PendingRequestsProps> = ({
   const handleApprove = async (requestId: number) => {
     setProcessingId(requestId);
     try {
-      await ApproveTimeOffRequest(requestId, approverId);
+      const res = await fetch("/api/time-off-req", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: requestId, status: "APPROVED" }),
+      });
+      let payload: unknown = null;
+      try {
+        payload = await res.json();
+      } catch { }
+      if (!res.ok) {
+        console.error("Approve failed:", payload);
+      }
+      // Optimistic update: remove the request from local pending list
+      setRequests((prev) => prev.filter((r) => r.id !== requestId));
+      // Also refetch to ensure consistency
       await fetchRequests();
+      // Notify other views to refresh (e.g., StatusOfEmployeeRequests)
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("timeoff:status-updated"));
+        // Fallback: dispatch again shortly in case listeners were late to attach
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent("timeoff:status-updated"));
+        }, 200);
+      }
       onActionComplete?.();
     } catch (error) {
       console.error("Error approving request:", error);
@@ -71,8 +114,27 @@ const PendingRequests: React.FC<PendingRequestsProps> = ({
   const handleDecline = async (requestId: number) => {
     setProcessingId(requestId);
     try {
-      await DeclineTimeOffRequest(requestId, approverId);
+      const res = await fetch("/api/time-off-req", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: requestId, status: "DECLINED" }),
+      });
+      let payload: unknown = null;
+      try {
+        payload = await res.json();
+      } catch { }
+      if (!res.ok) {
+        console.error("Decline failed:", payload);
+      }
+      // Optimistic update: remove the request from local pending list
+      setRequests((prev) => prev.filter((r) => r.id !== requestId));
       await fetchRequests();
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("timeoff:status-updated"));
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent("timeoff:status-updated"));
+        }, 200);
+      }
       onActionComplete?.();
     } catch (error) {
       console.error("Error declining request:", error);
@@ -88,9 +150,7 @@ const PendingRequests: React.FC<PendingRequestsProps> = ({
 
   // Helper to get employee name from email (from employeeId)
   const getEmployeeName = (request: PendingRequest): string => {
-    // For now, using position as name placeholder
-    // You can fetch actual names from Supabase auth.users if needed
-    return request.UserMetadata?.position || "Employee";
+    return request.employeeName ?? "Employee";
   };
 
   if (loading) {
@@ -106,12 +166,34 @@ const PendingRequests: React.FC<PendingRequestsProps> = ({
     );
   }
 
+  if (errorMsg) {
+    return (
+      <div className="w-full">
+        <h2 className="mb-4 text-xl font-semibold text-gray-800">Pending Employee Requests</h2>
+        <div className="overflow-x-auto rounded-lg bg-red-50 p-8 text-center text-red-700">
+          Error: {errorMsg}
+        </div>
+      </div>
+    );
+  }
+
   if (requests.length === 0) {
     return (
       <div className="w-full">
         <h2 className="mb-4 text-xl font-semibold text-gray-800">Pending Employee Requests</h2>
         <div className="overflow-x-auto rounded-lg bg-gray-50 p-8">
           <p className="text-center text-gray-500">No pending requests</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!Array.isArray(requests)) {
+    return (
+      <div className="w-full">
+        <h2 className="mb-4 text-xl font-semibold text-gray-800">Pending Employee Requests</h2>
+        <div className="overflow-x-auto rounded-lg bg-red-50 p-8 text-center text-red-700">
+          Error: Unexpected requests state
         </div>
       </div>
     );
@@ -143,7 +225,7 @@ const PendingRequests: React.FC<PendingRequestsProps> = ({
                 <td className="px-4 py-3 text-gray-700">{formatDate(request.startDate)}</td>
                 <td className="px-4 py-3 text-gray-700">{formatDate(request.endDate)}</td>
                 <td className="px-4 py-3 text-gray-700">{request.comments || "-"}</td>
-                <td className="px-4 py-3 text-gray-700">{formatDate(request.requestDate)}</td>
+                <td className="px-4 py-3 text-gray-700">{formatDate(new Date(request.requestDate ?? request.startDate))}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
                     <button

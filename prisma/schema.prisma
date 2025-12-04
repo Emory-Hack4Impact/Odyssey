@@ -54,7 +54,15 @@ model TimeOffRequest {
   comments       String       @default("")
   approved       Boolean      @default(false)
   otherLeaveType String       @default("")
+  requestDate    DateTime @default(now())
+  status         RequestStatus @default(PENDING)
   UserMetadata   UserMetadata @relation(fields: [employeeId], references: [id])
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  DECLINED
 }
 
 model EmployeeEvaluation {

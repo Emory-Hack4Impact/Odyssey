@@ -116,6 +116,81 @@ async function main() {
     // ignore if table not present
   }
 
+  // Seed dummy TimeOffRequest data
+  try {
+    await prisma.timeOffRequest.deleteMany({
+      where: {
+        employeeId: {
+          in: [
+            EMP_ID,
+            "00000000-0000-0000-0000-000000000003",
+            "00000000-0000-0000-0000-000000000004",
+          ],
+        },
+      },
+    });
+
+    await prisma.timeOffRequest.createMany({
+      data: [
+        // Pending requests
+        {
+          employeeId: EMP_ID,
+          leaveType: "Vacation",
+          otherLeaveType: "",
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2),
+          comments: "Family trip",
+          status: "PENDING",
+          requestDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1),
+        },
+        {
+          employeeId: "00000000-0000-0000-0000-000000000003",
+          leaveType: "Sick",
+          otherLeaveType: "",
+          startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+          endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 8),
+          comments: "Doctor appointment",
+          status: "PENDING",
+          requestDate: new Date(),
+        },
+        // Approved requests
+        {
+          employeeId: EMP_ID,
+          leaveType: "Personal",
+          otherLeaveType: "",
+          startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15),
+          endDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14),
+          comments: "Errands",
+          status: "APPROVED",
+          requestDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 16),
+        },
+        {
+          employeeId: "00000000-0000-0000-0000-000000000004",
+          leaveType: "Vacation",
+          otherLeaveType: "",
+          startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 20),
+          endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 25),
+          comments: "Travel",
+          status: "APPROVED",
+          requestDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
+        },
+        // Declined request
+        {
+          employeeId: "00000000-0000-0000-0000-000000000003",
+          leaveType: "Other",
+          otherLeaveType: "Conference",
+          startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3),
+          endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 4),
+          comments: "External conference",
+          status: "DECLINED",
+          requestDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
+        },
+      ],
+    });
+  } catch {
+    // ignore if table not present
+  }
+
   // HR-submitted evaluation
   try {
     await prisma.employeeEvaluation.create({

@@ -1,5 +1,7 @@
+/* eslint-disable */
 // CommonJS seed script to avoid ESM loader issues
-import { PrismaClient } from "@prisma/client";
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { PrismaClient, RequestStatus } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 
@@ -74,7 +76,69 @@ async function main() {
 
   try {
     await prisma.employeeEvaluation.deleteMany({ where: { employeeId: EMP_ID, year: 2025 } });
-  } catch {}
+  } catch { }
+
+  // Seed dummy time-off requests
+  try {
+    await prisma.timeOffRequest.deleteMany({
+      where: {
+        employeeId: { in: [EMP_ID, "00000000-0000-0000-0000-000000000003", "00000000-0000-0000-0000-000000000004"] },
+      },
+    });
+
+    await prisma.timeOffRequest.createMany({
+      data: [
+        // Pending requests (should show under Pending Employee Requests)
+        {
+          employeeId: EMP_ID,
+          leaveType: "Vacation",
+          otherLeaveType: "",
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2),
+          comments: "Family trip",
+          status: RequestStatus.PENDING,
+        },
+        {
+          employeeId: "00000000-0000-0000-0000-000000000003",
+          leaveType: "Sick",
+          otherLeaveType: "",
+          startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+          endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 8),
+          comments: "Doctor appointment",
+          status: RequestStatus.PENDING,
+        },
+        // Approved requests (should show under Status of Employee Requests)
+        {
+          employeeId: EMP_ID,
+          leaveType: "Personal",
+          otherLeaveType: "",
+          startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15),
+          endDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14),
+          comments: "Errands",
+          status: RequestStatus.APPROVED,
+        },
+        {
+          employeeId: "00000000-0000-0000-0000-000000000004",
+          leaveType: "Vacation",
+          otherLeaveType: "",
+          startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 20),
+          endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 25),
+          comments: "Travel",
+          status: RequestStatus.APPROVED,
+        },
+        // Declined request
+        {
+          employeeId: "00000000-0000-0000-0000-000000000003",
+          leaveType: "Other",
+          otherLeaveType: "Conference",
+          startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3),
+          endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 4),
+          comments: "External conference",
+          status: RequestStatus.DECLINED,
+        },
+      ],
+    });
+  } catch { }
 
   try {
     await prisma.employeeEvaluation.create({
@@ -108,7 +172,7 @@ async function main() {
         submittedAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
       },
     });
-  } catch {}
+  } catch { }
 
   try {
     await prisma.employeeEvaluation.create({
@@ -144,7 +208,7 @@ async function main() {
         submittedAt: new Date(),
       },
     });
-  } catch {}
+  } catch { }
 }
 
 main()
