@@ -144,11 +144,10 @@ const TimeOffForm = ({ employeeId, onSuccess }: TimeOffFormProps) => {
               name="leaveType"
               value={formData.leaveType}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:outline-none ${
-                formErrors.leaveType
+              className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:outline-none ${formErrors.leaveType
                   ? "border-red-300 focus:border-red-500 focus:ring-red-200"
                   : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
-              }`}
+                }`}
             >
               <option value="">Select a Type</option>
               <option value="Annual Leave">Annual Leave</option>
@@ -195,11 +194,10 @@ const TimeOffForm = ({ employeeId, onSuccess }: TimeOffFormProps) => {
                 name="startDate"
                 value={formData.startDate}
                 onChange={handleChange}
-                className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:outline-none ${
-                  formErrors.startDate
+                className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:outline-none ${formErrors.startDate
                     ? "border-red-300 focus:border-red-500 focus:ring-red-200"
                     : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
-                }`}
+                  }`}
               />
               {formErrors.startDate && (
                 <p className="mt-1 text-xs text-red-500">{formErrors.startDate}</p>
@@ -215,11 +213,10 @@ const TimeOffForm = ({ employeeId, onSuccess }: TimeOffFormProps) => {
                 name="endDate"
                 value={formData.endDate}
                 onChange={handleChange}
-                className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:outline-none ${
-                  formErrors.endDate
+                className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:outline-none ${formErrors.endDate
                     ? "border-red-300 focus:border-red-500 focus:ring-red-200"
                     : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
-                }`}
+                  }`}
               />
               {formErrors.endDate && (
                 <p className="mt-1 text-xs text-red-500">{formErrors.endDate}</p>
