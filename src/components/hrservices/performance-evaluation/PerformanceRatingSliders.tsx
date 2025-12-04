@@ -6,11 +6,11 @@ interface PerformanceRatingSliderProps {
   onChange: (rating: number) => void;
 }
 
-export const PerformanceRatingSlider: React.FC<PerformanceRatingSliderProps> = ({
+export const PerformanceRatingSlider = ({
   category,
   value,
   onChange,
-}) => {
+}: PerformanceRatingSliderProps) => {
   // Treat `value` as the single source of truth so parent updates (e.g. from
   // loaded data) immediately move the slider. Call `onChange` when user
   // interacts.

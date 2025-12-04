@@ -5,7 +5,7 @@ interface RatingItemProps {
   percentage: string;
 }
 
-export const RatingItem: React.FC<RatingItemProps> = ({ label, percentage }) => {
+export const RatingItem = ({ label, percentage }: RatingItemProps) => {
   return (
     <div>
       <div className="w-32 text-sm text-gray-600">{label}</div>

@@ -8,7 +8,7 @@ import {
 } from "@/app/api/time-off-req";
 import { RequestStatus } from "@prisma/client";
 
-const ManageStatusTable: React.FC = () => {
+const ManageStatusTable = () => {
   const [requests, setRequests] = useState<TimeOffRequestWithUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<number | null>(null);
@@ -122,14 +122,14 @@ const ManageStatusTable: React.FC = () => {
                     <button
                       onClick={() => handleStatusUpdate(request.id as number, RequestStatus.APPROVED)}
                       disabled={isProcessing || request.status === RequestStatus.APPROVED}
-                      className="rounded-md bg-green-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-600 focus:ring-2 focus:ring-green-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-300"
+                      className="rounded-md bg-green-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-600 focus:ring-2 focus:ring-green-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-300 cursor-pointer"
                     >
                       {isProcessing ? "Processing..." : "Approve"}
                     </button>
                     <button
                       onClick={() => handleStatusUpdate(request.id as number, RequestStatus.DECLINED)}
                       disabled={isProcessing || request.status === RequestStatus.DECLINED}
-                      className="rounded-md bg-red-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-300"
+                      className="rounded-md bg-red-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-300 cursor-pointer"
                     >
                       {isProcessing ? "Processing..." : "Decline"}
                     </button>

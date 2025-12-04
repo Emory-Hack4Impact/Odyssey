@@ -29,10 +29,10 @@ interface Reviewer {
   initials: string;
 }
 
-export const PerformanceReviewDashboard: React.FC<PerformanceReviewDashboardProps> = ({
+export const PerformanceReviewDashboard = ({
   employeeId,
   selectedYear,
-}) => {
+}: PerformanceReviewDashboardProps) => {
   const [evaluation, setEvaluation] = useState<EmployeeEvaluationAPI | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

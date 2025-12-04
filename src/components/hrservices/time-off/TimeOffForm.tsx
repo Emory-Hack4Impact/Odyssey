@@ -16,7 +16,7 @@ interface TimeOffFormProps {
   onSuccess?: () => void;
 }
 
-const TimeOffForm: React.FC<TimeOffFormProps> = ({ employeeId, onSuccess }) => {
+const TimeOffForm = ({ employeeId, onSuccess }: TimeOffFormProps) => {
   const [formData, setFormData] = useState<SubmitTimeOffRequest>({
     id: employeeId,
     leaveType: "",

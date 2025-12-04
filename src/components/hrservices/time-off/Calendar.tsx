@@ -9,11 +9,15 @@ interface CalendarRequest {
   endDate: Date;
 }
 
-const Calendar: React.FC<{
+const Calendar = ({
+  refreshTrigger = 0,
+  selectedDateIso = null,
+  onSelectDate,
+}: {
   refreshTrigger?: number;
   selectedDateIso?: string | null;
   onSelectDate?: (iso: string | null) => void;
-}> = ({ refreshTrigger = 0, selectedDateIso = null, onSelectDate }) => {
+}) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [allRequests, setAllRequests] = useState<CalendarRequest[]>([]);
 

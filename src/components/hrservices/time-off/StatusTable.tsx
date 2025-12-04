@@ -14,10 +14,7 @@ interface TimeOffRequest {
   status: string;
 }
 
-const StatusTable: React.FC<{
-  employeeId: string;
-  refreshTrigger?: number;
-}> = ({ employeeId, refreshTrigger = 0 }) => {
+const StatusTable = ({ employeeId, refreshTrigger = 0 }: { employeeId: string; refreshTrigger?: number }) => {
   const [requests, setRequests] = useState<TimeOffRequest[]>([]);
   const [loading, setLoading] = useState(true);
 

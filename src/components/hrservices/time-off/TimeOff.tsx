@@ -16,7 +16,7 @@ interface TimeOffProps {
   } | null;
 }
 
-const Home: React.FC<TimeOffProps> = ({ employeeId, userMetadata }) => {
+const Home = ({ employeeId, userMetadata }: TimeOffProps) => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [calendarRanges, setCalendarRanges] = useState<Array<{ startDate: Date | string; endDate: Date | string }>>([]);
 

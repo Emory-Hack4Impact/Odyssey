@@ -17,7 +17,7 @@ type PendingRow = {
   requestDate?: Date | string;
 };
 
-const PendingTable: React.FC = () => {
+const PendingTable = () => {
   const [requests, setRequests] = useState<PendingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<number | null>(null);

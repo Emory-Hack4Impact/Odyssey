@@ -5,7 +5,7 @@ import RequestsTabs from "./RequestsTabs";
 
 // Props are typed inline in the component definition below
 
-const TimeOffHR: React.FC<{ employeeId: string }> = ({ employeeId }) => {
+const TimeOffHR = ({ employeeId }: { employeeId: string }) => {
   const [refreshTrigger] = useState(0);
   const [selectedDateIso, setSelectedDateIso] = useState<string | null>(null);
 

@@ -14,7 +14,7 @@ type TimeOffStats = {
   totalPTOPerYear: number;
 };
 
-const DaysInfo: React.FC<DaysInfoProps> = ({ employeeId, refreshTrigger = 0 }) => {
+const DaysInfo = ({ employeeId, refreshTrigger = 0 }: DaysInfoProps) => {
   const [stats, setStats] = useState<TimeOffStats>({
     daysAvailable: 0,
     pendingRequests: 0,

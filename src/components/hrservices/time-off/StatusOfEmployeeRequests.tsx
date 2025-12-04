@@ -16,10 +16,13 @@ interface EmployeeRequest {
   status: "PENDING" | "APPROVED" | "DECLINED";
 }
 
-const StatusOfEmployeeRequests: React.FC<{
+const StatusOfEmployeeRequests = ({
+  refreshTrigger = 0,
+  selectedDateIso = null,
+}: {
   refreshTrigger?: number;
   selectedDateIso?: string | null;
-}> = ({ refreshTrigger = 0, selectedDateIso = null }) => {
+}) => {
   const [requests, setRequests] = useState<EmployeeRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -341,7 +344,7 @@ const StatusOfEmployeeRequests: React.FC<{
                 <td className={`px-4 py-3 font-medium ${getStatusColor(request.status)}`}>
                   <select
                     aria-label="Change status"
-                    className="bg-transparent p-0 underline decoration-dotted underline-offset-4 focus:outline-none"
+                    className="bg-transparent p-0 underline decoration-dotted underline-offset-4 focus:outline-none cursor-pointer"
                     value={request.status}
                     onChange={(e) => {
                       const val = e.target.value as "PENDING" | "APPROVED" | "DECLINED";

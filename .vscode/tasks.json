@@ -5,6 +5,11 @@
 			"label": "lint",
 			"type": "shell",
 			"command": "npm run lint"
+		},
+		{
+			"label": "lint",
+			"type": "shell",
+			"command": "npm run lint"
 		}
 	]
 }

@@ -8,13 +8,13 @@ interface TextAreaProps {
   onChange?: (value: string) => void;
 }
 
-export const TextAreaWithDescription: React.FC<TextAreaProps> = ({
+export const TextAreaWithDescription = ({
   label,
   rows = 8,
   placeholder,
   value,
   onChange,
-}) => {
+}: TextAreaProps) => {
   return (
     <div className="w-full max-w-2xl space-y-2">
       <div className="space-y-1">

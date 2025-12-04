@@ -27,7 +27,7 @@ const buildHighlightSet = (ranges: CalendarRange[]) => {
 };
 
 // Simple current-month calendar that highlights provided dates
-const CalendarHighlights: React.FC<CalendarHighlightsProps> = ({ ranges }) => {
+const CalendarHighlights = ({ ranges }: CalendarHighlightsProps) => {
   const today = new Date();
   const year = today.getFullYear();
   const month = today.getMonth();
