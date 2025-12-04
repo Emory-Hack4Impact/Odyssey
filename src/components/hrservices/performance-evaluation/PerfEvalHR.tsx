@@ -18,6 +18,7 @@ interface FetchedEvalMeta {
   approved?: boolean;
   approvedAt?: string | null;
   approvedBy?: string | null;
+  submittedAt: string;
 }
 
 interface FetchedEval extends FetchedEvalMeta {
@@ -44,6 +45,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
     employeeFirstName: "",
     employeeLastName: "",
     year: 2025,
+    submittedAt: "2025-01-01T00:00:00.000Z",
     strengths: "",
     weaknesses: "",
     improvements: "",
@@ -59,6 +61,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
   const [isOpened, setIsOpened] = useState(false);
   const [search, setSearch] = useState("");
   const [yearSearch, setYearSearch] = useState(0);
+  const [onlyRecent, setOnlyRecent] = useState(true);
 
   const filteredEvals = employeeEvalsMeta.filter((evalItem) => {
     if (!search && !yearSearch) return true;
@@ -111,6 +114,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
         approvedAt: ((meta as any).approvedAt as string) ?? null,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         approvedBy: ((meta as any).approvedBy as string) ?? null,
+        submittedAt: String(meta.submittedAt),
       })) as FetchedEvalMeta[];
       setEmployeeEvalsMeta(normalized ?? []);
     } catch (error) {
@@ -121,6 +125,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     void fetchEvalMeta();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -244,6 +249,16 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                   </ul>
                 </div>
               </div>
+
+              <label className="label">
+                <input
+                  type="checkbox"
+                  checked={onlyRecent}
+                  className="checkbox"
+                  onChange={() => setOnlyRecent((prev) => !prev)}
+                />
+                Only show most recent
+              </label>
             </div>
 
             <div className="card h-full w-full border border-base-content/5 bg-base-100 shadow-xl">
@@ -260,8 +275,9 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                     <thead>
                       <tr className="bg-base-200 text-xs font-semibold tracking-wide text-base-content uppercase">
                         <th className="w-1/2">Name</th>
-                        <th className="w-1/6">Year</th>
+                        <th className="w-1/4">Year</th>
                         <th className="w-1/6">Status</th>
+                        <th className="w-1/4">At</th>
                         <th className="w-1/2 text-center">Action</th>
                       </tr>
                     </thead>
@@ -273,133 +289,162 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                           </td>
                         </tr>
                       ) : (
-                        filteredEvals.map((employeeEval, index) => (
-                          <tr key={index} className="text-sm">
-                            <td className="align-top font-medium">
-                              {employeeEval.employeeLastName}, {employeeEval.employeeFirstName}
-                            </td>
-                            <td className="align-top font-medium">{employeeEval.year}</td>
-                            <td className="align-top">
-                              {employeeEval.approved ? (
-                                <span className="badge badge-success">Approved</span>
-                              ) : (
-                                <span className="badge">Submitted</span>
-                              )}
-                            </td>
-                            <td className="text-center align-top">
-                              <div className="flex items-center justify-center gap-2">
-                                <button
-                                  className="btn btn-outline btn-sm"
-                                  onClick={async () => {
-                                    const evalData = await fetchEvalByID(employeeEval.evaluationId);
-                                    if (evalData) {
-                                      setSelectedEval({ ...employeeEval, ...evalData });
-                                      setIsOpened(true);
-                                    } else {
-                                      alert("Failed to load evaluation");
-                                    }
-                                  }}
-                                >
-                                  View
-                                </button>
+                        (() => {
+                          const display: FetchedEvalMeta[] = onlyRecent
+                            ? (() => {
+                                const latestByEmployeeYear = new Map<string, FetchedEvalMeta>();
+                                for (const ev of filteredEvals) {
+                                  const key = `${ev.employeeId}_${ev.year}`;
+                                  if (
+                                    !latestByEmployeeYear.get(key) ||
+                                    Date.parse(latestByEmployeeYear.get(key)!.submittedAt) <
+                                      Date.parse(ev.submittedAt)
+                                  ) {
+                                    latestByEmployeeYear.set(key, ev);
+                                    continue;
+                                  }
+                                }
+                                return Array.from(latestByEmployeeYear.values());
+                              })()
+                            : filteredEvals;
 
-                                <button
-                                  className="btn btn-outline btn-sm"
-                                  onClick={async () => {
-                                    try {
+                          return display.map((employeeEval, index) => (
+                            <tr key={index} className="text-sm">
+                              <td className="align-top font-medium">
+                                {employeeEval.employeeLastName}, {employeeEval.employeeFirstName}
+                              </td>
+
+                              <td className="align-top font-medium">{employeeEval.year}</td>
+
+                              <td className="align-top">
+                                {employeeEval.approved ? (
+                                  <span className="badge badge-success">Approved</span>
+                                ) : (
+                                  <span className="badge">Submitted</span>
+                                )}
+                              </td>
+
+                              <td className="align-top font-medium">{employeeEval.submittedAt}</td>
+                              <td className="text-center align-top">
+                                <div className="flex items-center justify-center gap-2">
+                                  <button
+                                    className="btn btn-outline btn-sm"
+                                    onClick={async () => {
                                       const evalData = await fetchEvalByID(
                                         employeeEval.evaluationId,
                                       );
-                                      if (!evalData) {
+                                      if (evalData) {
+                                        setSelectedEval({ ...employeeEval, ...evalData });
+                                        setIsOpened(true);
+                                      } else {
                                         alert("Failed to load evaluation");
-                                        return;
                                       }
-                                      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                                      const reason =
-                                        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                                        window.prompt("Reason for resubmission:", "") || "";
-                                      const today = new Date().toISOString().slice(0, 10);
-                                      const tag = `[Resubmission Requested on ${today}]${reason ? ` Reason: ${reason}` : ""}`;
-                                      const newNotes = `${tag}\n\n${evalData.notes ?? ""}`;
+                                    }}
+                                  >
+                                    View
+                                  </button>
 
-                                      const payload = {
-                                        strengths: evalData.strengths ?? "",
-                                        weaknesses: evalData.weaknesses ?? "",
-                                        improvements: evalData.improvements ?? "",
-                                        notes: newNotes,
-                                        communication: Number(evalData.communication ?? 0),
-                                        leadership: Number(evalData.leadership ?? 0),
-                                        timeliness: Number(evalData.timeliness ?? 0),
-                                        skill1: Number(evalData.skill1 ?? 0),
-                                        skill2: Number(evalData.skill2 ?? 0),
-                                        skill3: Number(evalData.skill3 ?? 0),
-                                      };
-
-                                      const metadata = {
-                                        employeeId: employeeEval.employeeId ?? undefined,
-                                        submitterId: employeeEval.submitterId ?? undefined,
-                                        year: employeeEval.year,
-                                      };
-
-                                      const resp = await fetch("/api/employee-evals", {
-                                        method: "PUT",
-                                        headers: { "Content-Type": "application/json" },
-                                        body: JSON.stringify({
-                                          id: employeeEval.evaluationId,
-                                          data: payload,
-                                          metadata,
-                                        }),
-                                      });
-                                      const res = await resp.json();
-                                      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                                      if (!resp.ok)
-                                        throw new Error(
-                                          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                                          res?.error ?? "Failed to request resubmission",
+                                  <button
+                                    className="btn btn-outline btn-sm"
+                                    onClick={async () => {
+                                      try {
+                                        const evalData = await fetchEvalByID(
+                                          employeeEval.evaluationId,
                                         );
-                                      alert("Resubmission requested");
-                                    } catch (err) {
-                                      console.error(err);
-                                      alert("Failed to request resubmission");
-                                    }
-                                  }}
-                                >
-                                  Resubmit
-                                </button>
+                                        if (!evalData) {
+                                          alert("Failed to load evaluation");
+                                          return;
+                                        }
+                                        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                                        const reason =
+                                          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                                          window.prompt("Reason for resubmission:", "") || "";
+                                        const today = new Date().toISOString().slice(0, 10);
+                                        const tag = `[Resubmission Requested on ${today}]${reason ? ` Reason: ${reason}` : ""}`;
+                                        const newNotes = `${tag}\n\n${evalData.notes ?? ""}`;
 
-                                <button
-                                  className="btn btn-outline btn-sm"
-                                  onClick={async () => {
-                                    try {
-                                      const resp = await fetch("/api/employee-evals", {
-                                        method: "PATCH",
-                                        headers: { "Content-Type": "application/json" },
-                                        body: JSON.stringify({
-                                          evaluationId: employeeEval.evaluationId,
-                                          approvedBy: _userId,
-                                        }),
-                                      });
+                                        const payload = {
+                                          strengths: evalData.strengths ?? "",
+                                          weaknesses: evalData.weaknesses ?? "",
+                                          improvements: evalData.improvements ?? "",
+                                          notes: newNotes,
+                                          communication: Number(evalData.communication ?? 0),
+                                          leadership: Number(evalData.leadership ?? 0),
+                                          timeliness: Number(evalData.timeliness ?? 0),
+                                          skill1: Number(evalData.skill1 ?? 0),
+                                          skill2: Number(evalData.skill2 ?? 0),
+                                          skill3: Number(evalData.skill3 ?? 0),
+                                        };
 
-                                      const res = await resp.json();
+                                        const metadata = {
+                                          employeeId: employeeEval.employeeId ?? undefined,
+                                          submitterId: employeeEval.submitterId ?? undefined,
+                                          year: employeeEval.year,
+                                        };
 
-                                      if (!resp.ok) {
+                                        const resp = await fetch("/api/employee-evals", {
+                                          method: "PUT",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({
+                                            id: employeeEval.evaluationId,
+                                            data: payload,
+                                            metadata,
+                                          }),
+                                        });
+                                        const res = await resp.json();
                                         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                                        throw new Error(res?.error ?? "Failed to toggle approval");
+                                        if (!resp.ok)
+                                          throw new Error(
+                                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                                            res?.error ?? "Failed to request resubmission",
+                                          );
+                                        alert("Resubmission requested");
+                                      } catch (err) {
+                                        console.error(err);
+                                        alert("Failed to request resubmission");
                                       }
+                                    }}
+                                  >
+                                    Resubmit
+                                  </button>
 
-                                      await fetchEvalMeta();
-                                    } catch (err) {
-                                      console.error(err);
-                                      alert("Failed to toggle approval");
-                                    }
-                                  }}
-                                >
-                                  {employeeEval.approved ? "Unapprove" : "Approve"}
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
+                                  <button
+                                    className="btn btn-outline btn-sm"
+                                    onClick={async () => {
+                                      try {
+                                        const resp = await fetch("/api/employee-evals", {
+                                          method: "PATCH",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({
+                                            evaluationId: employeeEval.evaluationId,
+                                            approvedBy: _userId,
+                                          }),
+                                        });
+
+                                        const res = await resp.json();
+
+                                        if (!resp.ok) {
+                                          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                                          throw new Error(
+                                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                                            res?.error ?? "Failed to toggle approval",
+                                          );
+                                        }
+
+                                        await fetchEvalMeta();
+                                      } catch (err) {
+                                        console.error(err);
+                                        alert("Failed to toggle approval");
+                                      }
+                                    }}
+                                  >
+                                    {employeeEval.approved ? "Unapprove" : "Approve"}
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ));
+                        })()
                       )}
                     </tbody>
                   </table>

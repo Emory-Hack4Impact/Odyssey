@@ -72,20 +72,17 @@ async function main() {
   const EMP_ID = "00000000-0000-0000-0000-000000000005";
   const HR_ID = "00000000-0000-0000-0000-000000000002"; // HR user
 
-  // Clean previous dev rows for determinism
   try {
-    await prisma.employeeEvaluation.deleteMany({ where: { employeeId: EMP_ID, year: 2025 } });
-  } catch {
-    // table may not exist if migrations haven't been applied yet; ignore
-  }
+    // Delete metadata first due to cascade
+    await prisma.employeeEvaluationMetadata.deleteMany({
+      where: { employeeId: EMP_ID, year: 2025 },
+    });
+  } catch {}
 
   // Employee self-submitted evaluation
   try {
     await prisma.employeeEvaluation.create({
       data: {
-        employeeId: EMP_ID,
-        submitterId: EMP_ID,
-        year: 2025,
         strengths: [
           "Delivers features on time",
           "Communicates scope changes early",
@@ -109,7 +106,14 @@ async function main() {
         skill1: 65,
         skill2: 70,
         skill3: 60,
-        submittedAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
+        metadata: {
+          create: {
+            employeeId: EMP_ID,
+            submitterId: EMP_ID,
+            year: 2025,
+            submittedAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
+          },
+        },
       },
     });
   } catch {
@@ -120,9 +124,6 @@ async function main() {
   try {
     await prisma.employeeEvaluation.create({
       data: {
-        employeeId: EMP_ID,
-        submitterId: HR_ID,
-        year: 2025,
         strengths: [
           "Communicates clearly with team",
           "Proactive in sharing updates",
@@ -148,7 +149,14 @@ async function main() {
         skill1: 65,
         skill2: 70,
         skill3: 60,
-        submittedAt: new Date(),
+        metadata: {
+          create: {
+            employeeId: EMP_ID,
+            submitterId: HR_ID,
+            year: 2025,
+            submittedAt: new Date(),
+          },
+        },
       },
     });
   } catch {
