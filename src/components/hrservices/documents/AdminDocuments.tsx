@@ -555,9 +555,8 @@ export default function AdminDocuments() {
   const [editRecipientQuery, setEditRecipientQuery] = useState("");
   const [replacementFile, setReplacementFile] = useState<File | null>(null);
 
-  // this is admin's id for testing for now
-  // TODO: replace test id with real ones through reading from db
-  const TEST_USER_ID = "00000000-0000-0000-0000-000000000001";
+  // this is the only admin in db now
+  // const TEST_USER_ID = "00000000-0000-0000-0000-000000000001";
   useEffect(() => {
     const loadUser = async () => {
       const supabase = createSupabaseClient();
