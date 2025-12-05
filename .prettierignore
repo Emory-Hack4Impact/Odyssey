@@ -27,3 +27,4 @@ dist
 CHANGELOG.md
 
 supabase
+!src/utils/supabase

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { uploadDocumentCore } from "./index";
+import { uploadDocumentCore, getSignedUrlForFileId } from "./index";
 import { prisma } from "@/lib/prisma";
+import { getUser } from "@/utils/supabase/server";
 
 export const runtime = "nodejs";
 // export const dynamic = "force-dynamic";
@@ -54,22 +55,50 @@ export async function POST(req: Request) {
   }
 }
 
-// for fetching files
 export async function GET(req: NextResponse) {
   // parse request url & extract userId query params
   const { searchParams } = new URL(req.url);
+
+  const mode = searchParams.get("mode");
+  const fileId = searchParams.get("fileId");
   const userId = searchParams.get("userId");
-
-  if (!userId) {
-    return NextResponse.json({ error: "Missing userId query parameter" }, { status: 400 });
+  // check authentication from supabase
+  const user = await getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
-
-  // query all files for that user matched by params (may laster use filter)
-  const files = await prisma.files.findMany({
-    where: { userId },
-    orderBy: { uploadedAt: "desc" },
+  // look up Prisma UserMetadata using the Supabase auth user id
+  const userMeta = await prisma.userMetadata.findUnique({
+    where: { id: user.id },
   });
 
-  // return list of files as json
-  return NextResponse.json(files);
+  // Model 1: for fetching files on click (mode=view)
+  if (mode === "view" && fileId) {
+    try {
+      const signedUrl = await getSignedUrlForFileId(fileId, user.id, 60);
+      return NextResponse.json({ signedUrl });
+    } catch (err) {
+      console.error("/api/documents GET signed-url error", err);
+      return NextResponse.json({ error: String(err) }, { status: 500 });
+    }
+  }
+
+  // Model 2: for reading file list only
+
+  // check whether is admin, if so, show all files
+  const isAdmin = userMeta?.is_admin === true;
+  if (isAdmin) {
+    const files = await prisma.files.findMany({ orderBy: { uploadedAt: "desc" } });
+    return NextResponse.json(files);
+  }
+
+  // if just normal user, query all files for that user matched by params
+  if (userId) {
+    const files = await prisma.files.findMany({
+      where: { userId },
+      orderBy: { uploadedAt: "desc" },
+    });
+    // return list of files as json
+    return NextResponse.json(files);
+  }
 }

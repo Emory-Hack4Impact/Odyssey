@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, /*useMemo,*/ useState } from "react";
-import { /*ArrowDownAZ,*/ UploadCloud } from "lucide-react";
+import { useEffect, useState } from "react";
+import { UploadCloud } from "lucide-react";
 import { ROOT } from "./mockData";
 import type { DocumentNode, FolderNode } from "./types";
 import { FileIcon } from "./icons";
+import { createClient as createSupabaseClient } from "@/utils/supabase/client";
 
 // ----- Data helpers -------------------------------------------------------
 
@@ -41,21 +42,14 @@ type UploadedDocumentResult = {
   } | null;
 };
 
-/*
-type LocatedFile = {
-  id: string;
-  name: string;
-  url: string;
-  mimeType?: string;
-  parents: string[];
-  folderNames: string[];
-};
-*/
-
 type DocumentGridProps = {
   documents: AdminDocument[];
   onEdit: (doc: AdminDocument) => void;
   viewMode: "icons" | "list";
+};
+
+type SignedUrlResponse = {
+  signedUrl?: string;
 };
 
 type UploadPanelProps = {
@@ -115,35 +109,6 @@ function flattenFolders(
   ];
 }
 
-// Flatten files while remembering the folder breadcrumb they live under.
-// for testing purpose only (?)
-/*
-function collectFiles(
-  node: DocumentNode,
-  pathIds: string[] = [],
-  pathLabels: string[] = [],
-): LocatedFile[] {
-  if (node.type === "file") {
-    return [
-      {
-        id: node.id,
-        name: node.name,
-        url: node.url,
-        mimeType: node.mimeType,
-        parents: pathIds,
-        folderNames: pathLabels,
-      },
-    ];
-  }
-
-  const isRoot = node.id === "root";
-  const nextIds = isRoot ? [] : [...pathIds, node.id];
-  const nextLabels = isRoot ? [] : [...pathLabels, node.name];
-
-  return node.children.flatMap((child) => collectFiles(child, nextIds, nextLabels));
-}
-*/
-
 function formatPath(doc: AdminDocument) {
   return doc.pathLabel || "Shared Root";
 }
@@ -192,7 +157,7 @@ function UploadPanel({
           <p className="text-sm text-base-content/70">
             Select the employee first, then drop files and choose the right folder.
           </p>
-          {/* TODO: Replace mock upload functions with real storage + metadata calls */}
+          {/* TODO: Select Sender & Selected viewer to be connected to backend when employee selection is implemented */}
         </div>
 
         <div className="form-control">
@@ -345,6 +310,30 @@ function UploadPanel({
 }
 
 function DocumentGrid({ documents, onEdit, viewMode }: DocumentGridProps) {
+  //
+  const handleClickViewDocument = async (doc: AdminDocument) => {
+    if (doc.url.startsWith("blob:")) {
+      window.open(doc.url, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/documents?fileId=${encodeURIComponent(doc.id)}&mode=view`);
+      if (!res.ok) {
+        console.error("Failed to fetch signed URL", await res.text());
+        return;
+      }
+      const { signedUrl }: SignedUrlResponse = await res.json();
+      if (!signedUrl) {
+        console.error("Signed URL missing in response");
+        return;
+      }
+      window.open(signedUrl, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      console.error("Error opening document", error);
+    }
+  };
+
   if (!documents.length) {
     return (
       <div className="rounded-xl border border-dashed border-base-300 bg-base-100 p-10 text-center text-sm text-base-content/70">
@@ -379,7 +368,7 @@ function DocumentGrid({ documents, onEdit, viewMode }: DocumentGridProps) {
               <button
                 type="button"
                 className="btn btn-ghost btn-xs"
-                onClick={() => window.open(doc.url, "_blank", "noopener,noreferrer")}
+                onClick={() => handleClickViewDocument(doc)}
               >
                 View
               </button>
@@ -428,7 +417,7 @@ function DocumentGrid({ documents, onEdit, viewMode }: DocumentGridProps) {
                   <button
                     type="button"
                     className="btn btn-ghost btn-xs"
-                    onClick={() => window.open(doc.url, "_blank", "noopener,noreferrer")}
+                    onClick={() => handleClickViewDocument(doc)}
                   >
                     View
                   </button>
@@ -551,22 +540,6 @@ function EditDocumentModal({
 
 // Top-level admin surface combining upload, listing, and edit modal.
 export default function AdminDocuments() {
-  /* dummy files for testing purpose
-  const initialDocuments = useMemo<AdminDocument[]>(() => {
-    // TODO for Sprint 2: read from database
-    const files = collectFiles(ROOT);
-    return files.map((file) => ({
-      id: file.id,
-      name: file.name,
-      url: file.url,
-      pathIds: [...file.parents],
-      pathLabel: file.folderNames.length ? file.folderNames.join(" / ") : "Shared Root",
-      viewers: ["Everyone"],
-      updatedAt: new Date().toISOString(),
-    }));
-  }, []);
-  */
-
   const [documents, setDocuments] = useState<AdminDocument[]>([]);
   const [viewMode, setViewMode] = useState<"icons" | "list">("icons");
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
@@ -575,6 +548,7 @@ export default function AdminDocuments() {
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [uploadRecipients, setUploadRecipients] = useState<string[]>([]);
   const [uploadRecipientQuery, setUploadRecipientQuery] = useState("");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const [editingDoc, setEditingDoc] = useState<AdminDocument | null>(null);
   const [editRecipients, setEditRecipients] = useState<string[]>([]);
@@ -582,18 +556,33 @@ export default function AdminDocuments() {
   const [replacementFile, setReplacementFile] = useState<File | null>(null);
 
   // this is admin's id for testing for now
-  // TODO: change test id into real ones
+  // TODO: replace test id with real ones through reading from db
   const TEST_USER_ID = "00000000-0000-0000-0000-000000000001";
+  useEffect(() => {
+    const loadUser = async () => {
+      const supabase = createSupabaseClient();
+      const { data, error } = await supabase.auth.getUser();
+      if (error) {
+        console.error("Failed to fetch current user", error);
+        return;
+      }
+      setCurrentUserId(data.user?.id ?? null);
+    };
+
+    loadUser().catch((error) => {
+      console.error("Unexpected error while fetching current user", error);
+    });
+  }, []);
 
   useEffect(() => {
     const fetchDocuments = async () => {
-      const res = await fetch(`/api/documents?userId=${TEST_USER_ID}`);
+      if (!currentUserId) return;
+      const res = await fetch(`/api/documents?userId=${currentUserId}`);
       if (!res.ok) {
         console.error("Failed to fetch documents", await res.text());
         return;
       }
       const results: UploadedDocumentResult[] = await res.json();
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 
       const docs: AdminDocument[] = results.map((doc) => {
         const meta = doc.metadata ?? {};
@@ -605,28 +594,25 @@ export default function AdminDocuments() {
             : (doc.path.split("/").pop() ?? "Document");
 
         return {
+          //
           id: doc.id,
           name,
-          // TODO: use signed URLs from server side
-          // currently requires bucket to be public
-          url: `${supabaseUrl}/storage/v1/object/public/${doc.bucket}/${doc.path}`,
-          pathIds: folderPath, // GET returns this as string[]
+          // "url" uses signed URLs from server
+          // not used for card display, just keep it here for future features.
+          url: `/api/documents?fileId=${encodeURIComponent(doc.id)}`,
+          pathIds: folderPath,
           pathLabel: folderPath.length ? folderPath.join(" / ") : "Shared Root",
           viewers: viewers,
-          updatedAt: doc.uploadedAt,
+          updatedAt: doc.uploadedAt, // updatedAt is currenrly unused as well
         };
       });
-      // for debugging /////////
-      console.log("Mapped docs for view:", docs);
-      console.log("NEXT_PUBLIC_SUPABASE_URL in client:", process.env.NEXT_PUBLIC_SUPABASE_URL);
-      //////////////////////////
       setDocuments(docs);
     };
     // call (and catch error if throws)
     fetchDocuments().catch((error) => {
       console.error("Unexpected error while fetching documents", error);
     });
-  }, []);
+  }, [currentUserId]);
 
   // When an employee is chosen, generate folder shortcuts from mock data.
   useEffect(() => {
@@ -657,13 +643,15 @@ export default function AdminDocuments() {
     const folderPath = targetOption?.label != null ? targetOption.label.split("/") : [];
 
     // if chose upload recipients, use them; otherwise by default select selectedEmployee
+    // TODO: double check whether "send to" and "additional viewers"
+    // map to db correctly as desired
     const viewers = uploadRecipients.length ? uploadRecipients : [selectedEmployee];
 
-    // TODO: replace this with a real UserMetadata.id when employee selection is wired up
+    // TODO: replace this with a real userId when employee selection is wired up
     // only have account "00000000-0000-0000-0000-000000000001" for testing for now
     const userIdForNow = selectedEmployee;
 
-    // TODO: for now still use local URLs so the admin can preview files immediately,
+    // use local URLs so the admin can preview files immediately,
     // but also call the server action to store everything in Supabase + Prisma.
     const uploadedDocs: AdminDocument[] = [];
 
@@ -672,7 +660,7 @@ export default function AdminDocuments() {
       // build file itself + metadata to send to backend
       formData.append("file", file);
       formData.append("userId", userIdForNow);
-      formData.append("bucket", "files"); // TODO: set to actual Supabase bucket name in future sprints
+      formData.append("bucket", "files"); // TODO: set to actual Supabase bucket name
       formData.append("viewers", JSON.stringify(viewers));
       formData.append("folderPath", JSON.stringify(folderPath));
       formData.append("contentType", file.type);
@@ -700,18 +688,6 @@ export default function AdminDocuments() {
         viewers: result.viewers,
         updatedAt: result.uploadedAt,
       });
-      // fake file upload for tests ////////////////////////
-      // const now = new Date().toISOString();
-      // uploadedDocs.push({
-      //   id: `${file.name}-${now}`,
-      //   name: file.name,
-      //   url: URL.createObjectURL(file),
-      //   pathIds: targetOption?.id === "root" ? [] : (targetOption?.id.split("/") ?? []),
-      //   pathLabel: targetOption?.label ?? "Shared Root",
-      //   viewers,
-      //   updatedAt: now,
-      // });
-      ///////////////////////////////////////////////////////
     }
 
     setDocuments((prev) => [...uploadedDocs, ...prev]);
@@ -780,9 +756,6 @@ export default function AdminDocuments() {
             <div>
               <h3 className="text-lg font-semibold">Existing documents</h3>
               <p className="text-sm text-base-content/70">Review the files available to admins.</p>
-              {/* TODO: Replace local state with backend-powered document listing 
-              Sihao: a todo for Sprint 2
-              */}
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-base-content/70">View</span>
