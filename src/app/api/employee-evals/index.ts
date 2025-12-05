@@ -1,48 +1,37 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
-import type { EmployeeEvaluation } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import type { EmployeeEvaluation, EmployeeEvaluationMetadata } from "@prisma/client";
 
-export interface EmployeeEval {
-  employeeId?: string | null;
-  submitterId?: string | null;
-  year: number;
-  strengths: string;
-  weaknesses: string;
-  improvements: string;
-  notes: string;
-  communication: number;
-  leadership: number;
-  timeliness: number;
-  skill1: number;
-  skill2: number;
-  skill3: number;
-  submittedAt?: Date | string;
-}
-
-export async function SubmitEmployeeEval(data: EmployeeEval) {
-  const prisma = new PrismaClient();
+export async function SubmitEmployeeEval(
+  data: EmployeeEvaluation,
+  metadata: EmployeeEvaluationMetadata,
+) {
   try {
     // Enforce: manager/HR may not submit before the employee's own submission exists.
     // If submitterId !== employeeId (i.e. manager/HR), ensure a self-submission exists for same employee and year.
-    if (data.employeeId && data.submitterId && data.submitterId !== data.employeeId) {
+    if (
+      metadata.employeeId &&
+      metadata.submitterId &&
+      metadata.submitterId !== metadata.employeeId
+    ) {
       let self = null;
       try {
-        self = await prisma.employeeEvaluation.findFirst({
+        self = await prisma.employeeEvaluationMetadata.findFirst({
           where: {
-            employeeId: data.employeeId,
-            submitterId: data.employeeId,
-            year: data.year,
+            employeeId: metadata.employeeId,
+            submitterId: metadata.employeeId,
+            year: metadata.year,
           },
         });
       } catch (err) {
         // Fall back for DB schema/type mismatches (e.g. conversion errors) by
         // querying without the year and checking in JS.
         console.warn("Prisma findFirst with year failed, falling back to client-side filter:", err);
-        const candidates = await prisma.employeeEvaluation.findMany({
-          where: { employeeId: data.employeeId, submitterId: data.employeeId },
+        const candidates = await prisma.employeeEvaluationMetadata.findMany({
+          where: { employeeId: metadata.employeeId, submitterId: metadata.employeeId },
         });
-        self = candidates.find((c) => Number(c.year) === Number(data.year)) ?? null;
+        self = candidates.find((c) => Number(c.year) === Number(metadata.year)) ?? null;
       }
       if (!self) {
         throw new Error(
@@ -53,10 +42,8 @@ export async function SubmitEmployeeEval(data: EmployeeEval) {
 
     // Default: create a new evaluation row for non-self submissions
     try {
-      return await prisma.employeeEvaluation.create({
+      const evalRow = await prisma.employeeEvaluation.create({
         data: {
-          employeeId: data.employeeId,
-          year: data.year,
           strengths: data.strengths,
           weaknesses: data.weaknesses,
           improvements: data.improvements,
@@ -67,10 +54,20 @@ export async function SubmitEmployeeEval(data: EmployeeEval) {
           skill1: data.skill1,
           skill2: data.skill2,
           skill3: data.skill3,
-          submitterId: data.submitterId,
-          submittedAt: data.submittedAt ?? new Date(),
         },
       });
+
+      const metaRow = await prisma.employeeEvaluationMetadata.create({
+        data: {
+          evaluationId: evalRow.id,
+          employeeId: metadata.employeeId,
+          submitterId: metadata.submitterId,
+          year: metadata.year,
+          submittedAt: metadata.submittedAt ?? new Date(),
+        },
+      });
+
+      return { evaluation: evalRow, metadata: metaRow };
     } catch (err: unknown) {
       // If a unique-constraint violation occurred (P2002), another process
       // likely created the row concurrently. In that case, find the existing
@@ -79,16 +76,16 @@ export async function SubmitEmployeeEval(data: EmployeeEval) {
       const name = (err as { name?: unknown })?.name as string | undefined;
       if (code === "P2002" || name === "PrismaClientKnownRequestError") {
         // locate the existing row by the composite key
-        const existing = await prisma.employeeEvaluation.findFirst({
+        const existing = await prisma.employeeEvaluationMetadata.findFirst({
           where: {
-            employeeId: data.employeeId,
-            submitterId: data.submitterId,
-            year: data.year,
+            employeeId: metadata.employeeId,
+            submitterId: metadata.submitterId,
+            year: metadata.year,
           },
         });
         if (existing) {
-          return await prisma.employeeEvaluation.update({
-            where: { id: existing.id },
+          const updatedEval = await prisma.employeeEvaluation.update({
+            where: { id: existing.evaluationId },
             data: {
               strengths: data.strengths,
               weaknesses: data.weaknesses,
@@ -100,34 +97,68 @@ export async function SubmitEmployeeEval(data: EmployeeEval) {
               skill1: data.skill1,
               skill2: data.skill2,
               skill3: data.skill3,
-              submittedAt: data.submittedAt ?? new Date(),
             },
           });
+          return { evaluation: updatedEval, metadata: existing };
         }
       }
       // rethrow if it's not a handled case
       throw err;
     }
   } finally {
-    await prisma.$disconnect();
   }
 }
 
 export async function GetAllEmployeeEvals() {
-  const prisma = new PrismaClient();
   try {
     const rows = await prisma.employeeEvaluation.findMany();
     return rows.map((r) => ({ ...r }));
   } finally {
-    await prisma.$disconnect();
+  }
+}
+
+export async function GetAllEmployeeEvalsMetadata() {
+  try {
+    // Fetch all evaluation metadata with related evaluation and user data
+    const rows = await prisma.employeeEvaluationMetadata.findMany({
+      orderBy: { submittedAt: "desc" },
+      include: { evaluation: true, submitter: true, reviewedEmployee: true },
+    });
+
+    // Flatten and normalize into a shape convenient for the admin listing
+    return rows.map((r) => ({
+      id: r.id,
+      evaluationId: r.evaluationId,
+      employeeId: r.employeeId ?? null,
+      submitterId: r.submitterId ?? null,
+      year: r.year,
+      submittedAt: r.submittedAt,
+      employeeFirstName: r.reviewedEmployee?.employeeFirstName ?? "",
+      employeeLastName: r.reviewedEmployee?.employeeLastName ?? "",
+    }));
+  } catch (err) {
+    console.error("GetAllEmployeeEvalsMetadata error", err);
+    throw err;
+  }
+}
+
+export async function GetEmployeeEvalByID(evaluationId: string) {
+  try {
+    // Fetch all evaluation metadata with related evaluation and user data
+    const employeeEval = await prisma.employeeEvaluation.findUnique({
+      where: { id: evaluationId },
+    });
+    return employeeEval;
+  } catch (err) {
+    console.error("GetEmployeeEval error", err);
+    throw err;
   }
 }
 
 export async function GetEmployeeEvals(employeeId: string) {
-  const prisma = new PrismaClient();
   try {
     try {
-      return await prisma.employeeEvaluation.findMany({
+      return await prisma.employeeEvaluationMetadata.findMany({
         where: { employeeId: employeeId },
         orderBy: { submittedAt: "desc" },
       });
@@ -135,7 +166,7 @@ export async function GetEmployeeEvals(employeeId: string) {
       // Some Prisma clients / schema states may not have `submittedAt` available
       // (unknown argument). Fall back to querying without orderBy and sort in JS.
       console.warn("Prisma ordering by submittedAt failed, falling back to client-side sort:", err);
-      const rows: EmployeeEvaluation[] = await prisma.employeeEvaluation.findMany({
+      const rows: EmployeeEvaluationMetadata[] = await prisma.employeeEvaluationMetadata.findMany({
         where: { employeeId: employeeId },
       });
       // sort by submittedAt if present, otherwise keep DB order
@@ -150,16 +181,14 @@ export async function GetEmployeeEvals(employeeId: string) {
       return rows;
     }
   } finally {
-    await prisma.$disconnect();
   }
 }
 
 export async function GetLatestEmployeeEvalWithReviewers(employeeId: string, year: number) {
-  const prisma = new PrismaClient();
   try {
-    let evals: EmployeeEvaluation[] = [];
+    let evalsMeta: EmployeeEvaluationMetadata[] = [];
     try {
-      evals = await prisma.employeeEvaluation.findMany({
+      evalsMeta = await prisma.employeeEvaluationMetadata.findMany({
         where: { employeeId, year },
         orderBy: { submittedAt: "desc" },
       });
@@ -170,7 +199,7 @@ export async function GetLatestEmployeeEvalWithReviewers(employeeId: string, yea
       );
       // Try querying without year first (some DBs may have incompatible column types)
       try {
-        evals = await prisma.employeeEvaluation.findMany({
+        evalsMeta = await prisma.employeeEvaluationMetadata.findMany({
           where: { employeeId },
           orderBy: { submittedAt: "desc" },
         });
@@ -179,7 +208,7 @@ export async function GetLatestEmployeeEvalWithReviewers(employeeId: string, yea
           "Prisma ordering by submittedAt failed as well, falling back to client-side sort:",
           err2,
         );
-        evals = await prisma.employeeEvaluation.findMany({ where: { employeeId } });
+        evalsMeta = await prisma.employeeEvaluationMetadata.findMany({ where: { employeeId } });
         const getTime = (val: unknown) => {
           if (!val) return 0;
           if (typeof val === "number") return val;
@@ -187,19 +216,47 @@ export async function GetLatestEmployeeEvalWithReviewers(employeeId: string, yea
           if (val instanceof Date) return val.getTime();
           return 0;
         };
-        evals.sort((a, b) => getTime(b.submittedAt) - getTime(a.submittedAt));
+        evalsMeta.sort((a, b) => getTime(b.submittedAt) - getTime(a.submittedAt));
       }
       // Filter by year in JS so we avoid DB type-conversion errors
-      evals = evals.filter((e) => Number(e.year) === Number(year));
+      evalsMeta = evalsMeta.filter((e) => Number(e.year) === Number(year));
     }
 
-    const latest = evals.length > 0 ? evals[0] : null;
+    const latest = evalsMeta.length > 0 ? evalsMeta[0] : null;
     // normalize reviewer/evaluation numeric fields before returning
-    const normalizedLatest = latest ? { ...latest } : null;
+    let normalizedLatest: (EmployeeEvaluation & Partial<EmployeeEvaluationMetadata>) | null = null;
+    if (latest) {
+      try {
+        const evalRow = await prisma.employeeEvaluation.findUnique({
+          where: { id: latest.evaluationId },
+        });
+        if (evalRow) {
+          normalizedLatest = {
+            ...evalRow,
+            year: latest.year as unknown as number,
+            submitterId: latest.submitterId,
+            employeeId: latest.employeeId,
+            submittedAt: latest.submittedAt,
+          };
+        } else {
+          normalizedLatest = {
+            ...(latest as unknown as EmployeeEvaluation & Partial<EmployeeEvaluationMetadata>),
+          };
+        }
+      } catch (err) {
+        console.warn(
+          "Failed to fetch evaluation row for metadata, falling back to metadata-only response:",
+          err,
+        );
+        normalizedLatest = {
+          ...(latest as unknown as EmployeeEvaluation & Partial<EmployeeEvaluationMetadata>),
+        };
+      }
+    }
 
     // gather distinct submitterIds (exclude null and the employee themself optional)
     const submitterIds = Array.from(
-      new Set(evals.map((e) => e.submitterId).filter((id): id is string => !!id)),
+      new Set(evalsMeta.map((e) => e.submitterId).filter((id): id is string => !!id)),
     );
 
     let reviewers: { id: string; initials: string }[] = [];
@@ -226,23 +283,29 @@ export async function GetLatestEmployeeEvalWithReviewers(employeeId: string, yea
 
     return { evaluation: normalizedLatest, reviewers };
   } finally {
-    await prisma.$disconnect();
   }
 }
 
-export async function UpdateEmployeeEval(id: string, data: EmployeeEval) {
-  const prisma = new PrismaClient();
+export async function UpdateEmployeeEval(
+  id: string,
+  data: EmployeeEvaluation,
+  metadata: EmployeeEvaluationMetadata,
+) {
   try {
     // Similar validation on update: if this update represents a manager/HR submission
     // (submitterId !== employeeId), ensure the employee's self-submission for that year exists.
-    if (data.employeeId && data.submitterId && data.submitterId !== data.employeeId) {
+    if (
+      metadata.employeeId &&
+      metadata.submitterId &&
+      metadata.submitterId !== metadata.employeeId
+    ) {
       let self = null;
       try {
-        self = await prisma.employeeEvaluation.findFirst({
+        self = await prisma.employeeEvaluationMetadata.findFirst({
           where: {
-            employeeId: data.employeeId,
-            submitterId: data.employeeId,
-            year: data.year,
+            employeeId: metadata.employeeId,
+            submitterId: metadata.employeeId,
+            year: metadata.year,
           },
         });
       } catch (err) {
@@ -250,10 +313,10 @@ export async function UpdateEmployeeEval(id: string, data: EmployeeEval) {
           "Prisma findFirst with year failed in update, falling back to client-side filter:",
           err,
         );
-        const candidates = await prisma.employeeEvaluation.findMany({
-          where: { employeeId: data.employeeId, submitterId: data.employeeId },
+        const candidates = await prisma.employeeEvaluationMetadata.findMany({
+          where: { employeeId: metadata.employeeId, submitterId: metadata.employeeId },
         });
-        self = candidates.find((c) => Number(c.year) === Number(data.year)) ?? null;
+        self = candidates.find((c) => Number(c.year) === Number(metadata.year)) ?? null;
       }
       if (!self) {
         throw new Error(
@@ -267,8 +330,6 @@ export async function UpdateEmployeeEval(id: string, data: EmployeeEval) {
         id: id,
       },
       data: {
-        employeeId: data.employeeId,
-        year: data.year,
         strengths: data.strengths,
         weaknesses: data.weaknesses,
         improvements: data.improvements,
@@ -279,11 +340,8 @@ export async function UpdateEmployeeEval(id: string, data: EmployeeEval) {
         skill1: data.skill1,
         skill2: data.skill2,
         skill3: data.skill3,
-        submitterId: data.submitterId,
-        submittedAt: data.submittedAt ?? new Date(),
       },
     });
   } finally {
-    await prisma.$disconnect();
   }
 }
