@@ -2,13 +2,7 @@
  * Time off request types
  */
 
-export type LeaveType =
-  | "vacation"
-  | "sick"
-  | "personal"
-  | "bereavement"
-  | "jury_duty"
-  | "other";
+export type LeaveType = "vacation" | "sick" | "personal" | "bereavement" | "jury_duty" | "other";
 
 export interface TimeOffRequest {
   id: string;

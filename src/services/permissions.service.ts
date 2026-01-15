@@ -29,7 +29,7 @@ export function hasPermission(role: UserRole, permission: Permission): boolean {
  */
 export function userHasPermission(
   userMetadata: UserMetadata | null,
-  permission: Permission
+  permission: Permission,
 ): boolean {
   const role = getUserRole(userMetadata);
   return hasPermission(role, permission);

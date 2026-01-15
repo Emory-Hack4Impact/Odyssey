@@ -6,12 +6,7 @@
  * if (can('manage_evaluations')) { ... }
  */
 
-import type {
-  UserMetadata,
-  Permission,
-  PermissionCheck,
-  UserRole,
-} from "@/types";
+import type { UserMetadata, Permission, PermissionCheck, UserRole } from "@/types";
 import { PERMISSION_ROLES } from "@/types";
 
 /**
@@ -35,9 +30,7 @@ export function hasPermission(role: UserRole, permission: Permission): boolean {
 /**
  * Hook to get permission checking utilities
  */
-export function usePermissions(
-  userMetadata: UserMetadata | null
-): PermissionCheck {
+export function usePermissions(userMetadata: UserMetadata | null): PermissionCheck {
   const isAdmin = userMetadata?.is_admin ?? false;
   const isHR = userMetadata?.is_hr ?? false;
   const isEmployee = !isAdmin && !isHR;
