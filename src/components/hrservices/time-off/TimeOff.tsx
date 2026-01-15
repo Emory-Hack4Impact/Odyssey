@@ -5,7 +5,7 @@ import DaysInfo from "./DaysInfo";
 import StatusTable from "./StatusTable";
 import { FetchTimeOff } from "@/app/api/time-off-req";
 
-const Home = ({ userId }: { userId: string }) => {
+const TimeOff = ({ userId }: { userId: string }) => {
   const [requests, setRequests] = useState<TimeOffRequest[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,8 +22,9 @@ const Home = ({ userId }: { userId: string }) => {
         setError("Failed to load existing requests.");
       }
     };
-    if (userId) void loadRequests(); //don't understand this
-  }, [userId]); //don't understand this either...
+    // Load requests when userId is available
+    if (userId) void loadRequests();
+  }, [userId]); // Re-run effect when userId changes
 
   if (error) {
     return <div className="p-10 text-center text-xl text-red-600">Error: {error}</div>; //redirect to error page
@@ -46,4 +47,4 @@ const Home = ({ userId }: { userId: string }) => {
   );
 };
 
-export default Home;
+export default TimeOff;
