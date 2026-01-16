@@ -1,6 +1,6 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 export interface SubmitTimeOffRequest {
   id: string;
@@ -13,7 +13,6 @@ export interface SubmitTimeOffRequest {
 }
 
 export async function SubmitTimeOff(data: SubmitTimeOffRequest) {
-  const prisma = new PrismaClient();
   return await prisma.timeOffRequest.create({
     data: {
       employeeId: data.id,
@@ -28,7 +27,6 @@ export async function SubmitTimeOff(data: SubmitTimeOffRequest) {
 }
 
 export async function FetchTimeOff(id: string) {
-  const prisma = new PrismaClient();
   return await prisma.timeOffRequest.findMany({
     where: {
       employeeId: {

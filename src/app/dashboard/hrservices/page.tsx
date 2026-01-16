@@ -21,11 +21,6 @@ export default async function HRServicesPage() {
   const userMetadata = data;
   const userRole = userMetadata?.position ?? "Unknown";
 
-  // const { data: evaluations, error: evalError } = await supabase
-  //   .from("EmployeeEvaluation")
-  //   .select("*");
-
-  // console.log(evaluations)
   return (
     <div>
       <HRServices
