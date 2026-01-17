@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { uploadDocumentCore, getSignedUrlForFileId } from "./index";
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/utils/supabase/server";
@@ -55,7 +56,7 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET(req: NextResponse) {
+export async function GET(req: NextRequest) {
   // parse request url & extract userId query params
   const { searchParams } = new URL(req.url);
 
