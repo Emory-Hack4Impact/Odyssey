@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { UploadCloud } from "lucide-react";
 import { ROOT } from "./mockData";
 import type { DocumentNode, FolderNode } from "./types";
@@ -46,10 +46,21 @@ type DocumentGridProps = {
   documents: AdminDocument[];
   onEdit: (doc: AdminDocument) => void;
   viewMode: "icons" | "list";
+  viewerLable: (viewerId: string) => string;
 };
 
 type SignedUrlResponse = {
   signedUrl?: string;
+};
+
+// for fetching users' fullnames
+type LabelUser = {
+  id?: string | null;
+  displayName?: string | null;
+};
+
+type LabelsResponse = {
+  users?: LabelUser[];
 };
 
 type UploadPanelProps = {
@@ -309,7 +320,7 @@ function UploadPanel({
   );
 }
 
-function DocumentGrid({ documents, onEdit, viewMode }: DocumentGridProps) {
+function DocumentGrid({ documents, onEdit, viewMode, viewerLable }: DocumentGridProps) {
   //
   const handleClickViewDocument = async (doc: AdminDocument) => {
     if (doc.url.startsWith("blob:")) {
@@ -358,9 +369,10 @@ function DocumentGrid({ documents, onEdit, viewMode }: DocumentGridProps) {
               <div className="text-xs text-base-content/60">{formatPath(doc)}</div>
             </div>
             <div className="mt-auto flex flex-wrap gap-2 pt-2">
-              {doc.viewers.slice(0, 3).map((viewer) => (
-                <span key={viewer} className="badge badge-outline badge-sm">
-                  {viewer}
+              {doc.viewers.slice(0, 3).map((viewer, i) => (
+                // TODO: replace this viewer display with autocomplete dropdown of user names instead of my UUIDs
+                <span key={i} className="badge badge-outline badge-sm">
+                  {viewerLable(viewer)}
                 </span>
               ))}
             </div>
@@ -540,6 +552,7 @@ function EditDocumentModal({
 
 // Top-level admin surface combining upload, listing, and edit modal.
 export default function AdminDocuments() {
+  const idToNameCache = useRef<Map<string, string>>(new Map());
   const [documents, setDocuments] = useState<AdminDocument[]>([]);
   const [viewMode, setViewMode] = useState<"icons" | "list">("icons");
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
@@ -554,6 +567,15 @@ export default function AdminDocuments() {
   const [editRecipients, setEditRecipients] = useState<string[]>([]);
   const [editRecipientQuery, setEditRecipientQuery] = useState("");
   const [replacementFile, setReplacementFile] = useState<File | null>(null);
+
+  // helper for UUID-fullname mapping
+  const shortId = (id: string) => `…${id.slice(-4)}`;
+  // UUID -> fullname with shortId hint
+  const viewerLabel = (viewerId: string) => {
+    if (viewerId === "Everyone") return "Everyone";
+    const name = idToNameCache.current.get(viewerId) ?? "Unknown user";
+    return `${name} · (${shortId(viewerId)})`;
+  };
 
   // this is the only admin in db now
   // const TEST_USER_ID = "00000000-0000-0000-0000-000000000001";
@@ -605,6 +627,37 @@ export default function AdminDocuments() {
           updatedAt: doc.uploadedAt, // updatedAt is currenrly unused as well
         };
       });
+
+      // collect unique viewer UUIDs across all docs
+      const uniqueIds = new Set<string>();
+      for (const d of docs) {
+        for (const v of d.viewers ?? []) {
+          if (v && v !== "Everyone") uniqueIds.add(v); // ignore special token "Everyone"
+        }
+      }
+
+      // only fetch IDs not already in cache
+      const missingIds = Array.from(uniqueIds).filter((id) => !idToNameCache.current.has(id));
+
+      if (missingIds.length > 0) {
+        const res2 = await fetch("/api/documents?mode=labels", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: missingIds }),
+        });
+
+        if (res2.ok) {
+          const data: LabelsResponse = await res2.json();
+          for (const u of data.users ?? []) {
+            if (u?.id && typeof u.displayName === "string") {
+              idToNameCache.current.set(u.id, u.displayName);
+            }
+          }
+        } else {
+          console.error("Failed to fetch user labels: ", await res2.text());
+        }
+      }
+
       setDocuments(docs);
     };
     // call (and catch error if throws)
@@ -768,8 +821,12 @@ export default function AdminDocuments() {
               </select>
             </div>
           </div>
-
-          <DocumentGrid documents={documents} onEdit={openEditModal} viewMode={viewMode} />
+          <DocumentGrid
+            documents={documents}
+            onEdit={openEditModal}
+            viewMode={viewMode}
+            viewerLable={viewerLabel}
+          />
         </div>
       </section>
 

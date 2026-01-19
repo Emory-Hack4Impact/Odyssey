@@ -5,11 +5,63 @@ import { prisma } from "@/lib/prisma";
 import { getUser } from "@/utils/supabase/server";
 
 export const runtime = "nodejs";
-// export const dynamic = "force-dynamic";
 
-// for uploading files
 export async function POST(req: Request) {
   try {
+    // mode control determines: get user names-id mapping or to get files
+    const url = new URL(req.url);
+    const mode = url.searchParams.get("mode");
+    // for getting user names-id mapping //
+    if (mode === "labels") {
+      const body = (await req.json()) as { ids?: string[] };
+      const ids = Array.isArray(body.ids) ? body.ids : [];
+      if (ids.length === 0) {
+        return NextResponse.json({ users: [] });
+      }
+
+      // auth guard: only signed-in users can ask for labels
+      const authedUser = await getUser();
+      if (!authedUser) {
+        return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+      }
+
+      // authorization: only admins can resolve other users' names now
+      // TODO: in the final sprints, determine who have access to resolved users' names
+      const requesterMeta = await prisma.userMetadata.findUnique({
+        where: { id: authedUser.id },
+        select: { is_admin: true },
+      });
+      if (!requesterMeta?.is_admin) {
+        return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+      }
+
+      // batch query: fetch names for all ids in one DB call
+      const metas = await prisma.userMetadata.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, employeeFirstName: true, employeeLastName: true },
+      });
+
+      // build a lookup map: id -> displayName
+      const idToName = new Map<string, string>();
+      for (const m of metas) {
+        const fullName = [m.employeeFirstName, m.employeeLastName]
+          .filter((part) => typeof part === "string" && part.trim().length > 0)
+          .join(" ")
+          .trim();
+
+        idToName.set(m.id, fullName || "Unknown user");
+      }
+
+      // return users aligned to the request order, with safe fallback
+      return NextResponse.json({
+        users: ids.map((id) => ({
+          id,
+          displayName: idToName.get(id) ?? "Unknown user",
+        })),
+      });
+    }
+
+    // for getting files //
     // read data from request and pull out fields
     const formData = await req.formData();
 
@@ -102,4 +154,8 @@ export async function GET(req: NextRequest) {
     // return list of files as json
     return NextResponse.json(files);
   }
+  return NextResponse.json(
+    { error: "Bad request: provide ?most=view&fileId=... or ?userId=..." },
+    { status: 400 },
+  );
 }
