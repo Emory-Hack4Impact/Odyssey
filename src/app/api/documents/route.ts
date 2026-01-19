@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { uploadDocumentCore, getSignedUrlForFileId } from "./index";
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/utils/supabase/server";
+import type { Prisma } from "@prisma/client";
 
 export const runtime = "nodejs";
 
@@ -115,7 +116,8 @@ export async function GET(req: NextRequest) {
   const mode = searchParams.get("mode");
   const fileId = searchParams.get("fileId");
   const userId = searchParams.get("userId");
-  // check authentication from supabase
+  const nameKeyword = searchParams.get("nameKeyword");
+  // from supabase, check whether current user is authenticated
   const user = await getUser();
   if (!user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
@@ -125,7 +127,40 @@ export async function GET(req: NextRequest) {
     where: { id: user.id },
   });
 
-  // Model 1: for fetching files on click (mode=view)
+  // Model for searching possible users for document upload //
+  if (mode === "userSearch" && nameKeyword) {
+    try {
+      if (!userMeta?.is_admin) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      const normalized = nameKeyword.trim().replace(/\s+/g, " ");
+      const tokens = normalized.split(" ").filter(Boolean);
+      // if emptry don't query
+      if (tokens.length === 0) {
+        return NextResponse.json({ users: [] });
+      }
+      const where: Prisma.UserMetadataWhereInput = {
+        AND: tokens.map((t) => ({
+          OR: [
+            { employeeFirstName: { contains: t, mode: "insensitive" as const } },
+            { employeeLastName: { contains: t, mode: "insensitive" as const } },
+          ],
+        })),
+      };
+      const users = await prisma.userMetadata.findMany({
+        where,
+        select: { id: true, employeeFirstName: true, employeeLastName: true },
+        take: 10, // keep it small for dropdown
+        orderBy: [{ employeeLastName: "asc" }, { employeeFirstName: "asc" }],
+      });
+      return NextResponse.json({ users });
+    } catch (err) {
+      console.error("/api/documents GET userSearch error", err);
+      return NextResponse.json({ error: String(err) }, { status: 500 });
+    }
+  }
+
+  // Model for fetching files on click (mode=view) //
   if (mode === "view" && fileId) {
     try {
       const signedUrl = await getSignedUrlForFileId(fileId, user.id, 60);
@@ -136,8 +171,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Model 2: for reading file list only
-
+  // Model for reading file list only //
   // check whether is admin, if so, show all files
   const isAdmin = userMeta?.is_admin === true;
   if (isAdmin) {

@@ -63,6 +63,12 @@ type LabelsResponse = {
   users?: LabelUser[];
 };
 
+type UserSearchResult = {
+  id: string;
+  employeeFirstName: string | null;
+  employeeLastName: string | null;
+};
+
 type UploadPanelProps = {
   files: File[];
   onFilesChange: (files: File[]) => void;
@@ -79,6 +85,12 @@ type UploadPanelProps = {
   onRecipientRemove: (value: string) => void;
   recipientQuery: string;
   onRecipientQueryChange: (value: string) => void;
+  // for fullname auto-population
+  userSuggestions: UserSearchResult[];
+  showSuggestions: boolean;
+  onSuggestionPick: (user: UserSearchResult) => void;
+  formatUserId: (id: string) => string;
+  onActivateUserSearch: (mode: "sendTo" | "viewers") => void;
 };
 
 type EditDocumentModalProps = {
@@ -137,10 +149,14 @@ function UploadPanel({
   selectedFolderId,
   onFolderChange,
   recipients,
-  onRecipientAdd,
   onRecipientRemove,
   recipientQuery,
   onRecipientQueryChange,
+  userSuggestions,
+  showSuggestions,
+  onSuggestionPick,
+  formatUserId,
+  onActivateUserSearch,
 }: UploadPanelProps) {
   const handleFileInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) return;
@@ -151,13 +167,6 @@ function UploadPanel({
     event.preventDefault();
     if (!event.dataTransfer.files?.length) return;
     onFilesChange(Array.from(event.dataTransfer.files));
-  };
-
-  const handleRecipientSubmit = () => {
-    const trimmed = recipientQuery.trim();
-    if (!trimmed) return;
-    onRecipientAdd(trimmed);
-    onRecipientQueryChange("");
   };
 
   return (
@@ -175,13 +184,39 @@ function UploadPanel({
           <label className="label">
             <span className="label-text font-semibold">Send to</span>
           </label>
-          <input
-            type="text"
-            placeholder="Type the employee name or email"
-            className="input-bordered input input-sm"
-            value={selectedEmployee}
-            onChange={(event) => onEmployeeChange(event.target.value)}
-          />
+          <div className="dropdown dropdown-bottom w-full">
+            <input
+              type="text"
+              placeholder="Type the employee name or email" // email not included in userMetadata yet
+              className="input-bordered input input-sm w-full"
+              value={selectedEmployee}
+              onChange={(event) => onEmployeeChange(event.target.value)}
+              onFocus={() => onActivateUserSearch("sendTo")}
+              autoComplete="off"
+            />
+
+            {showSuggestions &&
+              userSuggestions.length > 0 &&
+              selectedEmployee.trim().length > 0 && (
+                <ul className="dropdown-content menu z-[9999] mt-2 w-full rounded-box bg-base-100 p-2 shadow">
+                  {userSuggestions.map((u) => {
+                    const displayName =
+                      `${u.employeeFirstName ?? ""} ${u.employeeLastName ?? ""}`.trim() ||
+                      "Unknown user";
+                    const short = `…${u.id.slice(-4)}`;
+
+                    return (
+                      <li key={u.id}>
+                        <button type="button" onClick={() => onSuggestionPick(u)}>
+                          {displayName} · ({short})
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+          </div>
+
           <span className="label-text-alt mt-1 text-base-content/60">
             Folder choices appear after an employee is selected.
           </span>
@@ -259,36 +294,49 @@ function UploadPanel({
           <span className="label-text-alt mt-1 text-base-content/60">
             This will map to the selected employee&apos;s folder tree once the backend is connected.
           </span>
-          {/* TODO: Populate folderOptions from the selected employee's tree */}
         </div>
 
         <div className="form-control">
           <label className="label">
             <span className="label-text font-semibold">Additional viewers (optional)</span>
           </label>
-          <div className="flex items-center gap-2">
+
+          <div className="dropdown dropdown-bottom w-full">
             <input
               type="text"
-              className="input-bordered input input-sm flex-1"
-              placeholder="Add teammate name or email"
+              placeholder="Type the employee name"
+              className="input-bordered input input-sm w-full"
               value={recipientQuery}
               onChange={(event) => onRecipientQueryChange(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  handleRecipientSubmit();
-                }
-              }}
+              onFocus={() => onActivateUserSearch("viewers")}
+              autoComplete="off"
             />
-            <button type="button" className="btn btn-circle btn-sm" onClick={handleRecipientSubmit}>
-              ➤
-            </button>
+
+            {showSuggestions && userSuggestions.length > 0 && recipientQuery.trim().length > 0 && (
+              <ul className="dropdown-content menu z-[9999] mt-2 w-full rounded-box bg-base-100 p-2 shadow">
+                {userSuggestions.map((u) => {
+                  const displayName =
+                    `${u.employeeFirstName ?? ""} ${u.employeeLastName ?? ""}`.trim() ||
+                    "Unknown user";
+                  const short = `…${u.id.slice(-4)}`;
+
+                  return (
+                    <li key={u.id}>
+                      <button type="button" onClick={() => onSuggestionPick(u)}>
+                        {displayName} · ({short})
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
+
           {!!recipients.length && (
             <div className="mt-2 flex flex-wrap gap-2">
               {recipients.map((recipient) => (
                 <span key={recipient} className="badge gap-2 badge-primary">
-                  {recipient}
+                  {formatUserId(recipient)}
                   <button
                     type="button"
                     className="btn px-1 btn-ghost btn-xs"
@@ -300,6 +348,10 @@ function UploadPanel({
               ))}
             </div>
           )}
+
+          <span className="label-text-alt mt-1 text-base-content/60">
+            Start typing to search employees. Selecting one stores their UUID (not the name).
+          </span>
         </div>
 
         <div className="flex gap-2">
@@ -562,6 +614,10 @@ export default function AdminDocuments() {
   const [uploadRecipients, setUploadRecipients] = useState<string[]>([]);
   const [uploadRecipientQuery, setUploadRecipientQuery] = useState("");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [userSuggestions, setUserSuggestions] = useState<UserSearchResult[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const [activeUserSearch, setActiveUserSearch] = useState<"sendTo" | "viewers" | null>(null);
 
   const [editingDoc, setEditingDoc] = useState<AdminDocument | null>(null);
   const [editRecipients, setEditRecipients] = useState<string[]>([]);
@@ -595,6 +651,7 @@ export default function AdminDocuments() {
     });
   }, []);
 
+  // hook to fetching documents for the file cards
   useEffect(() => {
     const fetchDocuments = async () => {
       if (!currentUserId) return;
@@ -665,6 +722,51 @@ export default function AdminDocuments() {
       console.error("Unexpected error while fetching documents", error);
     });
   }, [currentUserId]);
+  // end of fetch doc hook
+
+  // for auto populate recipients entry
+  useEffect(() => {
+    const raw =
+      activeUserSearch === "sendTo"
+        ? selectedEmployee
+        : activeUserSearch === "viewers"
+          ? uploadRecipientQuery
+          : "";
+    const q = raw.trim();
+    // If empty, hide dropdown and clear suggestions
+    if (q.length === 0) {
+      setUserSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    // fetch + set state
+    const fetchSuggestions = async () => {
+      try {
+        const url = `/api/documents?mode=userSearch&nameKeyword=${encodeURIComponent(q)}`;
+        const res = await fetch(url);
+
+        if (!res.ok) {
+          console.error("userSearch failed:", await res.text());
+          setUserSuggestions([]);
+          setShowSuggestions(false);
+          return;
+        }
+        const data: { users: UserSearchResult[] } = await res.json();
+        setUserSuggestions(data.users ?? []);
+        setShowSuggestions(true);
+      } catch (err) {
+        console.error("userSearch error:", err);
+        setUserSuggestions([]);
+        setShowSuggestions(false);
+      }
+    };
+
+    // Debounce: wait a bit after typing stops
+    const timer = setTimeout(() => {
+      void fetchSuggestions();
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [activeUserSearch, selectedEmployee, uploadRecipientQuery]);
 
   // When an employee is chosen, generate folder shortcuts from mock data.
   useEffect(() => {
@@ -800,6 +902,30 @@ export default function AdminDocuments() {
         }
         recipientQuery={uploadRecipientQuery}
         onRecipientQueryChange={setUploadRecipientQuery}
+        // for user fullname auto-population
+        userSuggestions={userSuggestions}
+        showSuggestions={showSuggestions}
+        onSuggestionPick={(u) => {
+          const displayName =
+            `${u.employeeFirstName ?? ""} ${u.employeeLastName ?? ""}`.trim() || "Unknown user";
+
+          // cache for labels
+          idToNameCache.current.set(u.id, displayName);
+
+          if (activeUserSearch === "sendTo") {
+            // store UUID as the selected employee
+            setSelectedEmployee(u.id);
+            setShowSuggestions(false);
+            return;
+          }
+
+          // default: viewers
+          setUploadRecipients((prev) => (prev.includes(u.id) ? prev : [...prev, u.id]));
+          setUploadRecipientQuery("");
+          setShowSuggestions(false);
+        }}
+        formatUserId={viewerLabel}
+        onActivateUserSearch={setActiveUserSearch}
       />
 
       <section className="card bg-base-200 shadow-lg">
