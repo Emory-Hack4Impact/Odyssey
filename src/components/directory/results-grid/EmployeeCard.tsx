@@ -1,3 +1,3 @@
 export default function EmployeeCard() {
-  return <div>EmployeeCard</div>;
+  return <div className="border-2">EmployeeCard</div>;
 }
