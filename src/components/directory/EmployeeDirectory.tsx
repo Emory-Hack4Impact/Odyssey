@@ -16,6 +16,11 @@ export const EmployeeDirectory = ({
   userMetadata,
 }: EmployeeDirectoryProps) => {
   return (
-    <div className="m-12 flex min-h-screen w-auto flex-col items-start border-2 px-4">hey</div>
+    <div className="m-12 flex min-h-screen w-auto flex-col items-start px-4">
+      <div className="flex w-full justify-between border-2">
+        <div>hey</div>
+        <div>hey</div>
+      </div>
+    </div>
   );
 };
