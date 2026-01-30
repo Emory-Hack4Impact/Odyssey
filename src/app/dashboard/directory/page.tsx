@@ -1,10 +1,11 @@
 "use server";
 
 import Error from "@/components/Error";
+import { EmployeeDirectory } from "@/components/directory/EmployeeDirectory";
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/utils/supabase/server";
 
-export default async function HRServicesPage() {
+export default async function EmployeeDirectoryPage() {
   const user = (await getUser())!;
 
   // Get UserMetadata from DB
@@ -21,8 +22,11 @@ export default async function HRServicesPage() {
   const userRole = userMetadata?.position ?? "Unknown";
 
   return (
-    <div>
-      hey baby :/
-    </div>
+    <EmployeeDirectory
+      userId={userId}
+      username={username}
+      userRole={userRole}
+      userMetadata={userMetadata}
+    />
   );
 }
