@@ -34,9 +34,16 @@ const testEmployees: EmployeeCardProps[] = [
 ];
 
 export default function ResultsGrid({ search }: { search: string }) {
-  const filteredEmployees = testEmployees.filter((employee) =>
-    employee.name?.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filteredEmployees = testEmployees.filter((employee) => {
+    const query = search.toLowerCase();
+
+    return (
+      employee.name.toLowerCase().includes(query) ||
+      employee.department.toLowerCase().includes(query) ||
+      employee.role.toLowerCase().includes(query)
+    );
+  });
+
   return (
     <div className="flex flex-col gap-8 px-4 py-8">
       <div>
