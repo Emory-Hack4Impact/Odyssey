@@ -11,7 +11,13 @@ const testEmployee: EmployeeCardProps = {
   vacation: false,
 };
 
-export default function ResultsGrid() {
+export default function ResultsGrid({
+  search,
+  setActiveCard,
+}: {
+  search: string;
+  setActiveCard: React.Dispatch<React.SetStateAction<string>>;
+}) {
   return (
     <div className="flex flex-col gap-8 px-4 py-8">
       <div>

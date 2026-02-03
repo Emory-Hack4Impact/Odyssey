@@ -2,7 +2,11 @@
 
 import React from "react";
 
-export default function SearchTile() {
+export default function SearchTile({
+  setSearch,
+}: {
+  setSearch: React.Dispatch<React.SetStateAction<string>>;
+}) {
   return (
     <div className="card border border-base-content/5 bg-base-100 shadow-xl min-[1183px]:w-80">
       <div className="card-body gap-6 p-6">

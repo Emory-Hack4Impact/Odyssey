@@ -1,5 +1,8 @@
+"use client";
+
 import SidePanel from "./side-panel/SidePanel";
 import ResultsGrid from "./results-grid/ResultsGrid";
+import { useState } from "react";
 
 interface EmployeeDirectoryProps {
   userId: string;
@@ -18,15 +21,18 @@ export const EmployeeDirectory = ({
   userRole,
   userMetadata,
 }: EmployeeDirectoryProps) => {
+  const [search, setSearch] = useState("");
+  const [activeCard, setActiveCard] = useState(userId);
+
   return (
     <div className="m-12 flex min-h-screen w-auto flex-col items-start px-4">
       <div className="flex w-full gap-8 max-[1183px]:flex-col">
         <div className="flex-1 min-[1183px]:max-w-80">
-          <SidePanel />
+          <SidePanel activeCard={activeCard} setSearch={setSearch} />
         </div>
 
         <div className="flex-1">
-          <ResultsGrid />
+          <ResultsGrid search={search} setActiveCard={setActiveCard} />
         </div>
       </div>
     </div>
