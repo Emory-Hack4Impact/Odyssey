@@ -25,7 +25,7 @@ export default function EmployeeCard({
   vacation,
 }: EmployeeCardProps) {
   return (
-    <div className="card card-side h-48 w-full overflow-hidden border border-base-content/5 bg-base-100 shadow-xl min-[1055px]:max-w-2xl">
+    <div className="card card-side h-48 w-full overflow-hidden border border-base-content/5 bg-base-100 shadow-xl min-[1183px]:max-w-2xl">
       {/* Profile Picture & Status Section */}
       <figure className="relative w-48 shrink-0 bg-base-200">
         {pfp ? (

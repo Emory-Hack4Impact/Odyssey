@@ -4,7 +4,7 @@ import React from "react";
 
 export default function SearchTile() {
   return (
-    <div className="card border border-base-content/5 bg-base-100 shadow-xl min-[1055px]:w-80">
+    <div className="card border border-base-content/5 bg-base-100 shadow-xl min-[1183px]:w-80">
       <div className="card-body gap-6 p-6">
         {/* Simplified Search Input */}
         <div className="flex flex-col gap-2">
