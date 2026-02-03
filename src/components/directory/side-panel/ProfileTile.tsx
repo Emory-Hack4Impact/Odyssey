@@ -1,3 +1,3 @@
-export default function ProfileTile() {
-  return <div>Profile Tile</div>;
+export default function ProfileTile({ activeCard }: { activeCard: string }) {
+  return <div>Profile Tile</div>; //{activeCard
 }

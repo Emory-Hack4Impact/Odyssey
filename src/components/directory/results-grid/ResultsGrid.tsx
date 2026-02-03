@@ -33,7 +33,13 @@ const testEmployees: EmployeeCardProps[] = [
   },
 ];
 
-export default function ResultsGrid({ search }: { search: string }) {
+export default function ResultsGrid({
+  search,
+  setActiveCard,
+}: {
+  search: string;
+  setActiveCard: React.Dispatch<React.SetStateAction<string>>;
+}) {
   const filteredEmployees = testEmployees.filter((employee) => {
     const query = search.toLowerCase();
 

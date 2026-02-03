@@ -22,16 +22,17 @@ export const EmployeeDirectory = ({
   userMetadata,
 }: EmployeeDirectoryProps) => {
   const [search, setSearch] = useState("");
+  const [activeCard, setActiveCard] = useState(userId);
 
   return (
     <div className="m-12 flex min-h-screen w-auto flex-col items-start px-4">
       <div className="flex w-full gap-8 max-[1183px]:flex-col">
         <div className="flex-1 min-[1183px]:max-w-80">
-          <SidePanel setSearch={setSearch} />
+          <SidePanel activeCard={activeCard} setSearch={setSearch} />
         </div>
 
         <div className="flex-1">
-          <ResultsGrid search={search} />
+          <ResultsGrid search={search} setActiveCard={setActiveCard} />
         </div>
       </div>
     </div>
