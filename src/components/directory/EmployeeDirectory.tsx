@@ -21,11 +21,11 @@ export const EmployeeDirectory = ({
   return (
     <div className="m-12 flex min-h-screen w-auto flex-col items-start px-4">
       <div className="flex w-full gap-8">
-        <div className="border-2 max-w-80 flex-1">
+        <div className="max-w-80 flex-1">
           <SidePanel />
         </div>
 
-        <div className="border-2 flex-1">
+        <div className="flex-1">
           <ResultsGrid />
         </div>
       </div>

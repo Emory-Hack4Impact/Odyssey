@@ -3,7 +3,7 @@ import ProfileTile from "./ProfileTile";
 
 export default function SidePanel() {
   return (
-    <div>
+    <div className="flex flex-col gap-4">
       <SearchTile />
       <ProfileTile />
     </div>
