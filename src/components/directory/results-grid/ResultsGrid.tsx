@@ -5,7 +5,7 @@ const testEmployees: EmployeeCardProps[] = [
     name: "John Doe",
     role: "Software Engineer",
     department: "Engineering",
-    bio: "Full-stack engineer with 5 years experience.",
+    bio: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet",
     email: "john@example.com",
     pfp: "/logo.png",
     online: true,
@@ -15,7 +15,7 @@ const testEmployees: EmployeeCardProps[] = [
     name: "Sarah Chen",
     role: "Product Manager",
     department: "Product",
-    bio: "Leadsull-stack engineer withull-stack engineer withull-stack engineer withull-stack engineer with pronning.",
+    bio: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet",
     email: "sarah@example.com",
     pfp: "/logo.png",
     online: false,
@@ -25,7 +25,7 @@ const testEmployees: EmployeeCardProps[] = [
     name: "Marcus Rivera",
     role: "UX Designer",
     department: "Design",
-    bio: "Focuses on accessibility and user-centered design.",
+    bio: "Short bio",
     email: "marcus@example.com",
     pfp: "/logo.png",
     online: true,
@@ -55,7 +55,7 @@ export default function ResultsGrid({
       <div>
         <h2 className="text-2xl font-bold text-base-content">Results:</h2>
       </div>
-      <div className="flex flex-wrap gap-6">
+      <div className="flex flex-wrap gap-6 max-[1088px]:flex-col">
         {filteredEmployees.map((employee) => (
           <div
             key={employee.email}
