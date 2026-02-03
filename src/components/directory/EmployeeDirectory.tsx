@@ -20,8 +20,8 @@ export const EmployeeDirectory = ({
 }: EmployeeDirectoryProps) => {
   return (
     <div className="m-12 flex min-h-screen w-auto flex-col items-start px-4">
-      <div className="flex w-full gap-8">
-        <div className="max-w-80 flex-1">
+      <div className="flex w-full gap-8 max-[1055px]:flex-col">
+        <div className="flex-1 min-[1055px]:max-w-80">
           <SidePanel />
         </div>
 

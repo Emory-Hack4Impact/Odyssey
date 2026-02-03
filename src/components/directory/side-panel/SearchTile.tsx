@@ -4,14 +4,14 @@ import React from "react";
 
 export default function SearchTile() {
   return (
-    <div className="card w-80 border border-base-content/5 bg-base-100 shadow-xl">
+    <div className="card border border-base-content/5 bg-base-100 shadow-xl min-[1055px]:w-80">
       <div className="card-body gap-6 p-6">
         {/* Simplified Search Input */}
         <div className="flex flex-col gap-2">
           <p className="ml-1 text-xs font-semibold tracking-wide text-base-content/60 uppercase">
             Search
           </p>
-          <label className="input-bordered input flex h-12 items-center gap-3 border-none bg-base-200/50">
+          <label className="w-full input-bordered input flex h-12 items-center gap-3 border-none bg-base-200/50">
             <svg
               className="h-[1.1em] opacity-50"
               xmlns="http://www.w3.org/2000/svg"
