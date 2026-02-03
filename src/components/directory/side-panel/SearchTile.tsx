@@ -36,6 +36,10 @@ export default function SearchTile({
               type="search"
               className="grow text-sm font-medium placeholder:text-base-content/40"
               placeholder="Name or ID"
+              onChange={(e) => {
+                setSearch(e.target.value);
+                console.log(e.target.value);
+              }}
             />
           </label>
         </div>
