@@ -4,7 +4,7 @@ import React from "react";
 import Image from "next/image";
 
 export interface EmployeeCardProps {
-  name?: string;
+  name: string;
   role?: string;
   department?: string;
   bio?: string;

@@ -28,11 +28,11 @@ export const EmployeeDirectory = ({
     <div className="m-12 flex min-h-screen w-auto flex-col items-start px-4">
       <div className="flex w-full gap-8 max-[1183px]:flex-col">
         <div className="flex-1 min-[1183px]:max-w-80">
-          <SidePanel activeCard={activeCard} setSearch={setSearch} />
+          <SidePanel setSearch={setSearch} />
         </div>
 
         <div className="flex-1">
-          <ResultsGrid search={search} setActiveCard={setActiveCard} />
+          <ResultsGrid search={search} />
         </div>
       </div>
     </div>
