@@ -52,6 +52,7 @@ export default function ResultsGrid({
         {filteredEmployees.map((employee) => (
           <EmployeeCard key={employee.email} {...employee} />
         ))}
+        {filteredEmployees.length === 0 && <p>No employees found.</p>}
       </div>
     </div>
   );
