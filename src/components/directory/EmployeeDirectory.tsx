@@ -22,7 +22,6 @@ export const EmployeeDirectory = ({
   userMetadata,
 }: EmployeeDirectoryProps) => {
   const [search, setSearch] = useState("");
-  const [activeCard, setActiveCard] = useState(userId);
 
   return (
     <div className="m-12 flex min-h-screen w-auto flex-col items-start px-4">
