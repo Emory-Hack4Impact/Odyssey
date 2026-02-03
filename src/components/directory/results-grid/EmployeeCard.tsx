@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 
-interface EmployeeCardProps {
+export interface EmployeeCardProps {
   name?: string;
   role?: string;
   department?: string;
@@ -15,17 +15,17 @@ interface EmployeeCardProps {
 }
 
 export default function EmployeeCard({
-  name = "First Last",
-  role = "Role",
-  department = "Department",
-  bio = "Longer bio description as this is a desktop component and more can fit on the screen.",
-  email = "user1@example.com",
+  name,
+  role,
+  department,
+  bio,
+  email,
   pfp,
-  online = true,
-  vacation = true,
+  online,
+  vacation,
 }: EmployeeCardProps) {
   return (
-    <div className="card card-side h-48 max-w-2xl overflow-hidden border border-base-content/5 bg-base-100 shadow-xl">
+    <div className="card card-side h-48 w-full overflow-hidden border border-base-content/5 bg-base-100 shadow-xl min-[1055px]:max-w-2xl">
       {/* Profile Picture & Status Section */}
       <figure className="relative w-48 shrink-0 bg-base-200">
         {pfp ? (
@@ -58,7 +58,9 @@ export default function EmployeeCard({
           </p>
         </div>
 
-        <p className="mt-2 line-clamp-4 text-sm leading-relaxed text-base-content/80">{bio}</p>
+        <p className="mt-2 line-clamp-4 overflow-y-scroll text-sm leading-relaxed text-base-content/80">
+          {bio}
+        </p>
 
         <div className="mt-auto card-actions justify-end">
           <a

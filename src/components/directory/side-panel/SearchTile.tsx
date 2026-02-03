@@ -11,7 +11,7 @@ export default function SearchTile() {
           <p className="ml-1 text-xs font-semibold tracking-wide text-base-content/60 uppercase">
             Search
           </p>
-          <label className="w-full input-bordered input flex h-12 items-center gap-3 border-none bg-base-200/50">
+          <label className="input-bordered input flex h-12 w-full items-center gap-3 border-none bg-base-200/50">
             <svg
               className="h-[1.1em] opacity-50"
               xmlns="http://www.w3.org/2000/svg"
