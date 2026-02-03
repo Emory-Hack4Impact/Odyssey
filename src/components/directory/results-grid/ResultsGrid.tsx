@@ -15,7 +15,7 @@ const testEmployees: EmployeeCardProps[] = [
     name: "Sarah Chen",
     role: "Product Manager",
     department: "Product",
-    bio: "Leads product strategy and roadmap planning.",
+    bio: "Leadsull-stack engineer withull-stack engineer withull-stack engineer withull-stack engineer with pronning.",
     email: "sarah@example.com",
     pfp: "/logo.png",
     online: false,
@@ -57,7 +57,13 @@ export default function ResultsGrid({
       </div>
       <div className="flex flex-wrap gap-6">
         {filteredEmployees.map((employee) => (
-          <EmployeeCard key={employee.email} {...employee} />
+          <div
+            key={employee.email}
+            onClick={() => setActiveCard(employee.email)}
+            className="cursor-pointer"
+          >
+            <EmployeeCard {...employee} />
+          </div>
         ))}
         {filteredEmployees.length === 0 && <p>No employees found.</p>}
       </div>

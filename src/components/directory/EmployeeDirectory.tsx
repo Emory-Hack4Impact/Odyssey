@@ -26,8 +26,8 @@ export const EmployeeDirectory = ({
 
   return (
     <div className="m-12 flex min-h-screen w-auto flex-col items-start px-4">
-      <div className="flex w-full gap-8 max-[1183px]:flex-col">
-        <div className="flex-1 min-[1183px]:max-w-80">
+      <div className="flex w-full gap-8 max-[1088px]:flex-col">
+        <div className="flex-1 min-[1088px]:max-w-80">
           <SidePanel activeCard={activeCard} setSearch={setSearch} />
         </div>
 
