@@ -17,9 +17,11 @@ interface EmployeeDirectoryProps {
 
 export const EmployeeDirectory = ({
   userId,
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   username,
   userRole,
   userMetadata,
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 }: EmployeeDirectoryProps) => {
   const [search, setSearch] = useState("");
   const [activeCard, setActiveCard] = useState(userId);
