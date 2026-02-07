@@ -44,6 +44,14 @@ export default function NavBar() {
             </Link>
           </li>
           <li className="h-full w-full">
+            <Link
+              href="/dashboard/directory"
+              className={`btn rounded-full ${activeClass("/dashboard/directory")}`}
+            >
+              Directory
+            </Link>
+          </li>
+          <li className="h-full w-full">
             <form action="/api/auth/signout" method="post" className="">
               <button className="btn rounded-full">Sign out</button>
             </form>
