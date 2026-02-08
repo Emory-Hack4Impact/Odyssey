@@ -56,6 +56,7 @@ const articles = [
     title: "Article Event Title",
     blurb:
       "A brief reflection on why hard work matters, how it builds resilience and confidence, and why effort is most powerful when balanced with rest, purpose, and thoughtful direction.",
+    author: "John Doe",
     date: "2025-11-16",
     time: "4:00 PM – 5:30 PM",
     location: "Zoom",
@@ -67,6 +68,7 @@ const articles = [
     title: "Article Event Title",
     blurb:
       "A brief reflection on why hard work matters, how it builds resilience and confidence, and why effort is most powerful when balanced with rest, purpose, and thoughtful direction.",
+    author: "Jane Doe",
     date: "2025-11-16",
     time: "4:00 PM – 5:30 PM",
     location: "Zoom",
@@ -78,6 +80,7 @@ const articles = [
     title: "Article Event Title",
     blurb:
       "A brief reflection on why hard work matters, how it builds resilience and confidence, and why effort is most powerful when balanced with rest, purpose, and thoughtful direction.",
+    author: "Jane Doe",
     date: "2025-11-16",
     time: "4:00 PM – 5:30 PM",
     location: "Zoom",
@@ -299,12 +302,206 @@ function MediaCard({
   );
 }
 
+function ArticleCreateModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const [formData, setFormData] = useState({
+    title: "",
+    author: "",
+    blurb: "",
+    body: "",
+    date: "",
+    time: "",
+    location: "",
+  });
+  const [image, setImage] = useState<File | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // TODO: Upload image to Supabase Storage
+    // TODO: Save article to database
+
+    console.log("Form data:", formData);
+    console.log("Image:", image);
+
+    // Close modal after submit
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      role="dialog"
+      aria-modal
+      onClick={onClose}
+    >
+      <div
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between border-b p-4">
+          <h4 className="text-lg font-semibold">Create New Article</h4>
+          <button
+            className="rounded-full p-1 text-gray-500 hover:bg-gray-100"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-4">
+          <div className="space-y-4">
+            {/* Title */}
+            <div>
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                Title *
+              </label>
+              <input
+                type="text"
+                id="title"
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              />
+            </div>
+
+            {/* Author */}
+            <div>
+              <label htmlFor="author" className="block text-sm font-medium text-gray-700">
+                Author *
+              </label>
+              <input
+                type="text"
+                id="author"
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.author}
+                onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+              />
+            </div>
+
+            {/* Blurb */}
+            <div>
+              <label htmlFor="blurb" className="block text-sm font-medium text-gray-700">
+                Short Description *
+              </label>
+              <textarea
+                id="blurb"
+                required
+                rows={2}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.blurb}
+                onChange={(e) => setFormData({ ...formData, blurb: e.target.value })}
+              />
+            </div>
+
+            {/* Body */}
+            <div>
+              <label htmlFor="body" className="block text-sm font-medium text-gray-700">
+                Article Content *
+              </label>
+              <textarea
+                id="body"
+                required
+                rows={8}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.body}
+                onChange={(e) => setFormData({ ...formData, body: e.target.value })}
+              />
+            </div>
+
+            {/* Date */}
+            <div>
+              <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+                Date *
+              </label>
+              <input
+                type="date"
+                id="date"
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              />
+            </div>
+
+            {/* Time */}
+            <div>
+              <label htmlFor="time" className="block text-sm font-medium text-gray-700">
+                Time *
+              </label>
+              <input
+                type="time"
+                id="time"
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.time}
+                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+              />
+            </div>
+
+            {/* Location */}
+            <div>
+              <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+                Location *
+              </label>
+              <input
+                type="text"
+                id="location"
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              />
+            </div>
+
+            {/* Image Upload */}
+            <div>
+              <label htmlFor="image" className="block text-sm font-medium text-gray-700">
+                Article Image
+              </label>
+              <input
+                type="file"
+                id="image"
+                accept="image/*"
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                onChange={(e) => setImage(e.target.files?.[0] ?? null)}
+              />
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="mt-6 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            >
+              Create Article
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
   // ---- article modal state ----
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [activeArticle, setActiveArticle] = useState<null | {
     id: number;
     title: string;
+    author: string;
     date: string;
     time: string;
     location: string;
@@ -316,6 +513,7 @@ export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
     {
       id: number;
       title: string;
+      author: string;
       date: string;
       time: string;
       location: string;
@@ -362,7 +560,7 @@ export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
                   title="Add article"
                 >
                   <span className="text-lg leading-none">＋</span>
-                  <span className="hidden sm:inline">Add</span>
+                  <span className="hidden sm:inline">Add Article</span>
                 </button>
               )}
             </div>
@@ -425,6 +623,9 @@ export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
 
               <div className="mb-4 space-y-1 text-sm text-gray-600">
                 <p>
+                  <span className="font-medium">Author:</span> {activeArticle.author}
+                </p>
+                <p>
                   <span className="font-medium">Date:</span> {activeArticle.date}
                 </p>
                 <p>
@@ -442,6 +643,8 @@ export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
           </div>
         </div>
       )}
+      {/* Article Create Modal */}
+      <ArticleCreateModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
     </section>
   );
 }
