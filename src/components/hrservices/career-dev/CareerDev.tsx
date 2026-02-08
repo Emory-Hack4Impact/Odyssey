@@ -2,12 +2,22 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { createClient } from "@/utils/supabase/client";
 
 // ---- tiny helpers ----
 function classNames(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
 
+type ViewState = {
+  isAdmin: boolean;
+  error: string | null;
+};
+
+const initialState: ViewState = {
+  isAdmin: false,
+  error: null,
+};
 // ---- data access layer (DB later) ----
 // when #33 is complete, swap this with a real fetch
 export async function fetchArticles() {
@@ -289,13 +299,9 @@ function MediaCard({
   );
 }
 
-export default function CareerDev() {
+export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
   // ---- article modal state ----
-
-  const isAdmin = true;
-
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
   const [activeArticle, setActiveArticle] = useState<null | {
     id: number;
     title: string;
