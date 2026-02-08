@@ -291,6 +291,11 @@ function MediaCard({
 
 export default function CareerDev() {
   // ---- article modal state ----
+
+  const isAdmin = true;
+
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
   const [activeArticle, setActiveArticle] = useState<null | {
     id: number;
     title: string;
@@ -337,9 +342,24 @@ export default function CareerDev() {
         {/* right column: cards */}
         <div className="lg:col-span-8">
           <section>
-            <h3 className="text-base font-semibold text-gray-900">
-              Featured Career Development Courses
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold text-gray-900">
+                Featured Career Development Courses
+              </h3>
+
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 shadow-sm hover:bg-gray-50"
+                  aria-label="Add career development article"
+                  title="Add article"
+                >
+                  <span className="text-lg leading-none">＋</span>
+                  <span className="hidden sm:inline">Add</span>
+                </button>
+              )}
+            </div>
             <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {courses.map((c) => (
                 <MediaCard
