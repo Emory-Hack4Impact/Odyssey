@@ -19,10 +19,45 @@ const initialState: ViewState = {
   error: null,
 };
 // ---- data access layer (DB later) ----
-// when #33 is complete, swap this with a real fetch
-export async function fetchArticles() {
-  // TODO: replace with DB call. return mock for now
-  return Promise.resolve(articles);
+
+type CareerDevArticleRow = {
+  id: string;
+  title: string;
+  author: string;
+  blurb: string;
+  body: string | null;
+  date: string;
+  starttime: string | null;
+  endtime: string | null;
+  location: string;
+  imageurl: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CareerDevArticleUI = {
+  id: string;
+  title: string;
+  author: string;
+  blurb: string;
+  body?: string | null;
+  date: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+  imageUrl?: string | null;
+  image?: { src: string; alt: string };
+};
+
+export async function fetchArticles(): Promise<CareerDevArticleUI[]> {
+  const res = await fetch("/api/career-dev-articles", { cache: "no-store" });
+
+  if (!res.ok) {
+    console.error("fetchArticles error:", await res.text());
+    return [];
+  }
+
+  return (await res.json()) as CareerDevArticleUI[];
 }
 
 // ---- mock data (replace with live data when #33 ) ----
@@ -93,7 +128,7 @@ const articles = [
 ];
 
 // placeholder long bodies for the modal (mock content)
-const mockArticleBodies: Record<number, string> = {
+/*const mockArticleBodies: Record<number, string> = {
   1: `Hard work is often described as the foundation of success. Whether in academics, sports, or creative fields, consistent effort allows people to build knowledge and improve their abilities.
   Unlike talent, which may come naturally, hard work is a choice that anyone can make. 
   
@@ -106,12 +141,12 @@ const mockArticleBodies: Record<number, string> = {
   Hard work is not simply a path to achievement; it is a way of developing the mindset needed to keep learning, keep improving, and keep moving forward.`,
   2: "Some description about Article 2.",
   3: "Some description about Article 3.",
-};
+}; */
 
 const demoEvents = [
-  { date: "2025-11-07", label: "Coaching 1:1", startTime: "16:00", endTime: "17:30" },
-  { date: "2025-11-16", label: "Workshop: Interview Prep", startTime: "16:00", endTime: "17:30" },
-  { date: "2025-11-24", label: "Lunch & Learn", startTime: "16:00", endTime: "17:30" },
+  { date: "2025-11-07", label: "Coaching 1:1", starttime: "16:00", endtime: "17:30" },
+  { date: "2025-11-16", label: "Workshop: Interview Prep", starttime: "16:00", endtime: "17:30" },
+  { date: "2025-11-24", label: "Lunch & Learn", starttime: "16:00", endtime: "17:30" },
 ];
 
 function startOfMonth(d: Date) {
@@ -132,7 +167,7 @@ function toISODate(d: Date) {
 }
 
 function CalendarMini({
-  events = [] as { date: string; label?: string; startTime?: string; endTime?: string }[],
+  events = [] as { date: string; label?: string; starttime?: string; endtime?: string }[],
 }) {
   const [cursor, setCursor] = useState<Date>(startOfMonth(new Date()));
   const [selectedISO, setSelectedISO] = useState<string>(toISODate(new Date()));
@@ -254,7 +289,7 @@ function CalendarMini({
                 <span className="inline-block h-2 w-2 rounded-full bg-indigo-600" />
                 <span className="text-gray-700">
                   {e.label}
-                  {e.startTime && e.endTime ? ` — ${e.startTime} to ${e.endTime}` : ""}
+                  {e.starttime && e.endtime ? ` — ${e.starttime} to ${e.endtime}` : ""}
                 </span>
               </li>
             ))}
@@ -310,7 +345,15 @@ function MediaCard({
   );
 }
 
-function ArticleCreateModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+function ArticleCreateModal({
+  isOpen,
+  onClose,
+  onCreated,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreated: () => Promise<void>;
+}) {
   const [formData, setFormData] = useState({
     title: "",
     author: "",
@@ -320,19 +363,35 @@ function ArticleCreateModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
     startTime: "",
     endTime: "",
     location: "",
+    imageurl: null, //upload to storage & url later
   });
   const [image, setImage] = useState<File | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // TODO: Upload image to Supabase Storage
-    // TODO: Save article to database
+    const res = await fetch("/api/career-dev-articles", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: formData.title,
+        author: formData.author,
+        blurb: formData.blurb,
+        body: formData.body,
+        date: formData.date,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        location: formData.location,
+        imageUrl: null,
+      }),
+    });
 
-    console.log("Form data:", formData);
-    console.log("Image:", image);
+    if (!res.ok) {
+      console.error("Insert error:", await res.text());
+      return;
+    }
 
-    // Close modal after submit
+    await onCreated();
     onClose();
   };
 
@@ -440,28 +499,26 @@ function ArticleCreateModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
             {/* Time */}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
-                <label htmlFor="edit-startTime" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="startTime" className="block text-sm font-medium text-gray-700">
                   Start time *
                 </label>
                 <input
                   type="time"
-                  id="edit-startTime"
+                  id="startTime"
                   required
-                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
                   value={formData.startTime}
                   onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
                 />
               </div>
 
               <div>
-                <label htmlFor="edit-endTime" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="endTime" className="block text-sm font-medium text-gray-700">
                   End time *
                 </label>
                 <input
                   type="time"
-                  id="edit-endTime"
+                  id="endTime"
                   required
-                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
                   value={formData.endTime}
                   onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
                 />
@@ -509,6 +566,7 @@ function ArticleCreateModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
             </button>
             <button
               type="submit"
+              onClick={() => console.log("clicked submit")}
               className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
             >
               Create Article
@@ -524,20 +582,12 @@ function ArticleEditModal({
   isOpen,
   onClose,
   article,
+  onUpdated,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  article: {
-    id: number;
-    title: string;
-    author: string;
-    date: string;
-    startTime: string;
-    endTime: string;
-    location: string;
-    blurb: string;
-    body?: string;
-  } | null;
+  article: CareerDevArticleUI | null;
+  onUpdated: () => Promise<void>;
 }) {
   const [formData, setFormData] = useState({
     title: article?.title ?? "",
@@ -552,27 +602,46 @@ function ArticleEditModal({
   const [image, setImage] = useState<File | null>(null);
 
   useEffect(() => {
-    if (article) {
-      setFormData({
-        title: article.title,
-        author: article.author,
-        blurb: article.blurb,
-        body: article.body ?? "",
-        date: article.date,
-        startTime: article.startTime,
-        endTime: article.endTime,
-        location: article.location,
-      });
-    }
+    if (!article) return;
+    setFormData({
+      title: article.title,
+      author: article.author,
+      blurb: article.blurb,
+      body: article.body ?? "",
+      date: article.date,
+      startTime: article.startTime,
+      endTime: article.endTime,
+      location: article.location,
+    });
   }, [article]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    //TODO: upload img to supabase storage
-    // TODO: update article in database
-    console.log("Updated form data:", article?.id, formData);
-    console.log("New image:", image);
-    // Close modal after submit
+    if (!article) return;
+
+    const supabase = createClient();
+
+    const { error } = await supabase
+      .from("CareerDevArticles")
+      .update({
+        title: formData.title,
+        author: formData.author,
+        blurb: formData.blurb,
+        body: formData.body,
+        date: formData.date,
+        starttime: formData.startTime,
+        endtime: formData.endTime,
+        location: formData.location,
+        // imageUrl later
+      })
+      .eq("id", article.id);
+
+    if (error) {
+      console.error("Update error:", error);
+      return;
+    }
+
+    await onUpdated(); // refresh list in parent
     onClose();
   };
 
@@ -778,52 +847,18 @@ function ArticleEditModal({
 
 export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingArticle, setEditingArticle] = useState<null | {
-    id: number;
-    title: string;
-    author: string;
-    date: string;
-    startTime: string;
-    endTime: string;
-    location: string;
-    blurb: string;
-    body?: string;
-    image?: { src: string; alt: string };
-  }>(null);
-  const [activeArticle, setActiveArticle] = useState<null | {
-    id: number;
-    title: string;
-    author: string;
-    date: string;
-    startTime: string;
-    endTime: string;
-    location: string;
-    blurb: string;
-    body?: string;
-  }>(null);
+  const [editingArticle, setEditingArticle] = useState<CareerDevArticleUI | null>(null);
+  const [activeArticle, setActiveArticle] = useState<CareerDevArticleUI | null>(null);
 
-  const [allArticles, setAllArticles] = useState<
-    {
-      id: number;
-      title: string;
-      author: string;
-      date: string;
-      startTime: string;
-      endTime: string;
-      location: string;
-      blurb: string;
-      image?: { src: string; alt: string };
-    }[]
-  >([]);
+  const [allArticles, setAllArticles] = useState<CareerDevArticleUI[]>([]);
+
+  const reloadArticles = async () => {
+    const data = await fetchArticles();
+    setAllArticles(data);
+  };
 
   useEffect(() => {
-    // load articles from "DB" (issue #33)
-    // void currently silences lint about async in useEffect
-    async function load() {
-      const data = await fetchArticles();
-      setAllArticles(data);
-    }
-    void load();
+    void reloadArticles();
   }, []);
 
   return (
@@ -880,7 +915,7 @@ export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
                 <button
                   key={a.id}
                   type="button"
-                  onClick={() => setActiveArticle({ ...a, body: mockArticleBodies[a.id] })}
+                  onClick={() => setActiveArticle(a)}
                   className="text-left"
                 >
                   <MediaCard title={a.title} blurb={a.blurb} image={a.image} />
@@ -914,11 +949,7 @@ export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
                       const full = allArticles.find((x) => x.id === activeArticle.id);
                       if (!full) return;
 
-                      setEditingArticle({
-                        ...full,
-                        body: mockArticleBodies[full.id],
-                      });
-
+                      setEditingArticle(full);
                       setActiveArticle(null); // optional: close the view modal when editing
                     }}
                   >
@@ -962,11 +993,16 @@ export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
         </div>
       )}
       {/* Article Create Modal */}
-      <ArticleCreateModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
+      <ArticleCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreated={reloadArticles}
+      />
       <ArticleEditModal
         isOpen={editingArticle !== null}
         onClose={() => setEditingArticle(null)}
         article={editingArticle}
+        onUpdated={reloadArticles}
       />
     </section>
   );
