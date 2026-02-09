@@ -197,8 +197,8 @@ function CalendarMini({
       </div>
 
       <div className="mt-3 grid grid-cols-7 text-center text-xs text-gray-500">
-        {"SMTWTFS".split("").map((c) => (
-          <div key={c} className="py-1">
+        {"SMTWTFS".split("").map((c, i) => (
+          <div key={i} className="py-1">
             {c}
           </div>
         ))}
