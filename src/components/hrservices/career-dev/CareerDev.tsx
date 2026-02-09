@@ -18,7 +18,6 @@ const initialState: ViewState = {
   isAdmin: false,
   error: null,
 };
-// ---- data access layer (DB later) ----
 
 type CareerDevArticleRow = {
   id: string;
@@ -60,7 +59,6 @@ export async function fetchArticles(): Promise<CareerDevArticleUI[]> {
   return (await res.json()) as CareerDevArticleUI[];
 }
 
-// ---- mock data (replace with live data when #33 ) ----
 const courses = [
   {
     id: 1,
@@ -361,7 +359,6 @@ function ArticleCreateModal({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // STEP 1 — create article (NO image yet)
     const createRes = await fetch("/api/career-dev-articles", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -383,14 +380,11 @@ function ArticleCreateModal({
       return;
     }
 
-    // ⬅️ THIS is the createdRes you asked about
     const created = (await createRes.json()) as { id: string };
 
-    // STEP 2 — Upload new image if provided (CLIENT-SIDE)
     if (image) {
       const supabase = createClient();
 
-      // Just check authentication, skip admin check
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -421,7 +415,6 @@ function ArticleCreateModal({
 
       const { data } = supabase.storage.from("Article").getPublicUrl(path);
 
-      // STEP 3 — Save new image URL
       const imageUpdateRes = await fetch("/api/career-dev-articles", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -687,11 +680,9 @@ function ArticleEditModal({
       return;
     }
 
-    // STEP 2 — Upload new image if provided (CLIENT-SIDE) with DEBUG
     if (image) {
       const supabase = createClient();
 
-      // DEBUG: Check authentication
       const {
         data: { user },
         error: authError,
@@ -705,7 +696,6 @@ function ArticleEditModal({
         return;
       }
 
-      // DEBUG: Check user metadata
       const { data: metadata, error: metaError } = await supabase
         .from("UserMetadata")
         .select("is_admin")
@@ -741,7 +731,6 @@ function ArticleEditModal({
 
       const { data } = supabase.storage.from("Article").getPublicUrl(path);
 
-      // STEP 3 — Save new image URL
       const imageUpdateRes = await fetch("/api/career-dev-articles", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
