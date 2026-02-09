@@ -14,15 +14,12 @@ type CreateCareerDevArticleInput = {
   imageurl?: string | null;
 };
 
-// NOTE: This assumes your Prisma schema has a model that maps to the same table.
-// If your Prisma model name differs, change prisma.careerDevArticles -> prisma.<YourModelName>
 export async function CreateCareerDevArticle(input: CreateCareerDevArticleInput) {
   // basic guardrails (keeps DB errors quieter)
   if (!input.title || !input.author || !input.blurb || !input.date) {
     throw new Error("Missing required fields.");
   }
 
-  // IMPORTANT: use the DB column names here (starttime/endtime/imageurl)
   const row = await prisma.careerDevArticles.create({
     data: {
       title: input.title,
