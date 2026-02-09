@@ -35,40 +35,45 @@ interface FetchedEval extends FetchedEvalMeta {
   submitterEmail?: string | null;
 }
 
+const EMPTY_EVAL: FetchedEval = {
+  id: "",
+  evaluationId: "",
+  employeeId: "",
+  submitterId: "",
+  employeeFirstName: "",
+  employeeLastName: "",
+  year: 2025,
+  submittedAt: "",
+  strengths: "",
+  weaknesses: "",
+  improvements: "",
+  notes: "",
+  communication: "",
+  leadership: "",
+  timeliness: "",
+  skill1: "",
+  skill2: "",
+  skill3: "",
+  submitterEmail: null,
+};
+
 export default function PerfEvalHR({ userId: _userId, username, userRole }: HRServicesProps) {
   const [employeeEvalsMeta, setEmployeeEvalsMeta] = useState<FetchedEvalMeta[]>([]);
-  const [selectedEval, setSelectedEval] = useState<FetchedEval>({
-    id: "",
-    evaluationId: "",
-    employeeId: "",
-    submitterId: "",
-    employeeFirstName: "",
-    employeeLastName: "",
-    year: 2025,
-    submittedAt: "2025-01-01T00:00:00.000Z",
-    strengths: "",
-    weaknesses: "",
-    improvements: "",
-    notes: "",
-    communication: "",
-    leadership: "",
-    timeliness: "",
-    skill1: "",
-    skill2: "",
-    skill3: "",
-    submitterEmail: null,
-  });
+  const [selectedEval, setSelectedEval] = useState<FetchedEval>(EMPTY_EVAL);
   const [isOpened, setIsOpened] = useState(false);
   const [search, setSearch] = useState("");
   const [yearSearch, setYearSearch] = useState(0);
   const [onlyRecent, setOnlyRecent] = useState(true);
 
   const filteredEvals = employeeEvalsMeta.filter((evalItem) => {
-    if (!search && !yearSearch) return true;
     const matchesSearch =
-      !search || JSON.stringify(evalItem).toLowerCase().includes(search.toLowerCase());
+      !search ||
+      `${evalItem.employeeFirstName} ${evalItem.employeeLastName}`
+        .toLowerCase()
+        .includes(search.toLowerCase());
 
     const matchesYear = !yearSearch || evalItem.year === yearSearch;
+
     return matchesSearch && matchesYear;
   });
 
@@ -96,10 +101,11 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
     }
   };
 
-  const fetchEvalMeta = async () => {
+  const fetchEvalMeta = React.useCallback(async () => {
     try {
       const resp = await fetch("/api/employee-evals?meta=true");
       const res = await resp.json();
+
       const normalized = (res as RawEval[]).map((meta) => ({
         id: String(meta.id),
         evaluationId: String(meta.evaluationId),
@@ -108,25 +114,105 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
         employeeFirstName: meta.employeeFirstName,
         employeeLastName: meta.employeeLastName,
         year: Number(meta.year ?? 0),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        approved: Boolean((meta as any).approved ?? false),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        approvedAt: ((meta as any).approvedAt as string) ?? null,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        approvedBy: ((meta as any).approvedBy as string) ?? null,
+        approved: Boolean(meta.approved ?? false),
+        approvedAt: (meta.approvedAt as string) ?? null,
+        approvedBy: (meta.approvedBy as string) ?? null,
         submittedAt: String(meta.submittedAt),
       })) as FetchedEvalMeta[];
+
       setEmployeeEvalsMeta(normalized ?? []);
     } catch (error) {
       console.error(error);
     }
-  };
+  }, []);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     void fetchEvalMeta();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchEvalMeta]);
+
+  const handleViewClick = async (employeeEval: FetchedEvalMeta) => {
+    const evalData = await fetchEvalByID(employeeEval.evaluationId);
+    if (!evalData) {
+      alert("Failed to load evaluation");
+      return;
+    }
+
+    setSelectedEval({ ...employeeEval, ...evalData });
+    setIsOpened(true);
+  };
+
+  const handleResubmitClick = async (employeeEval: FetchedEvalMeta) => {
+    try {
+      const evalData = await fetchEvalByID(employeeEval.evaluationId);
+      if (!evalData) {
+        alert("Failed to load evaluation");
+        return;
+      }
+      const reason = window.prompt("Reason for resubmission:", "") ?? "";
+      const today = new Date().toISOString().slice(0, 10);
+      const tag = `[Resubmission Requested on ${today}]${reason ? ` Reason: ${reason}` : ""}`;
+      const newNotes = `${tag}\n\n${evalData.notes ?? ""}`;
+
+      const payload = {
+        strengths: evalData.strengths ?? "",
+        weaknesses: evalData.weaknesses ?? "",
+        improvements: evalData.improvements ?? "",
+        notes: newNotes,
+        communication: Number(evalData.communication ?? 0),
+        leadership: Number(evalData.leadership ?? 0),
+        timeliness: Number(evalData.timeliness ?? 0),
+        skill1: Number(evalData.skill1 ?? 0),
+        skill2: Number(evalData.skill2 ?? 0),
+        skill3: Number(evalData.skill3 ?? 0),
+      };
+
+      const metadata = {
+        employeeId: employeeEval.employeeId ?? undefined,
+        submitterId: employeeEval.submitterId ?? undefined,
+        year: employeeEval.year,
+      };
+
+      const resp = await fetch("/api/employee-evals", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: employeeEval.evaluationId,
+          data: payload,
+          metadata,
+        }),
+      });
+      const res = await resp.json();
+      if (!resp.ok) throw new Error(String(res?.error ?? "Failed to request resubmission"));
+      alert("Resubmission requested");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to request resubmission");
+    }
+  };
+
+  const handleToggleApproveClick = async (employeeEval: FetchedEvalMeta) => {
+    try {
+      const resp = await fetch("/api/employee-evals", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          evaluationId: employeeEval.evaluationId,
+          approvedBy: _userId,
+        }),
+      });
+
+      const res: { error?: string } = await resp.json();
+
+      if (!resp.ok) {
+        throw new Error(res.error ?? "Failed to toggle approval");
+      }
+
+      await fetchEvalMeta();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to toggle approval");
+    }
+  };
 
   return (
     <>
@@ -195,7 +281,6 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                     role="button"
                     className="flex w-full items-center justify-between gap-2"
                   >
-                    {/* Calendar icon */}
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-[1em] opacity-50"
@@ -210,12 +295,10 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                       <line x1="3" y1="10" x2="21" y2="10"></line>
                     </svg>
 
-                    {/* Text */}
                     <span className="flex-1 opacity-60">
                       {yearSearch ? yearSearch : "Search by year"}
                     </span>
 
-                    {/* Dropdown caret */}
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-4 w-4 opacity-60"
@@ -329,114 +412,21 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                                 <div className="flex items-center justify-center gap-2">
                                   <button
                                     className="btn btn-outline btn-sm"
-                                    onClick={async () => {
-                                      const evalData = await fetchEvalByID(
-                                        employeeEval.evaluationId,
-                                      );
-                                      if (evalData) {
-                                        setSelectedEval({ ...employeeEval, ...evalData });
-                                        setIsOpened(true);
-                                      } else {
-                                        alert("Failed to load evaluation");
-                                      }
-                                    }}
+                                    onClick={() => handleViewClick(employeeEval)}
                                   >
                                     View
                                   </button>
 
                                   <button
                                     className="btn btn-outline btn-sm"
-                                    onClick={async () => {
-                                      try {
-                                        const evalData = await fetchEvalByID(
-                                          employeeEval.evaluationId,
-                                        );
-                                        if (!evalData) {
-                                          alert("Failed to load evaluation");
-                                          return;
-                                        }
-                                        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                                        const reason =
-                                          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                                          window.prompt("Reason for resubmission:", "") || "";
-                                        const today = new Date().toISOString().slice(0, 10);
-                                        const tag = `[Resubmission Requested on ${today}]${reason ? ` Reason: ${reason}` : ""}`;
-                                        const newNotes = `${tag}\n\n${evalData.notes ?? ""}`;
-
-                                        const payload = {
-                                          strengths: evalData.strengths ?? "",
-                                          weaknesses: evalData.weaknesses ?? "",
-                                          improvements: evalData.improvements ?? "",
-                                          notes: newNotes,
-                                          communication: Number(evalData.communication ?? 0),
-                                          leadership: Number(evalData.leadership ?? 0),
-                                          timeliness: Number(evalData.timeliness ?? 0),
-                                          skill1: Number(evalData.skill1 ?? 0),
-                                          skill2: Number(evalData.skill2 ?? 0),
-                                          skill3: Number(evalData.skill3 ?? 0),
-                                        };
-
-                                        const metadata = {
-                                          employeeId: employeeEval.employeeId ?? undefined,
-                                          submitterId: employeeEval.submitterId ?? undefined,
-                                          year: employeeEval.year,
-                                        };
-
-                                        const resp = await fetch("/api/employee-evals", {
-                                          method: "PUT",
-                                          headers: { "Content-Type": "application/json" },
-                                          body: JSON.stringify({
-                                            id: employeeEval.evaluationId,
-                                            data: payload,
-                                            metadata,
-                                          }),
-                                        });
-                                        const res = await resp.json();
-                                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                                        if (!resp.ok)
-                                          throw new Error(
-                                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                                            res?.error ?? "Failed to request resubmission",
-                                          );
-                                        alert("Resubmission requested");
-                                      } catch (err) {
-                                        console.error(err);
-                                        alert("Failed to request resubmission");
-                                      }
-                                    }}
+                                    onClick={() => handleResubmitClick(employeeEval)}
                                   >
                                     Resubmit
                                   </button>
 
                                   <button
                                     className="btn btn-outline btn-sm"
-                                    onClick={async () => {
-                                      try {
-                                        const resp = await fetch("/api/employee-evals", {
-                                          method: "PATCH",
-                                          headers: { "Content-Type": "application/json" },
-                                          body: JSON.stringify({
-                                            evaluationId: employeeEval.evaluationId,
-                                            approvedBy: _userId,
-                                          }),
-                                        });
-
-                                        const res = await resp.json();
-
-                                        if (!resp.ok) {
-                                          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                                          throw new Error(
-                                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                                            res?.error ?? "Failed to toggle approval",
-                                          );
-                                        }
-
-                                        await fetchEvalMeta();
-                                      } catch (err) {
-                                        console.error(err);
-                                        alert("Failed to toggle approval");
-                                      }
-                                    }}
+                                    onClick={() => handleToggleApproveClick(employeeEval)}
                                   >
                                     {employeeEval.approved ? "Unapprove" : "Approve"}
                                   </button>

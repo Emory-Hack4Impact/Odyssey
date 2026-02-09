@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { EmployeeEvaluation, EmployeeEvaluationMetadata } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import {
   GetEmployeeEvals,
   GetLatestEmployeeEvalWithReviewers,
@@ -23,8 +24,6 @@ export async function PATCH(req: Request) {
         { status: 400 },
       );
     }
-
-    const { prisma } = await import("@/lib/prisma");
 
     const meta = await prisma.employeeEvaluationMetadata.findUnique({
       where: { evaluationId: body.evaluationId },
