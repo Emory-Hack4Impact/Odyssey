@@ -63,8 +63,6 @@ export default function EmployeePerfEvalForm({
 
   const [formErrors, setFormErrors] = useState<Partial<FormData>>({});
   const [loadedYear, setLoadedYear] = useState<number | null>(null);
-  // navigation no longer required; parent controls view swap via onSuccess
-  // const router = useRouter();
 
   // If a `selectedYear` prop is provided (e.g. from the parent selector), keep
   // the local form year in sync and force a reload of evaluation data for the
