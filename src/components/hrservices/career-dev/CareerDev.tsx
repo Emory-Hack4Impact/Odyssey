@@ -58,7 +58,8 @@ const articles = [
       "A brief reflection on why hard work matters, how it builds resilience and confidence, and why effort is most powerful when balanced with rest, purpose, and thoughtful direction.",
     author: "John Doe",
     date: "2025-11-16",
-    time: "4:00 PM – 5:30 PM",
+    startTime: "16:00",
+    endTime: "17:30",
     location: "Zoom",
     href: "#",
     image: { src: "/testingfiles/articles/flowers.png", alt: "Article 1 thumbnail" },
@@ -70,7 +71,8 @@ const articles = [
       "A brief reflection on why hard work matters, how it builds resilience and confidence, and why effort is most powerful when balanced with rest, purpose, and thoughtful direction.",
     author: "Jane Doe",
     date: "2025-11-16",
-    time: "4:00 PM – 5:30 PM",
+    startTime: "16:00",
+    endTime: "17:30",
     location: "Zoom",
     href: "#",
     image: { src: "/testingfiles/articles/flower2.jpeg", alt: "Article 2 thumbnail" },
@@ -82,7 +84,8 @@ const articles = [
       "A brief reflection on why hard work matters, how it builds resilience and confidence, and why effort is most powerful when balanced with rest, purpose, and thoughtful direction.",
     author: "Jane Doe",
     date: "2025-11-16",
-    time: "4:00 PM – 5:30 PM",
+    startTime: "16:00",
+    endTime: "17:30",
     location: "Zoom",
     href: "#",
     image: { src: "/testingfiles/articles/flowers.png", alt: "Article 3 thumbnail" },
@@ -106,9 +109,9 @@ const mockArticleBodies: Record<number, string> = {
 };
 
 const demoEvents = [
-  { date: "2025-11-07", label: "Coaching 1:1" },
-  { date: "2025-11-16", label: "Workshop: Interview Prep" },
-  { date: "2025-11-24", label: "Lunch & Learn" },
+  { date: "2025-11-07", label: "Coaching 1:1", startTime: "16:00", endTime: "17:30" },
+  { date: "2025-11-16", label: "Workshop: Interview Prep", startTime: "16:00", endTime: "17:30" },
+  { date: "2025-11-24", label: "Lunch & Learn", startTime: "16:00", endTime: "17:30" },
 ];
 
 function startOfMonth(d: Date) {
@@ -128,7 +131,9 @@ function toISODate(d: Date) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-function CalendarMini({ events = [] as { date: string; label?: string }[] }) {
+function CalendarMini({
+  events = [] as { date: string; label?: string; startTime?: string; endTime?: string }[],
+}) {
   const [cursor, setCursor] = useState<Date>(startOfMonth(new Date()));
   const [selectedISO, setSelectedISO] = useState<string>(toISODate(new Date()));
 
@@ -247,7 +252,10 @@ function CalendarMini({ events = [] as { date: string; label?: string }[] }) {
             {dayEvents.map((e, i) => (
               <li key={i} className="flex items-center gap-2">
                 <span className="inline-block h-2 w-2 rounded-full bg-indigo-600" />
-                <span className="text-gray-700">{e.label}</span>
+                <span className="text-gray-700">
+                  {e.label}
+                  {e.startTime && e.endTime ? ` — ${e.startTime} to ${e.endTime}` : ""}
+                </span>
               </li>
             ))}
           </ul>
@@ -309,7 +317,8 @@ function ArticleCreateModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
     blurb: "",
     body: "",
     date: "",
-    time: "",
+    startTime: "",
+    endTime: "",
     location: "",
   });
   const [image, setImage] = useState<File | null>(null);
@@ -429,18 +438,34 @@ function ArticleCreateModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
             </div>
 
             {/* Time */}
-            <div>
-              <label htmlFor="time" className="block text-sm font-medium text-gray-700">
-                Time *
-              </label>
-              <input
-                type="time"
-                id="time"
-                required
-                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-                value={formData.time}
-                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-              />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <label htmlFor="edit-startTime" className="block text-sm font-medium text-gray-700">
+                  Start time *
+                </label>
+                <input
+                  type="time"
+                  id="edit-startTime"
+                  required
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                  value={formData.startTime}
+                  onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="edit-endTime" className="block text-sm font-medium text-gray-700">
+                  End time *
+                </label>
+                <input
+                  type="time"
+                  id="edit-endTime"
+                  required
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                  value={formData.endTime}
+                  onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                />
+              </div>
             </div>
 
             {/* Location */}
@@ -495,15 +520,283 @@ function ArticleCreateModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
   );
 }
 
+function ArticleEditModal({
+  isOpen,
+  onClose,
+  article,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  article: {
+    id: number;
+    title: string;
+    author: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+    location: string;
+    blurb: string;
+    body?: string;
+  } | null;
+}) {
+  const [formData, setFormData] = useState({
+    title: article?.title ?? "",
+    author: article?.author ?? "",
+    blurb: article?.blurb ?? "",
+    body: article?.body ?? "",
+    date: article?.date ?? "",
+    startTime: article?.startTime ?? "",
+    endTime: article?.endTime ?? "",
+    location: article?.location ?? "",
+  });
+  const [image, setImage] = useState<File | null>(null);
+
+  useEffect(() => {
+    if (article) {
+      setFormData({
+        title: article.title,
+        author: article.author,
+        blurb: article.blurb,
+        body: article.body ?? "",
+        date: article.date,
+        startTime: article.startTime,
+        endTime: article.endTime,
+        location: article.location,
+      });
+    }
+  }, [article]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    //TODO: upload img to supabase storage
+    // TODO: update article in database
+    console.log("Updated form data:", article?.id, formData);
+    console.log("New image:", image);
+    // Close modal after submit
+    onClose();
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this article? This action cannot be undone."))
+      return;
+
+    //TODO: delete article from database
+    console.log("Deleted article ID:", article?.id);
+    onClose();
+  };
+
+  if (!isOpen || !article) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      role="dialog"
+      aria-modal
+      onClick={onClose}
+    >
+      <div
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between border-b p-4">
+          <h4 className="text-lg font-semibold">Edit Article</h4>
+          <button
+            className="rounded-full p-1 text-gray-500 hover:bg-gray-100"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-4">
+          <div>
+            <div className="space-y-4">{/* Title */}</div>
+            <label htmlFor="edit-title" className="block text-sm font-medium text-gray-700">
+              Title *
+            </label>
+            <input
+              type="text"
+              id="edit-title"
+              required
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            />
+          </div>
+
+          {/* Author */}
+          <div>
+            <label htmlFor="edit-author" className="block text-sm font-medium text-gray-700">
+              Author *
+            </label>
+            <input
+              type="text"
+              id="edit-author"
+              required
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+              value={formData.author}
+              onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+            />
+          </div>
+
+          {/* Blurb */}
+          <div>
+            <label htmlFor="edit-blurb" className="block text-sm font-medium text-gray-700">
+              Short Description *
+            </label>
+            <textarea
+              id="edit-blurb"
+              required
+              rows={2}
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+              value={formData.blurb}
+              onChange={(e) => setFormData({ ...formData, blurb: e.target.value })}
+            />
+          </div>
+
+          {/* Body */}
+          <div>
+            <label htmlFor="edit-body" className="block text-sm font-medium text-gray-700">
+              Article Content *
+            </label>
+            <textarea
+              id="edit-body"
+              required
+              rows={8}
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+              value={formData.body}
+              onChange={(e) => setFormData({ ...formData, body: e.target.value })}
+            />
+          </div>
+
+          {/* Date */}
+          <div>
+            <label htmlFor="edit-date" className="block text-sm font-medium text-gray-700">
+              Date *
+            </label>
+            <input
+              type="date"
+              id="edit-date"
+              required
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+              value={formData.date}
+              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            />
+          </div>
+
+          {/* Time */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label htmlFor="edit-startTime" className="block text-sm font-medium text-gray-700">
+                Start time *
+              </label>
+              <input
+                type="time"
+                id="edit-startTime"
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.startTime}
+                onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="edit-endTime" className="block text-sm font-medium text-gray-700">
+                End time *
+              </label>
+              <input
+                type="time"
+                id="edit-endTime"
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.endTime}
+                onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+              />
+            </div>
+          </div>
+
+          {/* Location */}
+          <div>
+            <label htmlFor="edit-location" className="block text-sm font-medium text-gray-700">
+              Location *
+            </label>
+            <input
+              type="text"
+              id="edit-location"
+              required
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+            />
+          </div>
+
+          {/* Image Upload */}
+          <div>
+            <label htmlFor="edit-image" className="block text-sm font-medium text-gray-700">
+              Replace Article Image
+            </label>
+            <input
+              type="file"
+              id="edit-image"
+              accept="image/*"
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+              onChange={(e) => setImage(e.target.files?.[0] ?? null)}
+            />
+          </div>
+
+          {/* Action buttons */}
+          <div className="mt-6 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
+            >
+              Delete Article
+            </button>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
-  // ---- article modal state ----
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingArticle, setEditingArticle] = useState<null | {
+    id: number;
+    title: string;
+    author: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+    location: string;
+    blurb: string;
+    body?: string;
+    image?: { src: string; alt: string };
+  }>(null);
   const [activeArticle, setActiveArticle] = useState<null | {
     id: number;
     title: string;
     author: string;
     date: string;
-    time: string;
+    startTime: string;
+    endTime: string;
     location: string;
     blurb: string;
     body?: string;
@@ -515,7 +808,8 @@ export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
       title: string;
       author: string;
       date: string;
-      time: string;
+      startTime: string;
+      endTime: string;
       location: string;
       blurb: string;
       image?: { src: string; alt: string };
@@ -610,13 +904,36 @@ export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
           >
             <div className="flex items-start justify-between p-4">
               <h4 className="text-lg font-semibold">{activeArticle.title}</h4>
-              <button
-                className="rounded-full p-1 text-gray-500 hover:bg-gray-100"
-                onClick={() => setActiveArticle(null)}
-                aria-label="Close"
-              >
-                ✕
-              </button>
+
+              <div className="flex items-center gap-2">
+                {isAdmin && (
+                  <button
+                    type="button"
+                    className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 hover:bg-gray-50"
+                    onClick={() => {
+                      const full = allArticles.find((x) => x.id === activeArticle.id);
+                      if (!full) return;
+
+                      setEditingArticle({
+                        ...full,
+                        body: mockArticleBodies[full.id],
+                      });
+
+                      setActiveArticle(null); // optional: close the view modal when editing
+                    }}
+                  >
+                    Edit
+                  </button>
+                )}
+
+                <button
+                  className="rounded-full p-1 text-gray-500 hover:bg-gray-100"
+                  onClick={() => setActiveArticle(null)}
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
             <div className="px-4 pb-4 text-gray-700">
               <p className="mb-2 text-sm text-gray-500">{activeArticle.blurb}</p>
@@ -629,7 +946,8 @@ export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
                   <span className="font-medium">Date:</span> {activeArticle.date}
                 </p>
                 <p>
-                  <span className="font-medium">Time:</span> {activeArticle.time}
+                  <span className="font-medium">Time:</span> {activeArticle.startTime} to{" "}
+                  {activeArticle.endTime}
                 </p>
                 <p>
                   <span className="font-medium">Location:</span> {activeArticle.location}
@@ -645,6 +963,11 @@ export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
       )}
       {/* Article Create Modal */}
       <ArticleCreateModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
+      <ArticleEditModal
+        isOpen={editingArticle !== null}
+        onClose={() => setEditingArticle(null)}
+        article={editingArticle}
+      />
     </section>
   );
 }
