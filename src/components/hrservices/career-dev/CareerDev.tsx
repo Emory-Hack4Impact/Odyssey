@@ -302,8 +302,6 @@ function CalendarMini({
   );
 }
 
-import Image from "next/image";
-
 function MediaCard({
   title,
   blurb,
@@ -316,28 +314,21 @@ function MediaCard({
   image?: { src: string; alt: string };
 }) {
   const CardInner = (
-    <div className="group block rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none">
+    <div className="group flex h-full flex-col rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none">
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-2xl bg-gray-200">
         {image?.src ? (
-          <Image
-            src={image.src}
-            alt={image.alt}
-            fill
-            sizes="(min-width:1024px) 33vw,(min-width:640px) 50vw,100vw"
-            className="object-cover"
-            priority={false}
-          />
+          <img src={image.src} alt={image.alt} className="h-full w-full object-cover" />
         ) : null}
       </div>
-      <div className="p-3">
+      <div className="flex flex-1 flex-col p-3">
         <div className="text-sm font-medium text-gray-900 group-hover:underline">{title}</div>
-        <p className="mt-1 text-sm text-gray-600">{blurb}</p>
+        <p className="mt-1 line-clamp-3 text-sm text-gray-600">{blurb}</p>
       </div>
     </div>
   );
 
   return href ? (
-    <a href={href} className="block">
+    <a href={href} className="block h-full">
       {CardInner}
     </a>
   ) : (
@@ -370,7 +361,8 @@ function ArticleCreateModal({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const res = await fetch("/api/career-dev-articles", {
+    // STEP 1 — create article (NO image yet)
+    const createRes = await fetch("/api/career-dev-articles", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -386,9 +378,63 @@ function ArticleCreateModal({
       }),
     });
 
-    if (!res.ok) {
-      console.error("Insert error:", await res.text());
+    if (!createRes.ok) {
+      console.error("Insert error:", await createRes.text());
       return;
+    }
+
+    // ⬅️ THIS is the createdRes you asked about
+    const created = (await createRes.json()) as { id: string };
+
+    // STEP 2 — Upload new image if provided (CLIENT-SIDE)
+    if (image) {
+      const supabase = createClient();
+
+      // Just check authentication, skip admin check
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        console.error("❌ User not authenticated!");
+        alert("Please log in to upload images");
+        return;
+      }
+
+      console.log("✅ User authenticated, proceeding with upload...");
+
+      const ext = image.name.split(".").pop()?.toLowerCase() ?? "png";
+      const timestamp = Date.now();
+      const randomId = crypto.randomUUID();
+      const path = `${created.id}/${timestamp}-${randomId}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage.from("Article").upload(path, image, {
+        contentType: image.type,
+        upsert: false,
+      });
+
+      if (uploadError) {
+        console.error("❌ Image upload failed:", uploadError);
+        console.error("Full error:", JSON.stringify(uploadError, null, 2));
+        return;
+      }
+
+      const { data } = supabase.storage.from("Article").getPublicUrl(path);
+
+      // STEP 3 — Save new image URL
+      const imageUpdateRes = await fetch("/api/career-dev-articles", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: created.id,
+          imageUrl: data.publicUrl,
+        }),
+      });
+
+      if (!imageUpdateRes.ok) {
+        console.error("Image URL save failed:", await imageUpdateRes.text());
+        return;
+      }
     }
 
     await onCreated();
@@ -619,38 +665,99 @@ function ArticleEditModal({
     e.preventDefault();
     if (!article) return;
 
-    const supabase = createClient();
-
-    const { error } = await supabase
-      .from("CareerDevArticles")
-      .update({
+    // STEP 1 — Update article metadata (JSON, not FormData)
+    const updateRes = await fetch("/api/career-dev-articles", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: article.id,
         title: formData.title,
         author: formData.author,
         blurb: formData.blurb,
         body: formData.body,
         date: formData.date,
-        starttime: formData.startTime,
-        endtime: formData.endTime,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
         location: formData.location,
-        // imageUrl later
-      })
-      .eq("id", article.id);
+      }),
+    });
 
-    if (error) {
-      console.error("Update error:", error);
+    if (!updateRes.ok) {
+      console.error("Update error:", await updateRes.text());
       return;
     }
 
-    await onUpdated(); // refresh list in parent
-    onClose();
-  };
+    // STEP 2 — Upload new image if provided (CLIENT-SIDE) with DEBUG
+    if (image) {
+      const supabase = createClient();
 
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this article? This action cannot be undone."))
-      return;
+      // DEBUG: Check authentication
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+      console.log("🔍 Current user:", user);
+      console.log("🔍 Auth error:", authError);
 
-    //TODO: delete article from database
-    console.log("Deleted article ID:", article?.id);
+      if (!user) {
+        console.error("❌ User not authenticated!");
+        alert("You must be logged in to upload images");
+        return;
+      }
+
+      // DEBUG: Check user metadata
+      const { data: metadata, error: metaError } = await supabase
+        .from("UserMetadata")
+        .select("is_admin")
+        .eq("id", user.id)
+        .single();
+
+      console.log("🔍 UserMetadata:", metadata);
+      console.log("🔍 Metadata error:", metaError);
+
+      if (!metadata?.is_admin) {
+        console.error("❌ User is not an admin!");
+        alert("Only admins can upload images");
+        return;
+      }
+
+      console.log("✅ User is authenticated and is admin, proceeding with upload...");
+
+      const ext = image.name.split(".").pop()?.toLowerCase() ?? "png";
+      const timestamp = Date.now();
+      const randomId = crypto.randomUUID();
+      const path = `${article.id}/${timestamp}-${randomId}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage.from("Article").upload(path, image, {
+        contentType: image.type,
+        upsert: false,
+      });
+
+      if (uploadError) {
+        console.error("❌ Image upload failed:", uploadError);
+        console.error("Full error:", JSON.stringify(uploadError, null, 2));
+        return;
+      }
+
+      const { data } = supabase.storage.from("Article").getPublicUrl(path);
+
+      // STEP 3 — Save new image URL
+      const imageUpdateRes = await fetch("/api/career-dev-articles", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: article.id,
+          imageUrl: data.publicUrl,
+        }),
+      });
+
+      if (!imageUpdateRes.ok) {
+        console.error("Image URL save failed:", await imageUpdateRes.text());
+        return;
+      }
+    }
+
+    await onUpdated();
     onClose();
   };
 
@@ -816,13 +923,6 @@ function ArticleEditModal({
 
           {/* Action buttons */}
           <div className="mt-6 flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={handleDelete}
-              className="rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
-            >
-              Delete Article
-            </button>
             <div className="flex gap-3">
               <button
                 type="button"
@@ -918,7 +1018,11 @@ export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
                   onClick={() => setActiveArticle(a)}
                   className="text-left"
                 >
-                  <MediaCard title={a.title} blurb={a.blurb} image={a.image} />
+                  <MediaCard
+                    title={a.title}
+                    blurb={a.blurb}
+                    image={a.imageUrl ? { src: a.imageUrl, alt: `${a.title} image` } : a.image}
+                  />
                 </button>
               ))}
             </div>
