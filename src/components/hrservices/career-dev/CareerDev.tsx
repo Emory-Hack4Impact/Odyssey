@@ -2,20 +2,63 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { createClient } from "@/utils/supabase/client";
 
 // ---- tiny helpers ----
 function classNames(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
 
-// ---- data access layer (DB later) ----
-// when #33 is complete, swap this with a real fetch
-export async function fetchArticles() {
-  // TODO: replace with DB call. return mock for now
-  return Promise.resolve(articles);
+type ViewState = {
+  isAdmin: boolean;
+  error: string | null;
+};
+
+const initialState: ViewState = {
+  isAdmin: false,
+  error: null,
+};
+
+type CareerDevArticleRow = {
+  id: string;
+  title: string;
+  author: string;
+  blurb: string;
+  body: string | null;
+  date: string;
+  starttime: string | null;
+  endtime: string | null;
+  location: string;
+  imageurl: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CareerDevArticleUI = {
+  id: string;
+  title: string;
+  author: string;
+  blurb: string;
+  body?: string | null;
+  date: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+  imageUrl?: string | null;
+  image?: { src: string; alt: string };
+};
+
+export async function fetchArticles(): Promise<CareerDevArticleUI[]> {
+  const res = await fetch("/api/career-dev-articles", { cache: "no-store" });
+
+  if (!res.ok) {
+    console.error("fetchArticles error:", await res.text());
+    return [];
+  }
+
+  return (await res.json()) as CareerDevArticleUI[];
 }
 
-// ---- mock data (replace with live data when #33 ) ----
 const courses = [
   {
     id: 1,
@@ -46,8 +89,10 @@ const articles = [
     title: "Article Event Title",
     blurb:
       "A brief reflection on why hard work matters, how it builds resilience and confidence, and why effort is most powerful when balanced with rest, purpose, and thoughtful direction.",
+    author: "John Doe",
     date: "2025-11-16",
-    time: "4:00 PM – 5:30 PM",
+    startTime: "16:00",
+    endTime: "17:30",
     location: "Zoom",
     href: "#",
     image: { src: "/testingfiles/articles/flowers.png", alt: "Article 1 thumbnail" },
@@ -57,8 +102,10 @@ const articles = [
     title: "Article Event Title",
     blurb:
       "A brief reflection on why hard work matters, how it builds resilience and confidence, and why effort is most powerful when balanced with rest, purpose, and thoughtful direction.",
+    author: "Jane Doe",
     date: "2025-11-16",
-    time: "4:00 PM – 5:30 PM",
+    startTime: "16:00",
+    endTime: "17:30",
     location: "Zoom",
     href: "#",
     image: { src: "/testingfiles/articles/flower2.jpeg", alt: "Article 2 thumbnail" },
@@ -68,8 +115,10 @@ const articles = [
     title: "Article Event Title",
     blurb:
       "A brief reflection on why hard work matters, how it builds resilience and confidence, and why effort is most powerful when balanced with rest, purpose, and thoughtful direction.",
+    author: "Jane Doe",
     date: "2025-11-16",
-    time: "4:00 PM – 5:30 PM",
+    startTime: "16:00",
+    endTime: "17:30",
     location: "Zoom",
     href: "#",
     image: { src: "/testingfiles/articles/flowers.png", alt: "Article 3 thumbnail" },
@@ -77,7 +126,7 @@ const articles = [
 ];
 
 // placeholder long bodies for the modal (mock content)
-const mockArticleBodies: Record<number, string> = {
+/*const mockArticleBodies: Record<number, string> = {
   1: `Hard work is often described as the foundation of success. Whether in academics, sports, or creative fields, consistent effort allows people to build knowledge and improve their abilities.
   Unlike talent, which may come naturally, hard work is a choice that anyone can make. 
   
@@ -90,12 +139,12 @@ const mockArticleBodies: Record<number, string> = {
   Hard work is not simply a path to achievement; it is a way of developing the mindset needed to keep learning, keep improving, and keep moving forward.`,
   2: "Some description about Article 2.",
   3: "Some description about Article 3.",
-};
+}; */
 
 const demoEvents = [
-  { date: "2025-11-07", label: "Coaching 1:1" },
-  { date: "2025-11-16", label: "Workshop: Interview Prep" },
-  { date: "2025-11-24", label: "Lunch & Learn" },
+  { date: "2025-11-07", label: "Coaching 1:1", starttime: "16:00", endtime: "17:30" },
+  { date: "2025-11-16", label: "Workshop: Interview Prep", starttime: "16:00", endtime: "17:30" },
+  { date: "2025-11-24", label: "Lunch & Learn", starttime: "16:00", endtime: "17:30" },
 ];
 
 function startOfMonth(d: Date) {
@@ -115,7 +164,9 @@ function toISODate(d: Date) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-function CalendarMini({ events = [] as { date: string; label?: string }[] }) {
+function CalendarMini({
+  events = [] as { date: string; label?: string; starttime?: string; endtime?: string }[],
+}) {
   const [cursor, setCursor] = useState<Date>(startOfMonth(new Date()));
   const [selectedISO, setSelectedISO] = useState<string>(toISODate(new Date()));
 
@@ -179,8 +230,8 @@ function CalendarMini({ events = [] as { date: string; label?: string }[] }) {
       </div>
 
       <div className="mt-3 grid grid-cols-7 text-center text-xs text-gray-500">
-        {"SMTWTFS".split("").map((c) => (
-          <div key={c} className="py-1">
+        {"SMTWTFS".split("").map((c, i) => (
+          <div key={i} className="py-1">
             {c}
           </div>
         ))}
@@ -234,7 +285,10 @@ function CalendarMini({ events = [] as { date: string; label?: string }[] }) {
             {dayEvents.map((e, i) => (
               <li key={i} className="flex items-center gap-2">
                 <span className="inline-block h-2 w-2 rounded-full bg-indigo-600" />
-                <span className="text-gray-700">{e.label}</span>
+                <span className="text-gray-700">
+                  {e.label}
+                  {e.starttime && e.endtime ? ` — ${e.starttime} to ${e.endtime}` : ""}
+                </span>
               </li>
             ))}
           </ul>
@@ -245,8 +299,6 @@ function CalendarMini({ events = [] as { date: string; label?: string }[] }) {
     </div>
   );
 }
-
-import Image from "next/image";
 
 function MediaCard({
   title,
@@ -260,28 +312,21 @@ function MediaCard({
   image?: { src: string; alt: string };
 }) {
   const CardInner = (
-    <div className="group block rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none">
+    <div className="group flex h-full flex-col rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none">
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-2xl bg-gray-200">
         {image?.src ? (
-          <Image
-            src={image.src}
-            alt={image.alt}
-            fill
-            sizes="(min-width:1024px) 33vw,(min-width:640px) 50vw,100vw"
-            className="object-cover"
-            priority={false}
-          />
+          <img src={image.src} alt={image.alt} className="h-full w-full object-cover" />
         ) : null}
       </div>
-      <div className="p-3">
+      <div className="flex flex-1 flex-col p-3">
         <div className="text-sm font-medium text-gray-900 group-hover:underline">{title}</div>
-        <p className="mt-1 text-sm text-gray-600">{blurb}</p>
+        <p className="mt-1 line-clamp-3 text-sm text-gray-600">{blurb}</p>
       </div>
     </div>
   );
 
   return href ? (
-    <a href={href} className="block">
+    <a href={href} className="block h-full">
       {CardInner}
     </a>
   ) : (
@@ -289,38 +334,620 @@ function MediaCard({
   );
 }
 
-export default function CareerDev() {
-  // ---- article modal state ----
-  const [activeArticle, setActiveArticle] = useState<null | {
-    id: number;
-    title: string;
-    date: string;
-    time: string;
-    location: string;
-    blurb: string;
-    body?: string;
-  }>(null);
+function ArticleCreateModal({
+  isOpen,
+  onClose,
+  onCreated,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreated: () => Promise<void>;
+}) {
+  const [formData, setFormData] = useState({
+    title: "",
+    author: "",
+    blurb: "",
+    body: "",
+    date: "",
+    startTime: "",
+    endTime: "",
+    location: "",
+    imageurl: null, //upload to storage & url later
+  });
+  const [image, setImage] = useState<File | null>(null);
 
-  const [allArticles, setAllArticles] = useState<
-    {
-      id: number;
-      title: string;
-      date: string;
-      time: string;
-      location: string;
-      blurb: string;
-      image?: { src: string; alt: string };
-    }[]
-  >([]);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const createRes = await fetch("/api/career-dev-articles", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: formData.title,
+        author: formData.author,
+        blurb: formData.blurb,
+        body: formData.body,
+        date: formData.date,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        location: formData.location,
+        imageUrl: null,
+      }),
+    });
+
+    if (!createRes.ok) {
+      console.error("Insert error:", await createRes.text());
+      return;
+    }
+
+    const created = (await createRes.json()) as { id: string };
+
+    if (image) {
+      const supabase = createClient();
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        console.error("❌ User not authenticated!");
+        alert("Please log in to upload images");
+        return;
+      }
+
+      console.log("✅ User authenticated, proceeding with upload...");
+
+      const ext = image.name.split(".").pop()?.toLowerCase() ?? "png";
+      const timestamp = Date.now();
+      const randomId = crypto.randomUUID();
+      const path = `${created.id}/${timestamp}-${randomId}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage.from("Article").upload(path, image, {
+        contentType: image.type,
+        upsert: false,
+      });
+
+      if (uploadError) {
+        console.error("❌ Image upload failed:", uploadError);
+        console.error("Full error:", JSON.stringify(uploadError, null, 2));
+        return;
+      }
+
+      const { data } = supabase.storage.from("Article").getPublicUrl(path);
+
+      const imageUpdateRes = await fetch("/api/career-dev-articles", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: created.id,
+          imageUrl: data.publicUrl,
+        }),
+      });
+
+      if (!imageUpdateRes.ok) {
+        console.error("Image URL save failed:", await imageUpdateRes.text());
+        return;
+      }
+    }
+
+    await onCreated();
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      role="dialog"
+      aria-modal
+      onClick={onClose}
+    >
+      <div
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between border-b p-4">
+          <h4 className="text-lg font-semibold">Create New Article</h4>
+          <button
+            className="rounded-full p-1 text-gray-500 hover:bg-gray-100"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-4">
+          <div className="space-y-4">
+            {/* Title */}
+            <div>
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                Title *
+              </label>
+              <input
+                type="text"
+                id="title"
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              />
+            </div>
+
+            {/* Author */}
+            <div>
+              <label htmlFor="author" className="block text-sm font-medium text-gray-700">
+                Author *
+              </label>
+              <input
+                type="text"
+                id="author"
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.author}
+                onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+              />
+            </div>
+
+            {/* Blurb */}
+            <div>
+              <label htmlFor="blurb" className="block text-sm font-medium text-gray-700">
+                Short Description *
+              </label>
+              <textarea
+                id="blurb"
+                required
+                rows={2}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.blurb}
+                onChange={(e) => setFormData({ ...formData, blurb: e.target.value })}
+              />
+            </div>
+
+            {/* Body */}
+            <div>
+              <label htmlFor="body" className="block text-sm font-medium text-gray-700">
+                Article Content *
+              </label>
+              <textarea
+                id="body"
+                required
+                rows={8}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.body}
+                onChange={(e) => setFormData({ ...formData, body: e.target.value })}
+              />
+            </div>
+
+            {/* Date */}
+            <div>
+              <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+                Date *
+              </label>
+              <input
+                type="date"
+                id="date"
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              />
+            </div>
+
+            {/* Time */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <label htmlFor="startTime" className="block text-sm font-medium text-gray-700">
+                  Start time *
+                </label>
+                <input
+                  type="time"
+                  id="startTime"
+                  required
+                  value={formData.startTime}
+                  onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="endTime" className="block text-sm font-medium text-gray-700">
+                  End time *
+                </label>
+                <input
+                  type="time"
+                  id="endTime"
+                  required
+                  value={formData.endTime}
+                  onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {/* Location */}
+            <div>
+              <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+                Location *
+              </label>
+              <input
+                type="text"
+                id="location"
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              />
+            </div>
+
+            {/* Image Upload */}
+            <div>
+              <label htmlFor="image" className="block text-sm font-medium text-gray-700">
+                Article Image
+              </label>
+              <input
+                type="file"
+                id="image"
+                accept="image/*"
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                onChange={(e) => setImage(e.target.files?.[0] ?? null)}
+              />
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="mt-6 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              onClick={() => console.log("clicked submit")}
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            >
+              Create Article
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function ArticleEditModal({
+  isOpen,
+  onClose,
+  article,
+  onUpdated,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  article: CareerDevArticleUI | null;
+  onUpdated: () => Promise<void>;
+}) {
+  const [formData, setFormData] = useState({
+    title: article?.title ?? "",
+    author: article?.author ?? "",
+    blurb: article?.blurb ?? "",
+    body: article?.body ?? "",
+    date: article?.date ?? "",
+    startTime: article?.startTime ?? "",
+    endTime: article?.endTime ?? "",
+    location: article?.location ?? "",
+  });
+  const [image, setImage] = useState<File | null>(null);
 
   useEffect(() => {
-    // load articles from "DB" (issue #33)
-    // void currently silences lint about async in useEffect
-    async function load() {
-      const data = await fetchArticles();
-      setAllArticles(data);
+    if (!article) return;
+    setFormData({
+      title: article.title,
+      author: article.author,
+      blurb: article.blurb,
+      body: article.body ?? "",
+      date: article.date,
+      startTime: article.startTime,
+      endTime: article.endTime,
+      location: article.location,
+    });
+  }, [article]);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!article) return;
+
+    // STEP 1 — Update article metadata (JSON, not FormData)
+    const updateRes = await fetch("/api/career-dev-articles", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: article.id,
+        title: formData.title,
+        author: formData.author,
+        blurb: formData.blurb,
+        body: formData.body,
+        date: formData.date,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        location: formData.location,
+      }),
+    });
+
+    if (!updateRes.ok) {
+      console.error("Update error:", await updateRes.text());
+      return;
     }
-    void load();
+
+    if (image) {
+      const supabase = createClient();
+
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+      console.log("🔍 Current user:", user);
+      console.log("🔍 Auth error:", authError);
+
+      if (!user) {
+        console.error("❌ User not authenticated!");
+        alert("You must be logged in to upload images");
+        return;
+      }
+
+      const { data: metadata, error: metaError } = await supabase
+        .from("UserMetadata")
+        .select("is_admin")
+        .eq("id", user.id)
+        .single();
+
+      console.log("🔍 UserMetadata:", metadata);
+      console.log("🔍 Metadata error:", metaError);
+
+      if (!metadata?.is_admin) {
+        console.error("❌ User is not an admin!");
+        alert("Only admins can upload images");
+        return;
+      }
+
+      console.log("✅ User is authenticated and is admin, proceeding with upload...");
+
+      const ext = image.name.split(".").pop()?.toLowerCase() ?? "png";
+      const timestamp = Date.now();
+      const randomId = crypto.randomUUID();
+      const path = `${article.id}/${timestamp}-${randomId}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage.from("Article").upload(path, image, {
+        contentType: image.type,
+        upsert: false,
+      });
+
+      if (uploadError) {
+        console.error("❌ Image upload failed:", uploadError);
+        console.error("Full error:", JSON.stringify(uploadError, null, 2));
+        return;
+      }
+
+      const { data } = supabase.storage.from("Article").getPublicUrl(path);
+
+      const imageUpdateRes = await fetch("/api/career-dev-articles", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: article.id,
+          imageUrl: data.publicUrl,
+        }),
+      });
+
+      if (!imageUpdateRes.ok) {
+        console.error("Image URL save failed:", await imageUpdateRes.text());
+        return;
+      }
+    }
+
+    await onUpdated();
+    onClose();
+  };
+
+  if (!isOpen || !article) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      role="dialog"
+      aria-modal
+      onClick={onClose}
+    >
+      <div
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between border-b p-4">
+          <h4 className="text-lg font-semibold">Edit Article</h4>
+          <button
+            className="rounded-full p-1 text-gray-500 hover:bg-gray-100"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-4">
+          <div>
+            <div className="space-y-4">{/* Title */}</div>
+            <label htmlFor="edit-title" className="block text-sm font-medium text-gray-700">
+              Title *
+            </label>
+            <input
+              type="text"
+              id="edit-title"
+              required
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            />
+          </div>
+
+          {/* Author */}
+          <div>
+            <label htmlFor="edit-author" className="block text-sm font-medium text-gray-700">
+              Author *
+            </label>
+            <input
+              type="text"
+              id="edit-author"
+              required
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+              value={formData.author}
+              onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+            />
+          </div>
+
+          {/* Blurb */}
+          <div>
+            <label htmlFor="edit-blurb" className="block text-sm font-medium text-gray-700">
+              Short Description *
+            </label>
+            <textarea
+              id="edit-blurb"
+              required
+              rows={2}
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+              value={formData.blurb}
+              onChange={(e) => setFormData({ ...formData, blurb: e.target.value })}
+            />
+          </div>
+
+          {/* Body */}
+          <div>
+            <label htmlFor="edit-body" className="block text-sm font-medium text-gray-700">
+              Article Content *
+            </label>
+            <textarea
+              id="edit-body"
+              required
+              rows={8}
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+              value={formData.body}
+              onChange={(e) => setFormData({ ...formData, body: e.target.value })}
+            />
+          </div>
+
+          {/* Date */}
+          <div>
+            <label htmlFor="edit-date" className="block text-sm font-medium text-gray-700">
+              Date *
+            </label>
+            <input
+              type="date"
+              id="edit-date"
+              required
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+              value={formData.date}
+              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            />
+          </div>
+
+          {/* Time */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label htmlFor="edit-startTime" className="block text-sm font-medium text-gray-700">
+                Start time *
+              </label>
+              <input
+                type="time"
+                id="edit-startTime"
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.startTime}
+                onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="edit-endTime" className="block text-sm font-medium text-gray-700">
+                End time *
+              </label>
+              <input
+                type="time"
+                id="edit-endTime"
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.endTime}
+                onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+              />
+            </div>
+          </div>
+
+          {/* Location */}
+          <div>
+            <label htmlFor="edit-location" className="block text-sm font-medium text-gray-700">
+              Location *
+            </label>
+            <input
+              type="text"
+              id="edit-location"
+              required
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+            />
+          </div>
+
+          {/* Image Upload */}
+          <div>
+            <label htmlFor="edit-image" className="block text-sm font-medium text-gray-700">
+              Replace Article Image
+            </label>
+            <input
+              type="file"
+              id="edit-image"
+              accept="image/*"
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+              onChange={(e) => setImage(e.target.files?.[0] ?? null)}
+            />
+          </div>
+
+          {/* Action buttons */}
+          <div className="mt-6 flex justify-end gap-3">
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingArticle, setEditingArticle] = useState<CareerDevArticleUI | null>(null);
+  const [activeArticle, setActiveArticle] = useState<CareerDevArticleUI | null>(null);
+
+  const [allArticles, setAllArticles] = useState<CareerDevArticleUI[]>([]);
+
+  const reloadArticles = async () => {
+    const data = await fetchArticles();
+    setAllArticles(data);
+  };
+
+  useEffect(() => {
+    void reloadArticles();
   }, []);
 
   return (
@@ -337,9 +964,24 @@ export default function CareerDev() {
         {/* right column: cards */}
         <div className="lg:col-span-8">
           <section>
-            <h3 className="text-base font-semibold text-gray-900">
-              Featured Career Development Courses
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold text-gray-900">
+                Featured Career Development Courses
+              </h3>
+
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 shadow-sm hover:bg-gray-50"
+                  aria-label="Add career development article"
+                  title="Add article"
+                >
+                  <span className="text-lg leading-none">＋</span>
+                  <span className="hidden sm:inline">Add Article</span>
+                </button>
+              )}
+            </div>
             <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {courses.map((c) => (
                 <MediaCard
@@ -362,10 +1004,14 @@ export default function CareerDev() {
                 <button
                   key={a.id}
                   type="button"
-                  onClick={() => setActiveArticle({ ...a, body: mockArticleBodies[a.id] })}
+                  onClick={() => setActiveArticle(a)}
                   className="text-left"
                 >
-                  <MediaCard title={a.title} blurb={a.blurb} image={a.image} />
+                  <MediaCard
+                    title={a.title}
+                    blurb={a.blurb}
+                    image={a.imageUrl ? { src: a.imageUrl, alt: `${a.title} image` } : a.image}
+                  />
                 </button>
               ))}
             </div>
@@ -386,23 +1032,46 @@ export default function CareerDev() {
           >
             <div className="flex items-start justify-between p-4">
               <h4 className="text-lg font-semibold">{activeArticle.title}</h4>
-              <button
-                className="rounded-full p-1 text-gray-500 hover:bg-gray-100"
-                onClick={() => setActiveArticle(null)}
-                aria-label="Close"
-              >
-                ✕
-              </button>
+
+              <div className="flex items-center gap-2">
+                {isAdmin && (
+                  <button
+                    type="button"
+                    className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 hover:bg-gray-50"
+                    onClick={() => {
+                      const full = allArticles.find((x) => x.id === activeArticle.id);
+                      if (!full) return;
+
+                      setEditingArticle(full);
+                      setActiveArticle(null); // optional: close the view modal when editing
+                    }}
+                  >
+                    Edit
+                  </button>
+                )}
+
+                <button
+                  className="rounded-full p-1 text-gray-500 hover:bg-gray-100"
+                  onClick={() => setActiveArticle(null)}
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
             <div className="px-4 pb-4 text-gray-700">
               <p className="mb-2 text-sm text-gray-500">{activeArticle.blurb}</p>
 
               <div className="mb-4 space-y-1 text-sm text-gray-600">
                 <p>
+                  <span className="font-medium">Author:</span> {activeArticle.author}
+                </p>
+                <p>
                   <span className="font-medium">Date:</span> {activeArticle.date}
                 </p>
                 <p>
-                  <span className="font-medium">Time:</span> {activeArticle.time}
+                  <span className="font-medium">Time:</span> {activeArticle.startTime} to{" "}
+                  {activeArticle.endTime}
                 </p>
                 <p>
                   <span className="font-medium">Location:</span> {activeArticle.location}
@@ -416,6 +1085,18 @@ export default function CareerDev() {
           </div>
         </div>
       )}
+      {/* Article Create Modal */}
+      <ArticleCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreated={reloadArticles}
+      />
+      <ArticleEditModal
+        isOpen={editingArticle !== null}
+        onClose={() => setEditingArticle(null)}
+        article={editingArticle}
+        onUpdated={reloadArticles}
+      />
     </section>
   );
 }

@@ -32,7 +32,7 @@ export const HRServices = ({ userId, username, userRole, userMetadata }: HRServi
     {
       key: "careerDev",
       label: "Career Development",
-      component: <CareerDev />,
+      component: <CareerDev isAdmin={userMetadata?.is_admin ?? false} />,
     },
     {
       key: "perfEvals",

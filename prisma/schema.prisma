@@ -8,24 +8,16 @@ datasource db {
 }
 
 model UserMetadata {
-  id                String           @id @default(uuid()) @db.Uuid
-  is_admin          Boolean          @default(false)
-  is_hr             Boolean          @default(false)
-  position          String           @default("")
-  employeeFirstName String?
-  employeeLastName  String?
-  TimeOffRequests   TimeOffRequest[]
-  Files             Files[]
-
+  id                           String                       @id @default(uuid()) @db.Uuid
+  is_admin                     Boolean                      @default(false)
+  is_hr                        Boolean                      @default(false)
+  position                     String                       @default("")
+  employeeFirstName            String?
+  employeeLastName             String?
   evaluationsReceivedMetadata  EmployeeEvaluationMetadata[] @relation("ReviewedEmployeeMetadata")
   evaluationsSubmittedMetadata EmployeeEvaluationMetadata[] @relation("SubmitterMetadata")
-}
-
-enum FileTypes {
-  AVATAR
-  DOCUMENT
-  ATTACHMENT
-  ANNOUNCEMENT
+  Files                        Files[]
+  TimeOffRequests              TimeOffRequest[]
 }
 
 model Files {
@@ -42,7 +34,7 @@ model Files {
 }
 
 model TimeOffRequest {
-  id             String          @id @default(uuid()) @db.Uuid
+  id             String       @id @default(uuid()) @db.Uuid
   employeeId     String       @db.Uuid
   leaveType      String
   startDate      DateTime
@@ -54,12 +46,7 @@ model TimeOffRequest {
 }
 
 model EmployeeEvaluation {
-  // evaluation submission id (unique per submission)
-  id String @id @default(uuid()) @db.Uuid
-
-  // denormalized snapshot of employee name at time of submission
-  // denormalized snapshot of employee name at time of submission (removed — use relation)
-
+  id            String                      @id @default(uuid()) @db.Uuid
   strengths     String
   weaknesses    String
   improvements  String
@@ -70,29 +57,44 @@ model EmployeeEvaluation {
   skill1        Int
   skill2        Int
   skill3        Int
-
-  metadata EmployeeEvaluationMetadata?
+  metadata      EmployeeEvaluationMetadata?
 }
 
 model EmployeeEvaluationMetadata {
-  // evaluation submission id (unique per submission)
-  id String @id @default(uuid()) @db.Uuid
-
-  evaluationId String             @unique @db.Uuid
-  evaluation   EmployeeEvaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
-
-  // reviewed employee (FK to UserMetadata)
-  employeeId       String   @db.Uuid
-  reviewedEmployee UserMetadata? @relation("ReviewedEmployeeMetadata", fields: [employeeId], references: [id])
-
-  // id of the person who submitted this evaluation (FK to UserMetadata)
-  submitterId String  @db.Uuid
-  submitter   UserMetadata? @relation("SubmitterMetadata", fields: [submitterId], references: [id])
-
-  year Int
-
-  submittedAt DateTime @default(now())
+  id               String             @id @default(uuid()) @db.Uuid
+  evaluationId     String             @unique @db.Uuid
+  employeeId       String             @db.Uuid
+  submitterId      String             @db.Uuid
+  year             Int
+  submittedAt      DateTime           @default(now())
+  reviewedEmployee UserMetadata       @relation("ReviewedEmployeeMetadata", fields: [employeeId], references: [id])
+  evaluation       EmployeeEvaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+  submitter        UserMetadata       @relation("SubmitterMetadata", fields: [submitterId], references: [id])
 
   @@index([employeeId])
   @@index([submitterId])
+}
+
+model CareerDevArticles {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title      String
+  author     String
+  blurb      String
+  body       String?
+  date       DateTime @db.Date
+  starttime  DateTime @db.Time(6)
+  endtime    DateTime @db.Time(6)
+  location   String
+  imageurl   String?
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@map("CareerDevArticles")
+}
+
+enum FileTypes {
+  AVATAR
+  DOCUMENT
+  ATTACHMENT
+  ANNOUNCEMENT
 }
