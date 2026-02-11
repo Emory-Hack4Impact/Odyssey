@@ -210,3 +210,75 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
+
+// for now, PATCH function is only for:
+// 1) editing files
+export async function PATCH(req: Request) {
+  try {
+    const user = await getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    let body: { fileId?: string; viewers?: unknown }; // untrusted input container from request, to be sanitized before DB updates
+    try {
+      body = (await req.json()) as { fileId?: string; viewers?: unknown };
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+
+    const fileId = typeof body.fileId === "string" ? body.fileId.trim() : "";
+    const incomingViewers = Array.isArray(body.viewers) ? body.viewers : [];
+
+    if (!fileId) {
+      return NextResponse.json({ error: "fileId is required" }, { status: 400 });
+    }
+
+    const file = await prisma.files.findUnique({
+      where: { id: fileId },
+    });
+
+    if (!file) {
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
+    }
+
+    const isOwner = file.userId === user.id; // check whether is owner
+    if (!isOwner) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // build sanitized viewers
+    const viewers = Array.from(
+      new Set(
+        incomingViewers
+          .map((value) => (typeof value === "string" ? value.trim() : ""))
+          .filter((value) => value.length > 0),
+      ),
+    );
+
+    const existingMetadata =
+      file.metadata && typeof file.metadata === "object" && !Array.isArray(file.metadata)
+        ? (file.metadata as Record<string, unknown>)
+        : {};
+
+    // update DB
+    await prisma.files.update({
+      where: { id: fileId },
+      data: {
+        metadata: {
+          ...existingMetadata,
+          viewers,
+        },
+      },
+    });
+
+    return NextResponse.json({
+      fileId,
+      viewers,
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error("/api/documents PATCH error", err);
+    return NextResponse.json({ error: String(err) }, { status: 500 });
+  }
+}

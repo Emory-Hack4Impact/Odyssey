@@ -105,6 +105,8 @@ type EditDocumentModalProps = {
   onRecipientQueryChange: (value: string) => void;
   replacementFile: File | null;
   onReplacementFileChange: (file: File | null) => void;
+  isSaving: boolean;
+  saveError: string | null;
   onClose: () => void;
   onSave: () => void;
 };
@@ -531,6 +533,8 @@ function EditDocumentModal({
   onReplacementFileChange,
   onClose,
   onSave,
+  saveError,
+  isSaving,
 }: EditDocumentModalProps) {
   const handleRecipientSubmit = () => {
     const trimmed = recipientQuery.trim();
@@ -569,7 +573,7 @@ function EditDocumentModal({
               <input
                 type="text"
                 className="input-bordered input input-sm flex-1"
-                placeholder="Add teammate name or email"
+                placeholder="Add new viewers"
                 value={recipientQuery}
                 onChange={(event) => onRecipientQueryChange(event.target.value)}
                 onKeyDown={(event) => {
@@ -606,12 +610,14 @@ function EditDocumentModal({
           </div>
         </div>
 
+        {saveError ? <p className="text-sm text-error">{saveError}</p> : null}
+
         <div className="modal-action">
           <button type="button" className="btn btn-ghost" onClick={onClose}>
             Cancel
           </button>
-          <button type="button" className="btn btn-primary" onClick={onSave}>
-            Save changes
+          <button type="button" className="btn btn-primary" onClick={onSave} disabled={isSaving}>
+            {isSaving ? "Saving..." : "Save changes"}
           </button>
         </div>
       </div>
@@ -640,6 +646,8 @@ export default function AdminDocuments() {
   const [editRecipients, setEditRecipients] = useState<string[]>([]);
   const [editRecipientQuery, setEditRecipientQuery] = useState("");
   const [replacementFile, setReplacementFile] = useState<File | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // helper for UUID-fullname mapping
   const shortId = (id: string) => `…${id.slice(-4)}`;
@@ -874,31 +882,74 @@ export default function AdminDocuments() {
     setEditRecipients(doc.viewers);
     setReplacementFile(null);
     setEditRecipientQuery("");
+    setSaveError(null);
   };
 
   const closeEditModal = () => {
     setEditingDoc(null);
     setReplacementFile(null);
     setEditRecipientQuery("");
+    setSaveError(null);
   };
 
-  // Apply edits captured in the modal to local state.
-  // TODO: refactor to connect to backend
-  const saveDocumentChanges = () => {
+  const saveDocumentChanges = async () => {
     if (!editingDoc) return;
-    setDocuments((prev) =>
-      prev.map((doc) => {
-        if (doc.id !== editingDoc.id) return doc;
 
-        return {
-          ...doc,
-          name: replacementFile?.name ?? doc.name,
-          viewers: editRecipients.length ? editRecipients : doc.viewers,
-          updatedAt: new Date().toISOString(),
-        };
-      }),
-    );
-    closeEditModal();
+    try {
+      // call PATCH
+      setIsSaving(true);
+      setSaveError(null);
+      const res = await fetch("/api/documents", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileId: editingDoc.id,
+          viewers: editRecipients,
+        }),
+      });
+
+      // parse payload from server
+      const data = (await res.json()) as {
+        fileId?: string;
+        viewers?: string[];
+        updatedAt?: string;
+        error?: string;
+      };
+
+      if (!res.ok) {
+        console.error("Failed to save viewer changes", data.error ?? data);
+        setSaveError(data.error ?? "Failed to save viewer changes");
+        return;
+      }
+
+      if (!data.fileId || !Array.isArray(data.viewers)) {
+        console.error("Invalid PATCH response payload", data);
+        setSaveError("Server returned an invalid response");
+        return;
+      }
+
+      // update local state
+      setDocuments((prev) =>
+        prev.map((doc) =>
+          doc.id === data.fileId
+            ? {
+                ...doc,
+                viewers: data.viewers!,
+                updatedAt: data.updatedAt ?? new Date().toISOString(),
+              }
+            : doc,
+        ),
+      );
+
+      // CHANGED 7: close only after success
+      closeEditModal();
+    } catch (err) {
+      // CHANGED 8: network/runtime error path keeps modal open
+      console.error("Unexpected error while saving viewer changes", err);
+      setSaveError("Unexpected error while saving changes");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -992,6 +1043,8 @@ export default function AdminDocuments() {
           onRecipientQueryChange={setEditRecipientQuery}
           replacementFile={replacementFile}
           onReplacementFileChange={setReplacementFile}
+          isSaving={isSaving}
+          saveError={saveError}
           onClose={closeEditModal}
           onSave={saveDocumentChanges}
         />
