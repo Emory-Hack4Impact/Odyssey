@@ -65,17 +65,21 @@ export async function POST(req: Request) {
     // for getting files //
     // read data from request and pull out fields
     const formData = await req.formData();
+    const authedUser = await getUser();
+    if (!authedUser) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
 
     const file = formData.get("file");
     if (!(file instanceof File)) {
       return NextResponse.json({ error: "file is required" }, { status: 400 });
     }
 
-    const userId = formData.get("userId") as string | null;
+    const userId = authedUser.id; // ensure uploader is ALWAYS the signed-in user
     const bucket = formData.get("bucket") as string | null;
 
-    if (!userId || !bucket) {
-      return NextResponse.json({ error: "userId and bucket are required" }, { status: 400 });
+    if (!bucket) {
+      return NextResponse.json({ error: "bucket is required" }, { status: 400 });
     }
 
     const viewersRaw = formData.get("viewers") as string | null;
@@ -115,7 +119,6 @@ export async function GET(req: NextRequest) {
 
   const mode = searchParams.get("mode");
   const fileId = searchParams.get("fileId");
-  const userId = searchParams.get("userId");
   const nameKeyword = searchParams.get("nameKeyword");
   // from supabase, check whether current user is authenticated
   const user = await getUser();
@@ -179,17 +182,31 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(files);
   }
 
-  // if just normal user, query all files for that user matched by params
-  if (userId) {
+  // if normal user: ignore the incoming ?userId=... and only list what the current user can see.
+  // that includes:
+  // 1) files they uploaded (owner)
+  // 2) files shared with them via metadata.viewers
+  try {
     const files = await prisma.files.findMany({
-      where: { userId },
+      where: {
+        OR: [
+          { userId: user.id },
+          // JSON field filter: metadata.viewers contains current user id
+          // If TypeScript complains here, see the note below.
+          {
+            metadata: {
+              path: ["viewers"],
+              array_contains: [user.id],
+            },
+          },
+        ],
+      },
       orderBy: { uploadedAt: "desc" },
     });
     // return list of files as json
     return NextResponse.json(files);
+  } catch (err) {
+    console.error("/api/documents GET list error", err);
+    return NextResponse.json({ error: String(err) }, { status: 500 });
   }
-  return NextResponse.json(
-    { error: "Bad request: provide ?most=view&fileId=... or ?userId=..." },
-    { status: 400 },
-  );
 }

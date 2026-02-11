@@ -17,6 +17,7 @@ type FolderOption = {
 // for handling frontend UI
 type AdminDocument = {
   id: string;
+  userId: string;
   name: string;
   url: string;
   pathIds: string[];
@@ -28,6 +29,7 @@ type AdminDocument = {
 // for handling backend
 type UploadedDocumentResult = {
   id: string;
+  userId: string;
   bucket: string;
   path: string;
   fileName: string;
@@ -44,6 +46,7 @@ type UploadedDocumentResult = {
 
 type DocumentGridProps = {
   documents: AdminDocument[];
+  currentUserId: string | null;
   onEdit: (doc: AdminDocument) => void;
   viewMode: "icons" | "list";
   viewerLable: (viewerId: string) => string;
@@ -372,7 +375,13 @@ function UploadPanel({
   );
 }
 
-function DocumentGrid({ documents, onEdit, viewMode, viewerLable }: DocumentGridProps) {
+function DocumentGrid({
+  documents,
+  currentUserId,
+  onEdit,
+  viewMode,
+  viewerLable,
+}: DocumentGridProps) {
   //
   const handleClickViewDocument = async (doc: AdminDocument) => {
     if (doc.url.startsWith("blob:")) {
@@ -436,9 +445,15 @@ function DocumentGrid({ documents, onEdit, viewMode, viewerLable }: DocumentGrid
               >
                 View
               </button>
-              <button type="button" className="btn btn-xs btn-primary" onClick={() => onEdit(doc)}>
-                Edit
-              </button>
+              {currentUserId === doc.userId && (
+                <button
+                  type="button"
+                  className="btn btn-xs btn-primary"
+                  onClick={() => onEdit(doc)}
+                >
+                  Edit
+                </button>
+              )}
             </div>
           </div>
         ))}
@@ -485,13 +500,15 @@ function DocumentGrid({ documents, onEdit, viewMode, viewerLable }: DocumentGrid
                   >
                     View
                   </button>
-                  <button
-                    type="button"
-                    className="btn btn-xs btn-primary"
-                    onClick={() => onEdit(doc)}
-                  >
-                    Edit
-                  </button>
+                  {currentUserId === doc.userId && (
+                    <button
+                      type="button"
+                      className="btn btn-xs btn-primary"
+                      onClick={() => onEdit(doc)}
+                    >
+                      Edit
+                    </button>
+                  )}
                 </div>
               </td>
             </tr>
@@ -674,6 +691,7 @@ export default function AdminDocuments() {
         return {
           //
           id: doc.id,
+          userId: doc.userId,
           name,
           // "url" uses signed URLs from server
           // not used for card display, just keep it here for future features.
@@ -797,8 +815,6 @@ export default function AdminDocuments() {
     const folderPath = targetOption?.label != null ? targetOption.label.split("/") : [];
 
     // if chose upload recipients, use them; otherwise by default select selectedEmployee
-    // TODO: double check whether "send to" and "additional viewers"
-    // map to db correctly as desired
     const viewers = uploadRecipients.length ? uploadRecipients : [selectedEmployee];
 
     // TODO: replace this with a real userId when employee selection is wired up
@@ -814,7 +830,7 @@ export default function AdminDocuments() {
       // build file itself + metadata to send to backend
       formData.append("file", file);
       formData.append("userId", userIdForNow);
-      formData.append("bucket", "files"); // TODO: set to actual Supabase bucket name
+      formData.append("bucket", "files");
       formData.append("viewers", JSON.stringify(viewers));
       formData.append("folderPath", JSON.stringify(folderPath));
       formData.append("contentType", file.type);
@@ -832,8 +848,13 @@ export default function AdminDocuments() {
       // parse backend result + map into AdminDocument
       const result: UploadedDocumentResult = await res.json();
 
+      if (!currentUserId) {
+        throw new Error("No currentUserId found while uploading");
+      }
+
       uploadedDocs.push({
         id: result.id,
+        userId: currentUserId,
         name: result.fileName,
         // use a local blob URL so the admin can preview immediately
         url: URL.createObjectURL(file),
@@ -949,6 +970,7 @@ export default function AdminDocuments() {
           </div>
           <DocumentGrid
             documents={documents}
+            currentUserId={currentUserId}
             onEdit={openEditModal}
             viewMode={viewMode}
             viewerLable={viewerLabel}
