@@ -93,7 +93,8 @@ type UploadPanelProps = {
   showSuggestions: boolean;
   onSuggestionPick: (user: UserSearchResult) => void;
   formatUserId: (id: string) => string;
-  onActivateUserSearch: (mode: "sendTo" | "viewers") => void;
+  // pinned: 1. extend search mode enum
+  onActivateUserSearch: (mode: "sendTo" | "viewers" | "editViewers") => void;
 };
 
 type EditDocumentModalProps = {
@@ -109,6 +110,11 @@ type EditDocumentModalProps = {
   saveError: string | null;
   onClose: () => void;
   onSave: () => void;
+  // pinned: 3. pass autocomplete props into EditDocumentModalProps
+  userSuggestions: UserSearchResult[];
+  showSuggestions: boolean;
+  onSuggestionPick: (user: UserSearchResult) => void;
+  onActivateUserSearch: (mode: "sendTo" | "viewers" | "editViewers") => void;
 };
 
 // Build a select-friendly list of every folder in the tree.
@@ -520,7 +526,7 @@ function DocumentGrid({
   );
 }
 
-// Lightweight edit modal with fake replacement upload support.
+// Lightweight edit modal
 function EditDocumentModal({
   document,
   recipients,
@@ -534,6 +540,11 @@ function EditDocumentModal({
   onSave,
   saveError,
   isSaving,
+  // pinned: 3. include props in EditDocumentModal
+  userSuggestions,
+  showSuggestions,
+  onSuggestionPick,
+  onActivateUserSearch,
 }: EditDocumentModalProps) {
   const handleRecipientSubmit = () => {
     const trimmed = recipientQuery.trim();
@@ -568,27 +579,54 @@ function EditDocumentModal({
             <label className="label">
               <span className="label-text font-semibold">Shared with</span>
             </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                className="input-bordered input input-sm flex-1"
-                placeholder="Add new viewers"
-                value={recipientQuery}
-                onChange={(event) => onRecipientQueryChange(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    handleRecipientSubmit();
-                  }
-                }}
-              />
-              <button
-                type="button"
-                className="btn btn-circle btn-sm"
-                onClick={handleRecipientSubmit}
-              >
-                ➤
-              </button>
+            {/* // pinned: 4 */}
+            <div className="dropdown dropdown-bottom w-full">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  className="input-bordered input input-sm flex-1"
+                  placeholder="Add new viewers"
+                  value={recipientQuery}
+                  onChange={(event) => onRecipientQueryChange(event.target.value)}
+                  onFocus={() => onActivateUserSearch("editViewers")}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      handleRecipientSubmit();
+                    }
+                  }}
+                  autoComplete="off"
+                />
+                {/* TODO: determine whether this send button is to be removed, given auto-population is active*/}
+                <button
+                  type="button"
+                  className="btn btn-circle btn-sm"
+                  onClick={handleRecipientSubmit}
+                >
+                  ➤
+                </button>
+              </div>
+
+              {showSuggestions &&
+                userSuggestions.length > 0 &&
+                recipientQuery.trim().length > 0 && (
+                  <ul className="dropdown-content menu z-[9999] mt-2 w-full rounded-box bg-base-100 p-2 shadow">
+                    {userSuggestions.map((u) => {
+                      const displayName =
+                        `${u.employeeFirstName ?? ""} ${u.employeeLastName ?? ""}`.trim() ||
+                        "Unknown user";
+                      const short = `…${u.id.slice(-4)}`;
+
+                      return (
+                        <li key={u.id}>
+                          <button type="button" onClick={() => onSuggestionPick(u)}>
+                            {displayName} · ({short})
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
             </div>
             {!!recipients.length && (
               <div className="mt-2 flex flex-wrap gap-2">
@@ -638,8 +676,10 @@ export default function AdminDocuments() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [userSuggestions, setUserSuggestions] = useState<UserSearchResult[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-
-  const [activeUserSearch, setActiveUserSearch] = useState<"sendTo" | "viewers" | null>(null);
+  // pinned
+  const [activeUserSearch, setActiveUserSearch] = useState<
+    "sendTo" | "viewers" | "editViewers" | null
+  >(null);
 
   const [editingDoc, setEditingDoc] = useState<AdminDocument | null>(null);
   const [editRecipients, setEditRecipients] = useState<string[]>([]);
@@ -651,14 +691,13 @@ export default function AdminDocuments() {
   // helper for UUID-fullname mapping
   const shortId = (id: string) => `…${id.slice(-4)}`;
   // UUID -> fullname with shortId hint
-  // TODOPIN: viewerLabel
   const viewerLabel = (viewerId: string) => {
     if (viewerId === "Everyone") return "Everyone";
     const name = idToNameCache.current.get(viewerId) ?? "Unknown user";
     return `${name} · (${shortId(viewerId)})`;
   };
 
-  // for rerendering UUID -> fullname label
+  // helper for rerendering UUID -> fullname label
   const hydrateViewerLabels = async (viewerIds: string[]) => {
     const missingIds = Array.from(
       new Set(viewerIds.filter((id) => id && id !== "Everyone")),
@@ -704,7 +743,6 @@ export default function AdminDocuments() {
   }, []);
 
   // hook to fetching documents for the file cards
-  // PIN: fetchDocuments
   useEffect(() => {
     const fetchDocuments = async () => {
       if (!currentUserId) return;
@@ -765,7 +803,10 @@ export default function AdminDocuments() {
         ? selectedEmployee
         : activeUserSearch === "viewers"
           ? uploadRecipientQuery
-          : "";
+          : //pinned: 2. suggestiion fetch read edit query too
+            activeUserSearch === "editViewers"
+            ? editRecipientQuery
+            : "";
     const q = raw.trim();
     // If empty, hide dropdown and clear suggestions
     if (q.length === 0) {
@@ -800,7 +841,8 @@ export default function AdminDocuments() {
       void fetchSuggestions();
     }, 200);
     return () => clearTimeout(timer);
-  }, [activeUserSearch, selectedEmployee, uploadRecipientQuery]);
+    // pinned: check whether need to add editRecipientQuery
+  }, [activeUserSearch, selectedEmployee, uploadRecipientQuery, editRecipientQuery]);
 
   // When an employee is chosen, generate folder shortcuts from mock data.
   useEffect(() => {
@@ -999,6 +1041,13 @@ export default function AdminDocuments() {
             return;
           }
 
+          if (activeUserSearch === "editViewers") {
+            setEditRecipients((prev) => (prev.includes(u.id) ? prev : [...prev, u.id]));
+            setEditRecipientQuery("");
+            setShowSuggestions(false);
+            return;
+          }
+
           // default: viewers
           setUploadRecipients((prev) => (prev.includes(u.id) ? prev : [...prev, u.id]));
           setUploadRecipientQuery("");
@@ -1055,6 +1104,18 @@ export default function AdminDocuments() {
           saveError={saveError}
           onClose={closeEditModal}
           onSave={saveDocumentChanges}
+          userSuggestions={userSuggestions}
+          showSuggestions={showSuggestions}
+          onActivateUserSearch={setActiveUserSearch}
+          onSuggestionPick={(u) => {
+            const displayName =
+              `${u.employeeFirstName ?? ""} ${u.employeeLastName ?? ""}`.trim() || "Unknown user";
+
+            idToNameCache.current.set(u.id, displayName);
+            setEditRecipients((prev) => (prev.includes(u.id) ? prev : [...prev, u.id]));
+            setEditRecipientQuery("");
+            setShowSuggestions(false);
+          }}
         />
       ) : null}
     </div>
