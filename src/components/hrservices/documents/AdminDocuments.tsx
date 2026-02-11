@@ -93,7 +93,6 @@ type UploadPanelProps = {
   showSuggestions: boolean;
   onSuggestionPick: (user: UserSearchResult) => void;
   formatUserId: (id: string) => string;
-  // pinned: 1. extend search mode enum
   onActivateUserSearch: (mode: "sendTo" | "viewers" | "editViewers") => void;
 };
 
@@ -110,11 +109,11 @@ type EditDocumentModalProps = {
   saveError: string | null;
   onClose: () => void;
   onSave: () => void;
-  // pinned: 3. pass autocomplete props into EditDocumentModalProps
   userSuggestions: UserSearchResult[];
   showSuggestions: boolean;
   onSuggestionPick: (user: UserSearchResult) => void;
   onActivateUserSearch: (mode: "sendTo" | "viewers" | "editViewers") => void;
+  formatUserId: (id: string) => string;
 };
 
 // Build a select-friendly list of every folder in the tree.
@@ -540,11 +539,11 @@ function EditDocumentModal({
   onSave,
   saveError,
   isSaving,
-  // pinned: 3. include props in EditDocumentModal
   userSuggestions,
   showSuggestions,
   onSuggestionPick,
   onActivateUserSearch,
+  formatUserId,
 }: EditDocumentModalProps) {
   const handleRecipientSubmit = () => {
     const trimmed = recipientQuery.trim();
@@ -579,7 +578,6 @@ function EditDocumentModal({
             <label className="label">
               <span className="label-text font-semibold">Shared with</span>
             </label>
-            {/* // pinned: 4 */}
             <div className="dropdown dropdown-bottom w-full">
               <div className="flex items-center gap-2">
                 <input
@@ -632,7 +630,7 @@ function EditDocumentModal({
               <div className="mt-2 flex flex-wrap gap-2">
                 {recipients.map((name) => (
                   <span key={name} className="badge gap-2 badge-primary">
-                    {name}
+                    {formatUserId(name)}
                     <button
                       type="button"
                       className="btn px-1 btn-ghost btn-xs"
@@ -676,7 +674,6 @@ export default function AdminDocuments() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [userSuggestions, setUserSuggestions] = useState<UserSearchResult[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  // pinned
   const [activeUserSearch, setActiveUserSearch] = useState<
     "sendTo" | "viewers" | "editViewers" | null
   >(null);
@@ -803,8 +800,7 @@ export default function AdminDocuments() {
         ? selectedEmployee
         : activeUserSearch === "viewers"
           ? uploadRecipientQuery
-          : //pinned: 2. suggestiion fetch read edit query too
-            activeUserSearch === "editViewers"
+          : activeUserSearch === "editViewers"
             ? editRecipientQuery
             : "";
     const q = raw.trim();
@@ -841,7 +837,6 @@ export default function AdminDocuments() {
       void fetchSuggestions();
     }, 200);
     return () => clearTimeout(timer);
-    // pinned: check whether need to add editRecipientQuery
   }, [activeUserSearch, selectedEmployee, uploadRecipientQuery, editRecipientQuery]);
 
   // When an employee is chosen, generate folder shortcuts from mock data.
@@ -1107,6 +1102,7 @@ export default function AdminDocuments() {
           userSuggestions={userSuggestions}
           showSuggestions={showSuggestions}
           onActivateUserSearch={setActiveUserSearch}
+          formatUserId={viewerLabel}
           onSuggestionPick={(u) => {
             const displayName =
               `${u.employeeFirstName ?? ""} ${u.employeeLastName ?? ""}`.trim() || "Unknown user";
