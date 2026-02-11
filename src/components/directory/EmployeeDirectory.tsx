@@ -1,0 +1,42 @@
+"use client";
+
+import SidePanel from "./side-panel/SidePanel";
+import ResultsGrid from "./results-grid/ResultsGrid";
+import { useState } from "react";
+
+interface EmployeeDirectoryProps {
+  userId: string;
+  username: string;
+  userRole: string;
+  userMetadata: {
+    is_admin: boolean;
+    is_hr: boolean;
+    position: string;
+  } | null;
+}
+
+export const EmployeeDirectory = ({
+  userId,
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  username,
+  userRole,
+  userMetadata,
+  /* eslint-enable @typescript-eslint/no-unused-vars */
+}: EmployeeDirectoryProps) => {
+  const [search, setSearch] = useState("");
+  const [activeCard, setActiveCard] = useState(userId);
+
+  return (
+    <div className="m-12 flex min-h-screen w-auto flex-col items-start px-4">
+      <div className="flex w-full gap-8 max-[1088px]:flex-col">
+        <div className="flex-1 min-[1088px]:max-w-80">
+          <SidePanel activeCard={activeCard} setSearch={setSearch} />
+        </div>
+
+        <div className="flex-1">
+          <ResultsGrid search={search} setActiveCard={setActiveCard} />
+        </div>
+      </div>
+    </div>
+  );
+};

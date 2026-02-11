@@ -11,7 +11,7 @@ export interface FormData {
 }
 
 export type TimeOffRequest = FormData & {
-  id: number;
+  id: string;
   employeeId: string;
   startDate: Date;
   endDate: Date;

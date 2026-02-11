@@ -96,3 +96,18 @@ model EmployeeEvaluationMetadata {
   @@index([employeeId])
   @@index([submitterId])
 }
+
+model CareerDevArticles {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title      String
+  author     String
+  blurb      String
+  body       String?
+  date       DateTime @db.Date
+  starttime  DateTime @db.Time(6)
+  endtime    DateTime @db.Time(6)
+  location   String
+  imageurl   String?
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+}
