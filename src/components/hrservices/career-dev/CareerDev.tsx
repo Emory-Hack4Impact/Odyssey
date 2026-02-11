@@ -1,38 +1,13 @@
 // src/components/hrservices/Career-Development/CareerDev.tsx
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 
 // ---- tiny helpers ----
 function classNames(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
-
-type ViewState = {
-  isAdmin: boolean;
-  error: string | null;
-};
-
-const initialState: ViewState = {
-  isAdmin: false,
-  error: null,
-};
-
-type CareerDevArticleRow = {
-  id: string;
-  title: string;
-  author: string;
-  blurb: string;
-  body: string | null;
-  date: string;
-  starttime: string | null;
-  endtime: string | null;
-  location: string;
-  imageurl: string | null;
-  created_at: string;
-  updated_at: string;
-};
 
 export type CareerDevArticleUI = {
   id: string;
@@ -48,7 +23,7 @@ export type CareerDevArticleUI = {
   image?: { src: string; alt: string };
 };
 
-export async function fetchArticles(): Promise<CareerDevArticleUI[]> {
+async function fetchArticles(): Promise<CareerDevArticleUI[]> {
   const res = await fetch("/api/career-dev-articles", { cache: "no-store" });
 
   if (!res.ok) {
@@ -58,6 +33,8 @@ export async function fetchArticles(): Promise<CareerDevArticleUI[]> {
 
   return (await res.json()) as CareerDevArticleUI[];
 }
+
+// ---- static data ----
 
 const courses = [
   {
@@ -83,69 +60,56 @@ const courses = [
   },
 ];
 
-const articles = [
-  {
-    id: 1,
-    title: "Article Event Title",
-    blurb:
-      "A brief reflection on why hard work matters, how it builds resilience and confidence, and why effort is most powerful when balanced with rest, purpose, and thoughtful direction.",
-    author: "John Doe",
-    date: "2025-11-16",
-    startTime: "16:00",
-    endTime: "17:30",
-    location: "Zoom",
-    href: "#",
-    image: { src: "/testingfiles/articles/flowers.png", alt: "Article 1 thumbnail" },
-  },
-  {
-    id: 2,
-    title: "Article Event Title",
-    blurb:
-      "A brief reflection on why hard work matters, how it builds resilience and confidence, and why effort is most powerful when balanced with rest, purpose, and thoughtful direction.",
-    author: "Jane Doe",
-    date: "2025-11-16",
-    startTime: "16:00",
-    endTime: "17:30",
-    location: "Zoom",
-    href: "#",
-    image: { src: "/testingfiles/articles/flower2.jpeg", alt: "Article 2 thumbnail" },
-  },
-  {
-    id: 3,
-    title: "Article Event Title",
-    blurb:
-      "A brief reflection on why hard work matters, how it builds resilience and confidence, and why effort is most powerful when balanced with rest, purpose, and thoughtful direction.",
-    author: "Jane Doe",
-    date: "2025-11-16",
-    startTime: "16:00",
-    endTime: "17:30",
-    location: "Zoom",
-    href: "#",
-    image: { src: "/testingfiles/articles/flowers.png", alt: "Article 3 thumbnail" },
-  },
-];
-
-// placeholder long bodies for the modal (mock content)
-/*const mockArticleBodies: Record<number, string> = {
-  1: `Hard work is often described as the foundation of success. Whether in academics, sports, or creative fields, consistent effort allows people to build knowledge and improve their abilities.
-  Unlike talent, which may come naturally, hard work is a choice that anyone can make. 
-  
-  It reflects discipline, focus, and determination. Working hard also builds resilience. 
-  
-  When people encounter challenges or setbacks, their persistence helps them recover and learn from mistakes. Over time, this habit strengthens not only their skills but also their confidence. The ability to keep going, even when things are difficult, often separates success from failure. However, hard work should be balanced with rest and reflection. Working endlessly without direction can lead to burnout or frustration. 
-  
-  True effort means working smart—setting goals, prioritizing tasks, and learning from feedback. When hard work is guided by purpose, it becomes a powerful tool for personal growth. Hard work also creates opportunities. People who consistently show effort are more likely to gain trust from teachers, mentors, and peers. This trust can lead to new responsibilities, leadership roles, or chances to explore interests more deeply. In many ways, effort signals commitment, and others respond to that commitment by offering support and guidance. At the same time, it’s important to remember that hard work looks different for everyone. Some people may need more time to grasp certain skills, while others may face obstacles that make progress slower. What matters most is not how quickly someone improves, but how willing they are to stay engaged with the process. Growth rarely happens all at once; it builds gradually through small, steady steps. Ultimately, hard work is meaningful because it shapes a person’s character. The habits formed through sustained effort—patience, discipline, adaptability—carry into every part of life. These qualities help people navigate future challenges with confidence. 
-  
-  Hard work is not simply a path to achievement; it is a way of developing the mindset needed to keep learning, keep improving, and keep moving forward.`,
-  2: "Some description about Article 2.",
-  3: "Some description about Article 3.",
-}; */
-
 const demoEvents = [
   { date: "2025-11-07", label: "Coaching 1:1", starttime: "16:00", endtime: "17:30" },
   { date: "2025-11-16", label: "Workshop: Interview Prep", starttime: "16:00", endtime: "17:30" },
   { date: "2025-11-24", label: "Lunch & Learn", starttime: "16:00", endtime: "17:30" },
 ];
+
+// ---- image upload helper (shared by create & edit) ----
+
+async function uploadArticleImage(articleId: string, image: File): Promise<string | null> {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Please log in to upload images.");
+  }
+
+  const ext = image.name.split(".").pop()?.toLowerCase() ?? "png";
+  const timestamp = Date.now();
+  const randomId = crypto.randomUUID();
+  const path = `${articleId}/${timestamp}-${randomId}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage.from("Article").upload(path, image, {
+    contentType: image.type,
+    upsert: false,
+  });
+
+  if (uploadError) {
+    throw new Error(`Image upload failed: ${uploadError.message}`);
+  }
+
+  const { data } = supabase.storage.from("Article").getPublicUrl(path);
+
+  // Save the public URL back to the article record
+  const imageUpdateRes = await fetch("/api/career-dev-articles", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: articleId, imageUrl: data.publicUrl }),
+  });
+
+  if (!imageUpdateRes.ok) {
+    throw new Error("Failed to save image URL to article.");
+  }
+
+  return data.publicUrl;
+}
+
+// ---- calendar ----
 
 function startOfMonth(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -300,6 +264,8 @@ function CalendarMini({
   );
 }
 
+// ---- media card ----
+
 function MediaCard({
   title,
   blurb,
@@ -334,6 +300,19 @@ function MediaCard({
   );
 }
 
+// ---- article create modal ----
+
+const EMPTY_FORM = {
+  title: "",
+  author: "",
+  blurb: "",
+  body: "",
+  date: "",
+  startTime: "",
+  endTime: "",
+  location: "",
+};
+
 function ArticleCreateModal({
   isOpen,
   onClose,
@@ -343,95 +322,70 @@ function ArticleCreateModal({
   onClose: () => void;
   onCreated: () => Promise<void>;
 }) {
-  const [formData, setFormData] = useState({
-    title: "",
-    author: "",
-    blurb: "",
-    body: "",
-    date: "",
-    startTime: "",
-    endTime: "",
-    location: "",
-    imageurl: null, //upload to storage & url later
-  });
+  const [formData, setFormData] = useState({ ...EMPTY_FORM });
   const [image, setImage] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Reset form when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({ ...EMPTY_FORM });
+      setImage(null);
+      setError(null);
+    }
+  }, [isOpen]);
+
+  // Escape key to close
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isOpen, onClose]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setSubmitting(true);
+    setError(null);
 
-    const createRes = await fetch("/api/career-dev-articles", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: formData.title,
-        author: formData.author,
-        blurb: formData.blurb,
-        body: formData.body,
-        date: formData.date,
-        startTime: formData.startTime,
-        endTime: formData.endTime,
-        location: formData.location,
-        imageUrl: null,
-      }),
-    });
-
-    if (!createRes.ok) {
-      console.error("Insert error:", await createRes.text());
-      return;
-    }
-
-    const created = (await createRes.json()) as { id: string };
-
-    if (image) {
-      const supabase = createClient();
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        console.error("❌ User not authenticated!");
-        alert("Please log in to upload images");
-        return;
-      }
-
-      console.log("✅ User authenticated, proceeding with upload...");
-
-      const ext = image.name.split(".").pop()?.toLowerCase() ?? "png";
-      const timestamp = Date.now();
-      const randomId = crypto.randomUUID();
-      const path = `${created.id}/${timestamp}-${randomId}.${ext}`;
-
-      const { error: uploadError } = await supabase.storage.from("Article").upload(path, image, {
-        contentType: image.type,
-        upsert: false,
-      });
-
-      if (uploadError) {
-        console.error("❌ Image upload failed:", uploadError);
-        console.error("Full error:", JSON.stringify(uploadError, null, 2));
-        return;
-      }
-
-      const { data } = supabase.storage.from("Article").getPublicUrl(path);
-
-      const imageUpdateRes = await fetch("/api/career-dev-articles", {
-        method: "PUT",
+    try {
+      const createRes = await fetch("/api/career-dev-articles", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: created.id,
-          imageUrl: data.publicUrl,
+          title: formData.title,
+          author: formData.author,
+          blurb: formData.blurb,
+          body: formData.body,
+          date: formData.date,
+          startTime: formData.startTime,
+          endTime: formData.endTime,
+          location: formData.location,
+          imageUrl: null,
         }),
       });
 
-      if (!imageUpdateRes.ok) {
-        console.error("Image URL save failed:", await imageUpdateRes.text());
-        return;
+      if (!createRes.ok) {
+        const text = await createRes.text();
+        throw new Error(text || "Failed to create article.");
       }
-    }
 
-    await onCreated();
-    onClose();
+      const created = (await createRes.json()) as { id: string };
+
+      if (image) {
+        await uploadArticleImage(created.id, image);
+      }
+
+      await onCreated();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -440,7 +394,7 @@ function ArticleCreateModal({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       role="dialog"
-      aria-modal
+      aria-modal="true"
       onClick={onClose}
     >
       <div
@@ -459,6 +413,12 @@ function ArticleCreateModal({
         </div>
 
         <form onSubmit={handleSubmit} className="p-4">
+          {error && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
+
           <div className="space-y-4">
             {/* Title */}
             <div>
@@ -545,6 +505,7 @@ function ArticleCreateModal({
                   type="time"
                   id="startTime"
                   required
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
                   value={formData.startTime}
                   onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
                 />
@@ -558,6 +519,7 @@ function ArticleCreateModal({
                   type="time"
                   id="endTime"
                   required
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
                   value={formData.endTime}
                   onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
                 />
@@ -599,16 +561,17 @@ function ArticleCreateModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              disabled={submitting}
+              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              onClick={() => console.log("clicked submit")}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+              disabled={submitting}
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
             >
-              Create Article
+              {submitting ? "Creating..." : "Create Article"}
             </button>
           </div>
         </form>
@@ -616,6 +579,8 @@ function ArticleCreateModal({
     </div>
   );
 }
+
+// ---- article edit modal ----
 
 function ArticleEditModal({
   isOpen,
@@ -628,17 +593,10 @@ function ArticleEditModal({
   article: CareerDevArticleUI | null;
   onUpdated: () => Promise<void>;
 }) {
-  const [formData, setFormData] = useState({
-    title: article?.title ?? "",
-    author: article?.author ?? "",
-    blurb: article?.blurb ?? "",
-    body: article?.body ?? "",
-    date: article?.date ?? "",
-    startTime: article?.startTime ?? "",
-    endTime: article?.endTime ?? "",
-    location: article?.location ?? "",
-  });
+  const [formData, setFormData] = useState({ ...EMPTY_FORM });
   const [image, setImage] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!article) return;
@@ -652,102 +610,59 @@ function ArticleEditModal({
       endTime: article.endTime,
       location: article.location,
     });
+    setImage(null);
+    setError(null);
   }, [article]);
+
+  // Escape key to close
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isOpen, onClose]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!article) return;
+    setSubmitting(true);
+    setError(null);
 
-    // STEP 1 — Update article metadata (JSON, not FormData)
-    const updateRes = await fetch("/api/career-dev-articles", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: article.id,
-        title: formData.title,
-        author: formData.author,
-        blurb: formData.blurb,
-        body: formData.body,
-        date: formData.date,
-        startTime: formData.startTime,
-        endTime: formData.endTime,
-        location: formData.location,
-      }),
-    });
-
-    if (!updateRes.ok) {
-      console.error("Update error:", await updateRes.text());
-      return;
-    }
-
-    if (image) {
-      const supabase = createClient();
-
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
-      console.log("🔍 Current user:", user);
-      console.log("🔍 Auth error:", authError);
-
-      if (!user) {
-        console.error("❌ User not authenticated!");
-        alert("You must be logged in to upload images");
-        return;
-      }
-
-      const { data: metadata, error: metaError } = await supabase
-        .from("UserMetadata")
-        .select("is_admin")
-        .eq("id", user.id)
-        .single();
-
-      console.log("🔍 UserMetadata:", metadata);
-      console.log("🔍 Metadata error:", metaError);
-
-      if (!metadata?.is_admin) {
-        console.error("❌ User is not an admin!");
-        alert("Only admins can upload images");
-        return;
-      }
-
-      console.log("✅ User is authenticated and is admin, proceeding with upload...");
-
-      const ext = image.name.split(".").pop()?.toLowerCase() ?? "png";
-      const timestamp = Date.now();
-      const randomId = crypto.randomUUID();
-      const path = `${article.id}/${timestamp}-${randomId}.${ext}`;
-
-      const { error: uploadError } = await supabase.storage.from("Article").upload(path, image, {
-        contentType: image.type,
-        upsert: false,
-      });
-
-      if (uploadError) {
-        console.error("❌ Image upload failed:", uploadError);
-        console.error("Full error:", JSON.stringify(uploadError, null, 2));
-        return;
-      }
-
-      const { data } = supabase.storage.from("Article").getPublicUrl(path);
-
-      const imageUpdateRes = await fetch("/api/career-dev-articles", {
+    try {
+      const updateRes = await fetch("/api/career-dev-articles", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: article.id,
-          imageUrl: data.publicUrl,
+          title: formData.title,
+          author: formData.author,
+          blurb: formData.blurb,
+          body: formData.body,
+          date: formData.date,
+          startTime: formData.startTime,
+          endTime: formData.endTime,
+          location: formData.location,
         }),
       });
 
-      if (!imageUpdateRes.ok) {
-        console.error("Image URL save failed:", await imageUpdateRes.text());
-        return;
+      if (!updateRes.ok) {
+        const text = await updateRes.text();
+        throw new Error(text || "Failed to update article.");
       }
-    }
 
-    await onUpdated();
-    onClose();
+      if (image) {
+        await uploadArticleImage(article.id, image);
+      }
+
+      await onUpdated();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (!isOpen || !article) return null;
@@ -756,7 +671,7 @@ function ArticleEditModal({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       role="dialog"
-      aria-modal
+      aria-modal="true"
       onClick={onClose}
     >
       <div
@@ -775,158 +690,166 @@ function ArticleEditModal({
         </div>
 
         <form onSubmit={handleSubmit} className="p-4">
-          <div>
-            <div className="space-y-4">{/* Title */}</div>
-            <label htmlFor="edit-title" className="block text-sm font-medium text-gray-700">
-              Title *
-            </label>
-            <input
-              type="text"
-              id="edit-title"
-              required
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            />
-          </div>
+          {error && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
 
-          {/* Author */}
-          <div>
-            <label htmlFor="edit-author" className="block text-sm font-medium text-gray-700">
-              Author *
-            </label>
-            <input
-              type="text"
-              id="edit-author"
-              required
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-              value={formData.author}
-              onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-            />
-          </div>
-
-          {/* Blurb */}
-          <div>
-            <label htmlFor="edit-blurb" className="block text-sm font-medium text-gray-700">
-              Short Description *
-            </label>
-            <textarea
-              id="edit-blurb"
-              required
-              rows={2}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-              value={formData.blurb}
-              onChange={(e) => setFormData({ ...formData, blurb: e.target.value })}
-            />
-          </div>
-
-          {/* Body */}
-          <div>
-            <label htmlFor="edit-body" className="block text-sm font-medium text-gray-700">
-              Article Content *
-            </label>
-            <textarea
-              id="edit-body"
-              required
-              rows={8}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-              value={formData.body}
-              onChange={(e) => setFormData({ ...formData, body: e.target.value })}
-            />
-          </div>
-
-          {/* Date */}
-          <div>
-            <label htmlFor="edit-date" className="block text-sm font-medium text-gray-700">
-              Date *
-            </label>
-            <input
-              type="date"
-              id="edit-date"
-              required
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-              value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-            />
-          </div>
-
-          {/* Time */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="space-y-4">
+            {/* Title */}
             <div>
-              <label htmlFor="edit-startTime" className="block text-sm font-medium text-gray-700">
-                Start time *
+              <label htmlFor="edit-title" className="block text-sm font-medium text-gray-700">
+                Title *
               </label>
               <input
-                type="time"
-                id="edit-startTime"
+                type="text"
+                id="edit-title"
                 required
                 className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-                value={formData.startTime}
-                onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               />
             </div>
 
+            {/* Author */}
             <div>
-              <label htmlFor="edit-endTime" className="block text-sm font-medium text-gray-700">
-                End time *
+              <label htmlFor="edit-author" className="block text-sm font-medium text-gray-700">
+                Author *
               </label>
               <input
-                type="time"
-                id="edit-endTime"
+                type="text"
+                id="edit-author"
                 required
                 className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-                value={formData.endTime}
-                onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                value={formData.author}
+                onChange={(e) => setFormData({ ...formData, author: e.target.value })}
               />
             </div>
-          </div>
 
-          {/* Location */}
-          <div>
-            <label htmlFor="edit-location" className="block text-sm font-medium text-gray-700">
-              Location *
-            </label>
-            <input
-              type="text"
-              id="edit-location"
-              required
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-              value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-            />
-          </div>
+            {/* Blurb */}
+            <div>
+              <label htmlFor="edit-blurb" className="block text-sm font-medium text-gray-700">
+                Short Description *
+              </label>
+              <textarea
+                id="edit-blurb"
+                required
+                rows={2}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.blurb}
+                onChange={(e) => setFormData({ ...formData, blurb: e.target.value })}
+              />
+            </div>
 
-          {/* Image Upload */}
-          <div>
-            <label htmlFor="edit-image" className="block text-sm font-medium text-gray-700">
-              Replace Article Image
-            </label>
-            <input
-              type="file"
-              id="edit-image"
-              accept="image/*"
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-              onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-            />
+            {/* Body */}
+            <div>
+              <label htmlFor="edit-body" className="block text-sm font-medium text-gray-700">
+                Article Content *
+              </label>
+              <textarea
+                id="edit-body"
+                required
+                rows={8}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.body}
+                onChange={(e) => setFormData({ ...formData, body: e.target.value })}
+              />
+            </div>
+
+            {/* Date */}
+            <div>
+              <label htmlFor="edit-date" className="block text-sm font-medium text-gray-700">
+                Date *
+              </label>
+              <input
+                type="date"
+                id="edit-date"
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              />
+            </div>
+
+            {/* Time */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <label htmlFor="edit-startTime" className="block text-sm font-medium text-gray-700">
+                  Start time *
+                </label>
+                <input
+                  type="time"
+                  id="edit-startTime"
+                  required
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                  value={formData.startTime}
+                  onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="edit-endTime" className="block text-sm font-medium text-gray-700">
+                  End time *
+                </label>
+                <input
+                  type="time"
+                  id="edit-endTime"
+                  required
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                  value={formData.endTime}
+                  onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {/* Location */}
+            <div>
+              <label htmlFor="edit-location" className="block text-sm font-medium text-gray-700">
+                Location *
+              </label>
+              <input
+                type="text"
+                id="edit-location"
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              />
+            </div>
+
+            {/* Image Upload */}
+            <div>
+              <label htmlFor="edit-image" className="block text-sm font-medium text-gray-700">
+                Replace Article Image
+              </label>
+              <input
+                type="file"
+                id="edit-image"
+                accept="image/*"
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                onChange={(e) => setImage(e.target.files?.[0] ?? null)}
+              />
+            </div>
           </div>
 
           {/* Action buttons */}
           <div className="mt-6 flex justify-end gap-3">
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={onClose}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-              >
-                Save Changes
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={submitting}
+              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {submitting ? "Saving..." : "Save Changes"}
+            </button>
           </div>
         </form>
       </div>
@@ -934,21 +857,60 @@ function ArticleEditModal({
   );
 }
 
+// ---- main component ----
+
 export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState<CareerDevArticleUI | null>(null);
   const [activeArticle, setActiveArticle] = useState<CareerDevArticleUI | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const [allArticles, setAllArticles] = useState<CareerDevArticleUI[]>([]);
 
-  const reloadArticles = async () => {
+  const reloadArticles = useCallback(async () => {
     const data = await fetchArticles();
     setAllArticles(data);
-  };
+  }, []);
 
   useEffect(() => {
     void reloadArticles();
-  }, []);
+  }, [reloadArticles]);
+
+  // Escape key to close the article view modal
+  useEffect(() => {
+    if (!activeArticle) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setActiveArticle(null);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [activeArticle]);
+
+  const handleDelete = async (articleId: string) => {
+    if (!confirm("Are you sure you want to delete this article? This cannot be undone.")) return;
+
+    setDeleting(true);
+    try {
+      const res = await fetch("/api/career-dev-articles", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: articleId }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        alert(`Failed to delete article: ${text}`);
+        return;
+      }
+
+      setActiveArticle(null);
+      await reloadArticles();
+    } catch {
+      alert("Failed to delete article. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <section className="px-4 py-4 md:px-6 lg:px-8">
@@ -977,7 +939,7 @@ export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
                   aria-label="Add career development article"
                   title="Add article"
                 >
-                  <span className="text-lg leading-none">＋</span>
+                  <span className="text-lg leading-none">+</span>
                   <span className="hidden sm:inline">Add Article</span>
                 </button>
               )}
@@ -1019,11 +981,12 @@ export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
         </div>
       </div>
 
+      {/* Article view modal */}
       {activeArticle && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
           role="dialog"
-          aria-modal
+          aria-modal="true"
           onClick={() => setActiveArticle(null)}
         >
           <div
@@ -1035,19 +998,28 @@ export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
 
               <div className="flex items-center gap-2">
                 {isAdmin && (
-                  <button
-                    type="button"
-                    className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 hover:bg-gray-50"
-                    onClick={() => {
-                      const full = allArticles.find((x) => x.id === activeArticle.id);
-                      if (!full) return;
-
-                      setEditingArticle(full);
-                      setActiveArticle(null); // optional: close the view modal when editing
-                    }}
-                  >
-                    Edit
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 hover:bg-gray-50"
+                      onClick={() => {
+                        const full = allArticles.find((x) => x.id === activeArticle.id);
+                        if (!full) return;
+                        setEditingArticle(full);
+                        setActiveArticle(null);
+                      }}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      disabled={deleting}
+                      className="rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+                      onClick={() => handleDelete(activeArticle.id)}
+                    >
+                      {deleting ? "Deleting..." : "Delete"}
+                    </button>
+                  </>
                 )}
 
                 <button
@@ -1079,12 +1051,13 @@ export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
               </div>
 
               <p className="leading-relaxed whitespace-pre-line">
-                {activeArticle.body ?? "Coming soon…"}
+                {activeArticle.body ?? "Coming soon..."}
               </p>
             </div>
           </div>
         </div>
       )}
+
       {/* Article Create Modal */}
       <ArticleCreateModal
         isOpen={isCreateModalOpen}
