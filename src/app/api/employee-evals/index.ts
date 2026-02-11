@@ -135,6 +135,9 @@ export async function GetAllEmployeeEvalsMetadata() {
       submittedAt: r.submittedAt,
       employeeFirstName: r.reviewedEmployee?.employeeFirstName ?? "",
       employeeLastName: r.reviewedEmployee?.employeeLastName ?? "",
+      approved: r.approved ?? false,
+      approvedAt: r.approvedAt ?? null,
+      approvedBy: r.approvedBy ?? null,
     }));
   } catch (err) {
     console.error("GetAllEmployeeEvalsMetadata error", err);
