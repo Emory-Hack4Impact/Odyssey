@@ -182,7 +182,6 @@ function UploadPanel({
           <p className="text-sm text-base-content/70">
             Select the employee first, then drop files and choose the right folder.
           </p>
-          {/* TODO: Select Sender & Selected viewer to be connected to backend when employee selection is implemented */}
         </div>
 
         <div className="form-control">
@@ -422,6 +421,7 @@ function DocumentGrid({
         {documents.map((doc) => (
           <div
             key={doc.id}
+            // check file card updates after edit panel added viewers
             className="group flex flex-col gap-3 rounded-xl border border-base-200 bg-base-100 p-4 text-sm shadow-sm transition hover:border-primary/60 hover:shadow-md"
           >
             <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary/20">
@@ -433,7 +433,6 @@ function DocumentGrid({
             </div>
             <div className="mt-auto flex flex-wrap gap-2 pt-2">
               {doc.viewers.slice(0, 3).map((viewer, i) => (
-                // TODO: replace this viewer display with autocomplete dropdown of user names instead of my UUIDs
                 <span key={i} className="badge badge-outline badge-sm">
                   {viewerLable(viewer)}
                 </span>
@@ -652,10 +651,38 @@ export default function AdminDocuments() {
   // helper for UUID-fullname mapping
   const shortId = (id: string) => `…${id.slice(-4)}`;
   // UUID -> fullname with shortId hint
+  // TODOPIN: viewerLabel
   const viewerLabel = (viewerId: string) => {
     if (viewerId === "Everyone") return "Everyone";
     const name = idToNameCache.current.get(viewerId) ?? "Unknown user";
     return `${name} · (${shortId(viewerId)})`;
+  };
+
+  // for rerendering UUID -> fullname label
+  const hydrateViewerLabels = async (viewerIds: string[]) => {
+    const missingIds = Array.from(
+      new Set(viewerIds.filter((id) => id && id !== "Everyone")),
+    ).filter((id) => !idToNameCache.current.has(id));
+
+    if (missingIds.length === 0) return;
+
+    const res = await fetch("/api/documents?mode=labels", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: missingIds }),
+    });
+
+    if (!res.ok) {
+      console.error("Failed to fetch user labels:", await res.text());
+      return;
+    }
+
+    const data: LabelsResponse = await res.json();
+    for (const u of data.users ?? []) {
+      if (u?.id && typeof u.displayName === "string") {
+        idToNameCache.current.set(u.id, u.displayName);
+      }
+    }
   };
 
   // this is the only admin in db now
@@ -677,6 +704,7 @@ export default function AdminDocuments() {
   }, []);
 
   // hook to fetching documents for the file cards
+  // PIN: fetchDocuments
   useEffect(() => {
     const fetchDocuments = async () => {
       if (!currentUserId) return;
@@ -715,31 +743,11 @@ export default function AdminDocuments() {
       const uniqueIds = new Set<string>();
       for (const d of docs) {
         for (const v of d.viewers ?? []) {
-          if (v && v !== "Everyone") uniqueIds.add(v); // ignore special token "Everyone"
+          if (v && v !== "Everyone") uniqueIds.add(v);
         }
       }
 
-      // only fetch IDs not already in cache
-      const missingIds = Array.from(uniqueIds).filter((id) => !idToNameCache.current.has(id));
-
-      if (missingIds.length > 0) {
-        const res2 = await fetch("/api/documents?mode=labels", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ids: missingIds }),
-        });
-
-        if (res2.ok) {
-          const data: LabelsResponse = await res2.json();
-          for (const u of data.users ?? []) {
-            if (u?.id && typeof u.displayName === "string") {
-              idToNameCache.current.set(u.id, u.displayName);
-            }
-          }
-        } else {
-          console.error("Failed to fetch user labels: ", await res2.text());
-        }
-      }
+      await hydrateViewerLabels(Array.from(uniqueIds));
 
       setDocuments(docs);
     };
@@ -825,8 +833,7 @@ export default function AdminDocuments() {
     // if chose upload recipients, use them; otherwise by default select selectedEmployee
     const viewers = uploadRecipients.length ? uploadRecipients : [selectedEmployee];
 
-    // TODO: replace this with a real userId when employee selection is wired up
-    // only have account "00000000-0000-0000-0000-000000000001" for testing for now
+    // TODO: determine the usage of userIdForNow and potentially update this variable name
     const userIdForNow = selectedEmployee;
 
     // use local URLs so the admin can preview files immediately,
@@ -928,6 +935,8 @@ export default function AdminDocuments() {
         return;
       }
 
+      await hydrateViewerLabels(data.viewers);
+
       // update local state
       setDocuments((prev) =>
         prev.map((doc) =>
@@ -941,10 +950,9 @@ export default function AdminDocuments() {
         ),
       );
 
-      // CHANGED 7: close only after success
+      // close only after success
       closeEditModal();
     } catch (err) {
-      // CHANGED 8: network/runtime error path keeps modal open
       console.error("Unexpected error while saving viewer changes", err);
       setSaveError("Unexpected error while saving changes");
     } finally {
