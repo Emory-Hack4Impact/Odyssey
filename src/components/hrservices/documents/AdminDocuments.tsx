@@ -492,7 +492,7 @@ function DocumentGrid({
                         viewer.toLowerCase() === "everyone" ? "badge-outline" : "badge-secondary"
                       }`}
                     >
-                      {viewer}
+                      {viewerLable(viewer)}
                     </span>
                   ))}
                 </div>
