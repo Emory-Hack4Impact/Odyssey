@@ -33,8 +33,15 @@ model Files {
   userId     String       @db.Uuid
   bucket     String
   path       String
+  // type of documents
   type       FileTypes
   uploadedAt DateTime     @default(now())
+  // metadata for extra info for files, format: 
+  // {
+  //   "fileName": string,        // display name in AdminDocuments
+  //   "viewers": string[],       // names/emails of allowed viewers
+  //   "folderPath": string[]     // e.g. ["Documents", "Onboarding"]
+  // }
   metadata   Json?
   owner      UserMetadata @relation(fields: [userId], references: [id], onDelete: Cascade)
 
