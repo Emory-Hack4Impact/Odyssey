@@ -870,9 +870,6 @@ export default function AdminDocuments() {
     // if chose upload recipients, use them; otherwise by default select selectedEmployee
     const viewers = uploadRecipients.length ? uploadRecipients : [selectedEmployee];
 
-    // TODO: determine the usage of userIdForNow and potentially update this variable name
-    const userIdForNow = selectedEmployee;
-
     // use local URLs so the admin can preview files immediately,
     // but also call the server action to store everything in Supabase + Prisma.
     const uploadedDocs: AdminDocument[] = [];
@@ -881,8 +878,6 @@ export default function AdminDocuments() {
       const formData = new FormData();
       // build file itself + metadata to send to backend
       formData.append("file", file);
-      formData.append("userId", userIdForNow);
-      formData.append("bucket", "files");
       formData.append("viewers", JSON.stringify(viewers));
       formData.append("folderPath", JSON.stringify(folderPath));
       formData.append("contentType", file.type);

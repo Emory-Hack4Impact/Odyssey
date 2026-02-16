@@ -6,6 +6,19 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+function createServiceRoleClient() {
+  if (!supabaseUrl) {
+    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL for storage upload");
+  }
+  if (!supabaseServiceRoleKey) {
+    throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY for storage upload");
+  }
+
+  return createSupabaseClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
+
 export function createClient() {
   const cookieStore = cookies();
 
@@ -46,17 +59,8 @@ export async function uploadFileToStorage(
   fileBody: ArrayBuffer,
   contentType?: string,
 ): Promise<{ bucket: string; path: string }> {
-  if (!supabaseUrl) {
-    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL for storage upload");
-  }
-  if (!supabaseServiceRoleKey) {
-    throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY for storage upload");
-  }
-
   // Service role key is required for authenticated storage writes on the server
-  const supabase = createSupabaseClient(supabaseUrl, supabaseServiceRoleKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
+  const supabase = createServiceRoleClient();
 
   // call supabase helpers and upload file bytes
   // for now, just return basic info.
@@ -78,17 +82,8 @@ export async function getFileSignedUrl(
   path: string,
   expiresInSeconds: 60,
 ): Promise<string> {
-  if (!supabaseUrl) {
-    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL for storage upload");
-  }
-  if (!supabaseServiceRoleKey) {
-    throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY for storage upload");
-  }
-
   // service role key required for reading private buckets
-  const supabase = createSupabaseClient(supabaseUrl, supabaseServiceRoleKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
+  const supabase = createServiceRoleClient();
 
   // get signed url
   const { data, error } = await supabase.storage
@@ -104,4 +99,13 @@ export async function getFileSignedUrl(
   }
 
   return data.signedUrl;
+}
+
+export async function deleteFileFromStorage(bucket: string, path: string): Promise<void> {
+  const supabase = createServiceRoleClient();
+
+  const { error } = await supabase.storage.from(bucket).remove([path]);
+  if (error) {
+    throw new Error(`Failed to delete file from Supabase: ${error.message}`);
+  }
 }

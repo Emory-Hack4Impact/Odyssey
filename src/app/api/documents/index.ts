@@ -1,8 +1,12 @@
-"use server";
-
 import { FileTypes, type Files } from "@prisma/client";
-import { uploadFileToStorage, getFileSignedUrl } from "@/utils/supabase/server";
+import {
+  uploadFileToStorage,
+  getFileSignedUrl,
+  deleteFileFromStorage,
+} from "@/utils/supabase/server";
 import { prisma } from "@/lib/prisma";
+
+export const DOCUMENTS_BUCKET = "files";
 
 // Data we need from the frontend when uploading a document
 export type UploadDocumentInput = {
@@ -10,7 +14,6 @@ export type UploadDocumentInput = {
   fileName: string;
   viewers: string[];
   folderPath: string[];
-  bucket: string;
   contentType?: string;
   fileBody: ArrayBuffer; // plain array of bytes of file
 };
@@ -32,12 +35,22 @@ type FileWithMetadataViewers = Files & {
   } | null;
 };
 
+export class DocumentAccessError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "DocumentAccessError";
+    this.status = status;
+  }
+}
+
 // server function handling upload
 
 export async function uploadDocumentCore(
   input: UploadDocumentInput,
 ): Promise<UploadedDocumentResult> {
-  const { userId, fileName, viewers, folderPath, bucket, contentType, fileBody } = input;
+  const { userId, fileName, viewers, folderPath, contentType, fileBody } = input;
 
   // build storage path inside the bucket
   const safeFileName = fileName.replace(/\s+/g, "_"); // replace spaces
@@ -47,27 +60,38 @@ export async function uploadDocumentCore(
   // supabase side
   // upload file bytes
   const { bucket: storedBucket, path: storedPath } = await uploadFileToStorage(
-    bucket,
+    DOCUMENTS_BUCKET,
     path,
     fileBody,
     contentType,
   );
 
-  // prisma side
-  // create file row in database
-  const created = await prisma.files.create({
-    data: {
-      userId,
-      bucket: storedBucket,
-      path: storedPath,
-      type: FileTypes.DOCUMENT,
-      metadata: {
-        fileName,
-        viewers,
-        folderPath,
+  let created;
+  try {
+    // prisma side
+    // create file row in database
+    created = await prisma.files.create({
+      data: {
+        userId,
+        bucket: storedBucket,
+        path: storedPath,
+        type: FileTypes.DOCUMENT,
+        metadata: {
+          fileName,
+          viewers,
+          folderPath,
+        },
       },
-    },
-  });
+    });
+  } catch (err) {
+    // Compensating action: remove object from storage when DB write fails.
+    try {
+      await deleteFileFromStorage(storedBucket, storedPath);
+    } catch (cleanupErr) {
+      console.error("Failed to rollback uploaded file after DB error", cleanupErr);
+    }
+    throw err;
+  }
 
   // return clean result for API route
   return {
@@ -121,12 +145,12 @@ export async function getSignedUrlForFileId(
     where: { id: fileId },
   });
 
-  if (!file) {
-    throw new Error("File not found");
+  if (!file || file.type !== FileTypes.DOCUMENT || file.bucket !== DOCUMENTS_BUCKET) {
+    throw new DocumentAccessError("File not found", 404);
   }
   // check permission for viewing
   if (!(await canUserViewFile(file, currentUserId))) {
-    throw new Error("You do not have permission to view this file");
+    throw new DocumentAccessError("You do not have permission to view this file", 403);
   }
   // if all good, return signed url
   const signedUrl = await getFileSignedUrl(file.bucket, file.path, expiresInSeconds);

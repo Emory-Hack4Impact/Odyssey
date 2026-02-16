@@ -1,11 +1,44 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { uploadDocumentCore, getSignedUrlForFileId } from "./index";
+import {
+  uploadDocumentCore,
+  getSignedUrlForFileId,
+  DocumentAccessError,
+  DOCUMENTS_BUCKET,
+} from "./index";
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/utils/supabase/server";
-import type { Prisma } from "@prisma/client";
+import { FileTypes, type Prisma } from "@prisma/client";
 
 export const runtime = "nodejs";
+
+function internalServerError(message: string) {
+  return NextResponse.json({ error: message }, { status: 500 });
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
+function parseJsonStringArray(raw: string | null, fieldName: string): string[] | NextResponse {
+  if (!raw) return [];
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return NextResponse.json({ error: `${fieldName} must be valid JSON array` }, { status: 400 });
+  }
+
+  if (!isStringArray(parsed)) {
+    return NextResponse.json(
+      { error: `${fieldName} must be an array of strings` },
+      { status: 400 },
+    );
+  }
+
+  return parsed;
+}
 
 export async function POST(req: Request) {
   try {
@@ -76,17 +109,18 @@ export async function POST(req: Request) {
     }
 
     const userId = authedUser.id; // ensure uploader is ALWAYS the signed-in user
-    const bucket = formData.get("bucket") as string | null;
-
-    if (!bucket) {
-      return NextResponse.json({ error: "bucket is required" }, { status: 400 });
-    }
-
     const viewersRaw = formData.get("viewers") as string | null;
     const folderPathRaw = formData.get("folderPath") as string | null;
 
-    const viewers: string[] = viewersRaw ? JSON.parse(viewersRaw) : [];
-    const folderPath: string[] = folderPathRaw ? JSON.parse(folderPathRaw) : [];
+    const viewers = parseJsonStringArray(viewersRaw, "viewers");
+    if (viewers instanceof NextResponse) {
+      return viewers;
+    }
+
+    const folderPath = parseJsonStringArray(folderPathRaw, "folderPath");
+    if (folderPath instanceof NextResponse) {
+      return folderPath;
+    }
 
     // mime type
     const contentType = file.type ?? (formData.get("contentType") as string | null) ?? undefined;
@@ -100,7 +134,6 @@ export async function POST(req: Request) {
       fileName: file.name,
       viewers,
       folderPath,
-      bucket,
       contentType,
       fileBody,
     });
@@ -109,7 +142,7 @@ export async function POST(req: Request) {
     return NextResponse.json(result);
   } catch (err) {
     console.error("/api/documents POST error", err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return internalServerError("Failed to upload document");
   }
 }
 
@@ -159,7 +192,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ users });
     } catch (err) {
       console.error("/api/documents GET userSearch error", err);
-      return NextResponse.json({ error: String(err) }, { status: 500 });
+      return internalServerError("Failed to search users");
     }
   }
 
@@ -170,7 +203,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ signedUrl });
     } catch (err) {
       console.error("/api/documents GET signed-url error", err);
-      return NextResponse.json({ error: String(err) }, { status: 500 });
+      if (err instanceof DocumentAccessError) {
+        return NextResponse.json({ error: err.message }, { status: err.status });
+      }
+      return internalServerError("Failed to fetch document URL");
     }
   }
 
@@ -178,7 +214,10 @@ export async function GET(req: NextRequest) {
   // check whether is admin, if so, show all files
   const isAdmin = userMeta?.is_admin === true;
   if (isAdmin) {
-    const files = await prisma.files.findMany({ orderBy: { uploadedAt: "desc" } });
+    const files = await prisma.files.findMany({
+      where: { type: FileTypes.DOCUMENT, bucket: DOCUMENTS_BUCKET },
+      orderBy: { uploadedAt: "desc" },
+    });
     return NextResponse.json(files);
   }
 
@@ -189,6 +228,8 @@ export async function GET(req: NextRequest) {
   try {
     const files = await prisma.files.findMany({
       where: {
+        type: FileTypes.DOCUMENT,
+        bucket: DOCUMENTS_BUCKET,
         OR: [
           { userId: user.id },
           // JSON field filter: metadata.viewers contains current user id
@@ -207,7 +248,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(files);
   } catch (err) {
     console.error("/api/documents GET list error", err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return internalServerError("Failed to fetch documents");
   }
 }
 
@@ -279,6 +320,6 @@ export async function PATCH(req: Request) {
     });
   } catch (err) {
     console.error("/api/documents PATCH error", err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return internalServerError("Failed to update document viewers");
   }
 }
