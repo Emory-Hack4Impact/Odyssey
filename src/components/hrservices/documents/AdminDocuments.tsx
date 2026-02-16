@@ -47,7 +47,9 @@ type UploadedDocumentResult = {
 type DocumentGridProps = {
   documents: AdminDocument[];
   currentUserId: string | null;
+  canDeleteFiles: boolean;
   onEdit: (doc: AdminDocument) => void;
+  onDelete: (doc: AdminDocument) => void;
   viewMode: "icons" | "list";
   viewerLable: (viewerId: string) => string;
 };
@@ -384,7 +386,9 @@ function UploadPanel({
 function DocumentGrid({
   documents,
   currentUserId,
+  canDeleteFiles,
   onEdit,
+  onDelete,
   viewMode,
   viewerLable,
 }: DocumentGridProps) {
@@ -460,6 +464,15 @@ function DocumentGrid({
                   Edit
                 </button>
               )}
+              {canDeleteFiles && (
+                <button
+                  type="button"
+                  className="btn btn-xs btn-error"
+                  onClick={() => onDelete(doc)}
+                >
+                  Delete
+                </button>
+              )}
             </div>
           </div>
         ))}
@@ -513,6 +526,15 @@ function DocumentGrid({
                       onClick={() => onEdit(doc)}
                     >
                       Edit
+                    </button>
+                  )}
+                  {canDeleteFiles && (
+                    <button
+                      type="button"
+                      className="btn btn-xs btn-error"
+                      onClick={() => onDelete(doc)}
+                    >
+                      Delete
                     </button>
                   )}
                 </div>
@@ -672,6 +694,7 @@ export default function AdminDocuments() {
   const [uploadRecipients, setUploadRecipients] = useState<string[]>([]);
   const [uploadRecipientQuery, setUploadRecipientQuery] = useState("");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [canDeleteFiles, setCanDeleteFiles] = useState(false);
   const [userSuggestions, setUserSuggestions] = useState<UserSearchResult[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [activeUserSearch, setActiveUserSearch] = useState<
@@ -737,6 +760,21 @@ export default function AdminDocuments() {
     loadUser().catch((error) => {
       console.error("Unexpected error while fetching current user", error);
     });
+  }, []);
+
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      const res = await fetch("/api/documents?mode=permissions");
+      if (!res.ok) {
+        setCanDeleteFiles(false);
+        return;
+      }
+
+      const data = (await res.json()) as { canDeleteFiles?: boolean };
+      setCanDeleteFiles(Boolean(data.canDeleteFiles));
+    };
+
+    void fetchPermissions();
   }, []);
 
   // hook to fetching documents for the file cards
@@ -992,6 +1030,33 @@ export default function AdminDocuments() {
     }
   };
 
+  const deleteDocument = async (doc: AdminDocument) => {
+    const confirmed = window.confirm(`Delete "${doc.name}"? This action cannot be undone.`);
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/documents", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileId: doc.id }),
+      });
+
+      if (!res.ok) {
+        console.error("Failed to delete document", await res.text());
+        return;
+      }
+
+      setDocuments((prev) => prev.filter((item) => item.id !== doc.id));
+      if (editingDoc?.id === doc.id) {
+        closeEditModal();
+      }
+    } catch (err) {
+      console.error("Unexpected error while deleting document", err);
+    }
+  };
+
   return (
     <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
       <UploadPanel
@@ -1069,7 +1134,9 @@ export default function AdminDocuments() {
           <DocumentGrid
             documents={documents}
             currentUserId={currentUserId}
+            canDeleteFiles={canDeleteFiles}
             onEdit={openEditModal}
+            onDelete={deleteDocument}
             viewMode={viewMode}
             viewerLable={viewerLabel}
           />

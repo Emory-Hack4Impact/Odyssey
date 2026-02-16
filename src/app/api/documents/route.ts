@@ -7,7 +7,7 @@ import {
   DOCUMENTS_BUCKET,
 } from "./index";
 import { prisma } from "@/lib/prisma";
-import { getUser } from "@/utils/supabase/server";
+import { deleteFileFromStorage, getUser } from "@/utils/supabase/server";
 import { FileTypes, type Prisma } from "@prisma/client";
 
 export const runtime = "nodejs";
@@ -18,6 +18,14 @@ function internalServerError(message: string) {
 
 function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
+function canDeleteDocuments(userMeta: { is_admin: boolean; is_hr: boolean } | null): boolean {
+  if (userMeta?.is_admin === true) {
+    return true;
+  }
+
+  return userMeta?.is_hr === true;
 }
 
 function parseJsonStringArray(raw: string | null, fieldName: string): string[] | NextResponse {
@@ -162,6 +170,15 @@ export async function GET(req: NextRequest) {
   const userMeta = await prisma.userMetadata.findUnique({
     where: { id: user.id },
   });
+
+  // Model for searching possible users for document upload //
+  if (mode === "permissions") {
+    return NextResponse.json({
+      canDeleteFiles: canDeleteDocuments(
+        userMeta ? { is_admin: userMeta.is_admin, is_hr: userMeta.is_hr } : null,
+      ),
+    });
+  }
 
   // Model for searching possible users for document upload //
   if (mode === "userSearch" && nameKeyword) {
@@ -321,5 +338,50 @@ export async function PATCH(req: Request) {
   } catch (err) {
     console.error("/api/documents PATCH error", err);
     return internalServerError("Failed to update document viewers");
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const user = await getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    const requesterMeta = await prisma.userMetadata.findUnique({
+      where: { id: user.id },
+      select: { is_admin: true, is_hr: true },
+    });
+
+    if (!canDeleteDocuments(requesterMeta)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    let body: { fileId?: string };
+    try {
+      body = (await req.json()) as { fileId?: string };
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+
+    const fileId = typeof body.fileId === "string" ? body.fileId.trim() : "";
+    if (!fileId) {
+      return NextResponse.json({ error: "fileId is required" }, { status: 400 });
+    }
+
+    const file = await prisma.files.findUnique({ where: { id: fileId } });
+    if (!file || file.type !== FileTypes.DOCUMENT || file.bucket !== DOCUMENTS_BUCKET) {
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
+    }
+
+    // Remove storage object first to avoid DB delete with lingering private file.
+    await deleteFileFromStorage(file.bucket, file.path);
+
+    await prisma.files.delete({ where: { id: file.id } });
+
+    return NextResponse.json({ fileId: file.id, deleted: true });
+  } catch (err) {
+    console.error("/api/documents DELETE error", err);
+    return internalServerError("Failed to delete document");
   }
 }
