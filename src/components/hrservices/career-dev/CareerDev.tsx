@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/client";
 import CalendarMini from "./MiniCalender";
 import MediaCard from "./MediaCard";
 import ArticleModal from "./ArticleModal";
+import ArticleDetailsModal from "./ArticleDetailsModal";
 
 // ---- Types ----
 
@@ -33,56 +34,6 @@ async function fetchArticles(): Promise<CareerDevArticleUI[]> {
   }
 
   return (await res.json()) as CareerDevArticleUI[];
-}
-
-async function uploadArticleImage(articleId: string, image: File): Promise<string | null> {
-  const supabase = createClient();
-
-  // Get current user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error("Please log in to upload images.");
-  }
-
-  // Generate unique path for the image
-  const ext = image.name.split(".").pop()?.toLowerCase() ?? "png";
-  const timestamp = Date.now();
-  const randomId = crypto.randomUUID();
-  const path = `admin/assets/${articleId}/${timestamp}-${randomId}.${ext}`;
-
-  // Upload to storage
-  const { error: uploadError } = await supabase.storage
-    .from("article")
-    .upload(path, image, { contentType: image.type, upsert: false });
-
-  if (uploadError) {
-    throw new Error(`Image upload failed: ${uploadError.message}`);
-  }
-
-  // Generate a signed URL (valid for 1 hour, adjust as needed)
-  const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-    .from("article")
-    .createSignedUrl(path, 60); // 60 = 1 minute
-
-  if (signedUrlError || !signedUrlData?.signedUrl) {
-    throw new Error(`Failed to generate signed URL: ${signedUrlError?.message}`);
-  }
-
-  // Update article with signed URL
-  const imageUpdateRes = await fetch("/api/career-dev-articles", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id: articleId, imageUrl: signedUrlData.signedUrl }),
-  });
-
-  if (!imageUpdateRes.ok) {
-    throw new Error("Failed to save image URL to article.");
-  }
-
-  return signedUrlData.signedUrl;
 }
 
 // ---- Static Data ----
@@ -116,105 +67,6 @@ const demoEvents = [
   { date: "2025-11-16", label: "Workshop: Interview Prep", starttime: "16:00", endtime: "17:30" },
   { date: "2025-11-24", label: "Lunch & Learn", starttime: "16:00", endtime: "17:30" },
 ];
-
-// ---- Components ----
-
-function ArticleDetailModal({
-  isOpen,
-  onClose,
-  article,
-  onEdit,
-  onDelete,
-  isAdmin,
-  deleting,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  article: CareerDevArticleUI | null;
-  onEdit: () => void;
-  onDelete: () => void;
-  isAdmin: boolean;
-  deleting: boolean;
-}) {
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [isOpen, onClose]);
-
-  if (!isOpen || !article) return null;
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      role="dialog"
-      aria-modal="true"
-      onClick={onClose}
-    >
-      <div
-        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-base-100 shadow-lg"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-start justify-between border-b border-base-300 p-4">
-          <h4 className="text-lg font-semibold text-base-content">{article.title}</h4>
-
-          <div className="flex items-center gap-2">
-            {isAdmin && (
-              <>
-                <button
-                  type="button"
-                  className="rounded-md border border-base-300 bg-base-100 px-3 py-1.5 text-sm font-medium text-base-content hover:bg-base-200"
-                  onClick={onEdit}
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  disabled={deleting}
-                  className="rounded-md border border-error/30 bg-base-100 px-3 py-1.5 text-sm font-medium text-error hover:bg-error/10 disabled:opacity-50"
-                  onClick={onDelete}
-                >
-                  {deleting ? "Deleting..." : "Delete"}
-                </button>
-              </>
-            )}
-
-            <button
-              className="rounded-md p-1 text-base-content/60 hover:bg-base-200"
-              onClick={onClose}
-              aria-label="Close"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-        <div className="px-4 pb-4 text-base-content/80">
-          <p className="mb-2 text-sm text-base-content/60">{article.blurb}</p>
-
-          <div className="mb-4 space-y-1 text-sm">
-            <p>
-              <span className="font-medium">Author:</span> {article.author}
-            </p>
-            <p>
-              <span className="font-medium">Date:</span> {article.date}
-            </p>
-            <p>
-              <span className="font-medium">Time:</span> {article.startTime} to {article.endTime}
-            </p>
-            <p>
-              <span className="font-medium">Location:</span> {article.location}
-            </p>
-          </div>
-
-          <p className="leading-relaxed whitespace-pre-line">{article.body ?? "Coming soon..."}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ---- Main Component ----
 
@@ -343,7 +195,7 @@ export default function CareerDev({ isAdmin }: { isAdmin: boolean }) {
         onSubmitted={reloadArticles}
         isEdit
       />
-      <ArticleDetailModal
+      <ArticleDetailsModal
         isOpen={activeArticle !== null}
         onClose={() => setActiveArticle(null)}
         article={activeArticle}
