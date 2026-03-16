@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import React, { useCallback, useEffect, useState } from "react";
 import CalendarMini from "./MiniCalender";
 import MediaCard from "./MediaCard";
 import ArticleModal from "./ArticleModal";
