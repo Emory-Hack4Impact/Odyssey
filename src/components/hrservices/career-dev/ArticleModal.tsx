@@ -348,6 +348,6 @@ const ArticleModal = ({
       </div>
     </div>
   );
-}
+};
 
 export default ArticleModal;
