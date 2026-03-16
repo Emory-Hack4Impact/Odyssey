@@ -7,6 +7,7 @@ import CareerDev from "@/components/hrservices/career-dev/CareerDev";
 import AdminDocuments from "@/components/hrservices/documents/AdminDocuments";
 import UserDocuments from "@/components/hrservices/documents/UserDocuments";
 import { useState } from "react";
+import TimeOffAdmin from "./time-off/manage-requests/TimeOffAdmin";
 
 interface HRServicesProps {
   userId: string;
@@ -28,7 +29,11 @@ export const HRServices = ({ userId, username, userRole, userMetadata }: HRServi
   };
 
   const categories = [
-    { key: "timeOff", label: "Time Off", component: <TimeOff userId={userId} /> },
+    {
+      key: "timeOff",
+      label: "Time Off",
+      component: userMetadata?.is_admin ? <TimeOffAdmin /> : <TimeOff userId={userId} />,
+    },
     {
       key: "careerDev",
       label: "Career Development",
