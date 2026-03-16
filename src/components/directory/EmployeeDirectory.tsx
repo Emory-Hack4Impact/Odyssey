@@ -124,6 +124,8 @@ export const EmployeeDirectory = ({
   userRole,
   userMetadata,
 }: EmployeeDirectoryProps) => {
+  const isAdmin = userMetadata?.is_admin ?? false;
+
   const [employees, setEmployees] = useState<DirectoryEmployee[]>(() => [
     createCurrentUserEmployee({ userId, username, userRole, userMetadata }),
     ...SAMPLE_EMPLOYEES,
@@ -199,6 +201,7 @@ export const EmployeeDirectory = ({
         <div className="flex-1 min-[1088px]:max-w-96">
           <SidePanel
             currentUserId={userId}
+            isAdmin={isAdmin}
             selectedEmployee={selectedEmployee}
             onSaveEmployee={handleEmployeeSave}
             search={search}
