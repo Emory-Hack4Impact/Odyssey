@@ -37,6 +37,7 @@ async function fetchArticles(): Promise<CareerDevArticleUI[]> {
 async function uploadArticleImage(articleId: string, image: File): Promise<string | null> {
   const supabase = createClient();
 
+  // Get current user
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -45,33 +46,42 @@ async function uploadArticleImage(articleId: string, image: File): Promise<strin
     throw new Error("Please log in to upload images.");
   }
 
+  // Generate unique path for the image
   const ext = image.name.split(".").pop()?.toLowerCase() ?? "png";
   const timestamp = Date.now();
   const randomId = crypto.randomUUID();
   const path = `admin/assets/${articleId}/${timestamp}-${randomId}.${ext}`;
 
-  const { error: uploadError } = await supabase.storage.from("article").upload(path, image, {
-    contentType: image.type,
-    upsert: false,
-  });
+  // Upload to storage
+  const { error: uploadError } = await supabase.storage
+    .from("article")
+    .upload(path, image, { contentType: image.type, upsert: false });
 
   if (uploadError) {
     throw new Error(`Image upload failed: ${uploadError.message}`);
   }
 
-  const { data } = supabase.storage.from("article").getPublicUrl(path);
+  // Generate a signed URL (valid for 1 hour, adjust as needed)
+  const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+    .from("article")
+    .createSignedUrl(path, 3); // 3600 = 1 hour
 
+  if (signedUrlError || !signedUrlData?.signedUrl) {
+    throw new Error(`Failed to generate signed URL: ${signedUrlError?.message}`);
+  }
+
+  // Update article with signed URL
   const imageUpdateRes = await fetch("/api/career-dev-articles", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id: articleId, imageUrl: data.publicUrl }),
+    body: JSON.stringify({ id: articleId, imageUrl: signedUrlData.signedUrl }),
   });
 
   if (!imageUpdateRes.ok) {
     throw new Error("Failed to save image URL to article.");
   }
 
-  return data.publicUrl;
+  return signedUrlData.signedUrl;
 }
 
 // ---- Static Data ----
