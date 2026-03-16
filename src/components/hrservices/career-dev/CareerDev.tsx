@@ -48,9 +48,9 @@ async function uploadArticleImage(articleId: string, image: File): Promise<strin
   const ext = image.name.split(".").pop()?.toLowerCase() ?? "png";
   const timestamp = Date.now();
   const randomId = crypto.randomUUID();
-  const path = `${articleId}/${timestamp}-${randomId}.${ext}`;
+  const path = `admin/assets/${articleId}/${timestamp}-${randomId}.${ext}`;
 
-  const { error: uploadError } = await supabase.storage.from("Article").upload(path, image, {
+  const { error: uploadError } = await supabase.storage.from("article").upload(path, image, {
     contentType: image.type,
     upsert: false,
   });
@@ -59,7 +59,7 @@ async function uploadArticleImage(articleId: string, image: File): Promise<strin
     throw new Error(`Image upload failed: ${uploadError.message}`);
   }
 
-  const { data } = supabase.storage.from("Article").getPublicUrl(path);
+  const { data } = supabase.storage.from("article").getPublicUrl(path);
 
   const imageUpdateRes = await fetch("/api/career-dev-articles", {
     method: "PUT",
@@ -118,8 +118,6 @@ const EMPTY_FORM = {
 };
 
 // ---- Components ----
-
-
 
 interface ArticleModalProps {
   isOpen: boolean;
