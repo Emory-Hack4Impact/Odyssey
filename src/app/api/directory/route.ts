@@ -13,9 +13,20 @@ export async function GET() {
     const employees = await prisma.userMetadata.findMany({
       select: {
         id: true,
+        email: true,
         employeeFirstName: true,
         employeeLastName: true,
         position: true,
+        department: true,
+        role: true,
+        location: true,
+        bio: true,
+        mobile: true,
+        workNumber: true,
+        birthday: true,
+        avatarUrl: true,
+        online: true,
+        away: true,
       },
       orderBy: { id: "asc" },
     });
