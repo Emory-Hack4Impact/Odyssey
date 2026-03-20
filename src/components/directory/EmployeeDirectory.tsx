@@ -42,6 +42,7 @@ export const EmployeeDirectory = ({
 }: EmployeeDirectoryProps) => {
   // NOTE: now fetch real employees from backend
   const [employees, setEmployees] = useState<DirectoryEmployee[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // for search box
   const [search, setSearch] = useState("");
@@ -57,6 +58,7 @@ export const EmployeeDirectory = ({
   useEffect(() => {
     async function fetchEmployees() {
       try {
+        setIsLoading(true);
         const res = await fetch("/api/directory");
 
         if (!res.ok) {
@@ -85,6 +87,8 @@ export const EmployeeDirectory = ({
         setEmployees(mappedEmployees);
       } catch (error) {
         console.error("Failed to fetch directory employees:", error);
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -176,6 +180,7 @@ export const EmployeeDirectory = ({
             employees={filteredEmployees}
             activeCard={activeCard}
             setActiveCard={setActiveCard}
+            isLoading={isLoading}
           />
         </div>
       </div>
