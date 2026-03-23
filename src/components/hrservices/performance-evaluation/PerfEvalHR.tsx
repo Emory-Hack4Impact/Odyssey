@@ -57,7 +57,7 @@ const EMPTY_EVAL: FetchedEval = {
   submitterEmail: null,
 };
 
-export default function PerfEvalHR({ userId: _userId, username, userRole }: HRServicesProps) {
+export default function PerfEvalHR({ userId, username, userRole }: HRServicesProps) {
   const [employeeEvalsMeta, setEmployeeEvalsMeta] = useState<FetchedEvalMeta[]>([]);
   const [selectedEval, setSelectedEval] = useState<FetchedEval>(EMPTY_EVAL);
   const [isOpened, setIsOpened] = useState(false);
@@ -76,9 +76,6 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
 
     return matchesSearch && matchesYear;
   });
-
-  //   console.log(selectedEmployee)
-  //   console.log(isOpened)
 
   type RawEval = {
     id?: string | number;
@@ -197,7 +194,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           evaluationId: employeeEval.evaluationId,
-          approvedBy: _userId,
+          approvedBy: userId,
         }),
       });
 
@@ -367,7 +364,7 @@ export default function PerfEvalHR({ userId: _userId, username, userRole }: HRSe
                     <tbody>
                       {filteredEvals.length === 0 ? (
                         <tr>
-                          <td colSpan={3} className="py-6 text-center text-base-content/60">
+                          <td colSpan={5} className="py-6 text-center text-base-content/60">
                             No employee evaluations found.
                           </td>
                         </tr>
