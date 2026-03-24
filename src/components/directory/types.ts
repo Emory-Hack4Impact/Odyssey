@@ -1,3 +1,4 @@
+// shared UI model used by cards, filters, and side panel
 export interface DirectoryEmployee {
   id: string;
   email: string;
