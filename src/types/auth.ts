@@ -9,6 +9,14 @@ export interface UserMetadata {
   position: string;
   employeeFirstName: string | null;
   employeeLastName: string | null;
+  department: string;
+  jobTitle: string;
+  bio: string;
+  mobile: string;
+  workNumber: string;
+  birthday: string | null;
+  avatarUrl: string;
+  location: string;
 }
 
 export interface AuthUser {

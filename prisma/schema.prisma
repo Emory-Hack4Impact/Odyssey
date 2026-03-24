@@ -9,6 +9,14 @@ datasource db {
 
 model UserMetadata {
   id                String           @id @default(uuid()) @db.Uuid
+  department        String           @default("")
+  jobTitle          String           @default("")
+  bio               String           @default("Enter edit mode to update your bio")
+  mobile            String           @default("")
+  workNumber        String           @default("")
+  birthday          DateTime?        @db.Date
+  avatarUrl         String           @default("")
+  location          String           @default("")
   is_admin          Boolean          @default(false)
   is_hr             Boolean          @default(false)
   position          String           @default("")

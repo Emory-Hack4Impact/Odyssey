@@ -2,150 +2,95 @@
 
 import SidePanel from "./side-panel/SidePanel";
 import ResultsGrid from "./results-grid/ResultsGrid";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import type { DirectoryEmployee, DirectoryFilterOptions, DirectoryFilters } from "./types";
 
 interface EmployeeDirectoryProps {
-  userId: string;
-  username: string;
-  userRole: string;
-  userMetadata: {
-    is_admin: boolean;
-    is_hr: boolean;
-    position: string;
-    employeeFirstName: string | null;
-    employeeLastName: string | null;
-  } | null;
+  id: string;
+  isAdmin: boolean;
 }
 
-const SAMPLE_EMPLOYEES: DirectoryEmployee[] = [
-  {
-    id: "e-1001",
-    email: "sarah.chen@odyssey.org",
-    firstName: "Sarah",
-    lastName: "Chen",
-    position: "Product Manager",
-    department: "Product",
-    role: "Product Manager",
-    location: "Atlanta",
-    bio: "Leads roadmap planning and cross-functional delivery for the recruiting platform.",
-    mobile: "(404) 555-0192",
-    workNumber: "(404) 555-0131",
-    birthday: "1991-09-14",
-    avatarUrl: "",
-    online: true,
-    away: false,
-  },
-  {
-    id: "e-1002",
-    email: "marcus.rivera@odyssey.org",
-    firstName: "Marcus",
-    lastName: "Rivera",
-    position: "UX Designer",
-    department: "Design",
-    role: "Senior Designer",
-    location: "Remote",
-    bio: "Designs and tests employee-facing workflows, with a focus on accessibility.",
-    mobile: "(917) 555-0118",
-    workNumber: "(917) 555-0107",
-    birthday: "1993-02-03",
-    avatarUrl: "",
-    online: false,
-    away: true,
-  },
-  {
-    id: "e-1003",
-    email: "elena.garcia@odyssey.org",
-    firstName: "Elena",
-    lastName: "Garcia",
-    position: "HR Generalist",
-    department: "People",
-    role: "HR Generalist",
-    location: "New York",
-    bio: "Supports onboarding, policy education, and employee engagement programs.",
-    mobile: "(646) 555-0141",
-    workNumber: "(646) 555-0185",
-    birthday: "1990-11-28",
-    avatarUrl: "",
-    online: true,
-    away: false,
-  },
-  {
-    id: "e-1004",
-    email: "david.ng@odyssey.org",
-    firstName: "David",
-    lastName: "Ng",
-    position: "Backend Engineer",
-    department: "Engineering",
-    role: "Backend Engineer",
-    location: "San Francisco",
-    bio: "Builds APIs and data integrations for internal HR systems.",
-    mobile: "(415) 555-0162",
-    workNumber: "(415) 555-0124",
-    birthday: "1989-05-20",
-    avatarUrl: "",
-    online: true,
-    away: false,
-  },
-];
-
-function createCurrentUserEmployee({
-  userId,
-  username,
-  userRole,
-  userMetadata,
-}: EmployeeDirectoryProps): DirectoryEmployee {
-  const email = username.includes("@") ? username : `${userId}@odyssey.org`;
-  const emailPrefix = email.split("@")[0] ?? "you";
-  const fallbackFirstName = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
-
-  return {
-    id: userId,
-    email,
-    firstName: userMetadata?.employeeFirstName ?? fallbackFirstName,
-    lastName: userMetadata?.employeeLastName ?? "",
-    position: userMetadata?.position ?? userRole,
-    department: "People",
-    role: userRole,
-    location: "Atlanta",
-    bio: "This is your profile. Switch to edit mode to update your information.",
-    mobile: "",
-    workNumber: "",
-    birthday: "",
-    avatarUrl: "",
-    online: true,
-    away: false,
-  };
+interface DirectoryApiEmployee {
+  id: string;
+  email: string;
+  department: string;
+  jobTitle: string;
+  bio: string;
+  mobile: string;
+  workNumber: string;
+  birthday: string;
+  avatarUrl: string;
+  location: string;
+  position: string;
+  employeeFirstName: string;
+  employeeLastName: string;
 }
 
-export const EmployeeDirectory = ({
-  userId,
-  username,
-  userRole,
-  userMetadata,
-}: EmployeeDirectoryProps) => {
-  const isAdmin = userMetadata?.is_admin ?? false;
+interface DirectoryApiResponse {
+  employees: DirectoryApiEmployee[];
+}
 
-  const [employees, setEmployees] = useState<DirectoryEmployee[]>(() => [
-    createCurrentUserEmployee({ userId, username, userRole, userMetadata }),
-    ...SAMPLE_EMPLOYEES,
-  ]);
+export const EmployeeDirectory = ({ id, isAdmin }: EmployeeDirectoryProps) => {
+  const [employees, setEmployees] = useState<DirectoryEmployee[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [search, setSearch] = useState("");
-  const [activeCard, setActiveCard] = useState(userId);
+  const [activeCard, setActiveCard] = useState(id);
   const [filters, setFilters] = useState<DirectoryFilters>({
     department: "all",
-    role: "all",
+    jobTitle: "all",
     location: "all",
   });
+
+  useEffect(() => {
+    async function fetchEmployees() {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const res = await fetch("/api/directory");
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch employees");
+        }
+
+        const data: DirectoryApiResponse = await res.json();
+
+        const mappedEmployees: DirectoryEmployee[] = data.employees.map((employee) => ({
+          id: employee.id,
+          email: employee.email ?? "",
+          firstName: employee.employeeFirstName ?? "",
+          lastName: employee.employeeLastName ?? "",
+          position: employee.position ?? "",
+          department: employee.department ?? "",
+          jobTitle: employee.jobTitle ?? "",
+          location: employee.location ?? "",
+          bio: employee.bio ?? "",
+          mobile: employee.mobile ?? "",
+          workNumber: employee.workNumber ?? "",
+          birthday: employee.birthday ?? "",
+          avatarUrl: employee.avatarUrl ?? "",
+        }));
+        setEmployees(mappedEmployees);
+      } catch (err) {
+        console.error("Failed to fetch directory employees:", err);
+        setError("Unable to load the employee directory. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    void fetchEmployees();
+  }, []);
 
   const filterOptions = useMemo<DirectoryFilterOptions>(() => {
     const departments = Array.from(
       new Set(employees.map((employee) => employee.department)),
     ).sort();
-    const roles = Array.from(new Set(employees.map((employee) => employee.role))).sort();
+    const jobTitles = Array.from(new Set(employees.map((employee) => employee.jobTitle))).sort();
     const locations = Array.from(new Set(employees.map((employee) => employee.location))).sort();
 
-    return { departments, roles, locations };
+    return { departments, jobTitles, locations };
   }, [employees]);
 
   const filteredEmployees = useMemo(() => {
@@ -156,7 +101,7 @@ export const EmployeeDirectory = ({
         return false;
       }
 
-      if (filters.role !== "all" && employee.role !== filters.role) {
+      if (filters.jobTitle !== "all" && employee.jobTitle !== filters.jobTitle) {
         return false;
       }
 
@@ -174,10 +119,10 @@ export const EmployeeDirectory = ({
         employee.email,
         employee.id,
         employee.department,
-        employee.role,
+        employee.jobTitle,
       ].some((value) => value.toLowerCase().includes(query));
     });
-  }, [employees, filters.department, filters.location, filters.role, search]);
+  }, [employees, filters.department, filters.location, filters.jobTitle, search]);
 
   const selectedEmployee = useMemo(() => {
     return employees.find((employee) => employee.id === activeCard) ?? employees[0] ?? null;
@@ -191,7 +136,7 @@ export const EmployeeDirectory = ({
 
   const handleResultsBackgroundClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) {
-      setActiveCard(userId);
+      setActiveCard(id);
     }
   };
 
@@ -200,7 +145,7 @@ export const EmployeeDirectory = ({
       <div className="flex w-full gap-8 max-[1088px]:flex-col">
         <div className="flex-1 min-[1088px]:max-w-96">
           <SidePanel
-            currentUserId={userId}
+            currentUserId={id}
             isAdmin={isAdmin}
             selectedEmployee={selectedEmployee}
             onSaveEmployee={handleEmployeeSave}
@@ -217,6 +162,8 @@ export const EmployeeDirectory = ({
             employees={filteredEmployees}
             activeCard={activeCard}
             setActiveCard={setActiveCard}
+            isLoading={isLoading}
+            error={error}
           />
         </div>
       </div>

@@ -77,19 +77,19 @@ export default function SearchTile({
 
           <label className="form-control">
             <span className="mb-1 ml-1 text-xs font-semibold tracking-wide text-base-content/60 uppercase">
-              Role
+              Job Title
             </span>
             <select
               className="select-bordered select w-full"
-              value={filters.role}
+              value={filters.jobTitle}
               onChange={(event) => {
-                setFilters((prev) => ({ ...prev, role: event.target.value }));
+                setFilters((prev) => ({ ...prev, jobTitle: event.target.value }));
               }}
             >
-              <option value="all">All roles</option>
-              {filterOptions.roles.map((role) => (
-                <option key={role} value={role}>
-                  {role}
+              <option value="all">All job titles</option>
+              {filterOptions.jobTitles.map((jobTitle) => (
+                <option key={jobTitle} value={jobTitle}>
+                  {jobTitle}
                 </option>
               ))}
             </select>

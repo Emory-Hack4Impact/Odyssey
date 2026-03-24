@@ -53,18 +53,6 @@ export default function EmployeeCard({
             <span className="text-4xl font-bold text-base-content/20">{fullName.charAt(0)}</span>
           </div>
         )}
-
-        {/* Availability Badges */}
-        <div className="absolute top-3 left-3 flex gap-2">
-          {employee.online && (
-            <span className="badge p-1.5 badge-xs shadow-sm badge-success" title="Online" />
-          )}
-          {employee.away && (
-            <span className="badge badge-outline bg-base-100 badge-sm font-bold tracking-tighter uppercase badge-info">
-              Away
-            </span>
-          )}
-        </div>
       </figure>
 
       {/* Content Section */}
@@ -72,7 +60,7 @@ export default function EmployeeCard({
         <div>
           <h2 className="card-title text-2xl font-semibold text-base-content">{fullName}</h2>
           <p className="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
-            {employee.department} <span className="mx-1 opacity-30">|</span> {employee.role}
+            {employee.department} <span className="mx-1 opacity-30">|</span> {employee.jobTitle}
           </p>
         </div>
 
