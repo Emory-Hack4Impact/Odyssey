@@ -71,7 +71,8 @@ INSERT INTO storage.buckets
     (id, name)
 values
     ('avatars', 'avatars'),
-    ('files', 'files');
+    ('files', 'files'),
+    ('article', 'article');
 
 
 -------------------------------------------------------------------

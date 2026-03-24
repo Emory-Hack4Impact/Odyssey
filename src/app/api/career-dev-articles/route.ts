@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createServiceRoleClient } from "@/utils/supabase/server";
 
 const db = prisma.careerDevArticles;
 
@@ -77,7 +77,24 @@ async function requireAdmin(): Promise<{ userId: string } | NextResponse> {
 export async function GET() {
   try {
     const rows = await db.findMany({ orderBy: { created_at: "desc" } });
-    return NextResponse.json(rows.map(toArticleResponse));
+    const supabase = createServiceRoleClient();
+
+    const articles = await Promise.all(
+      rows.map(async (r) => {
+        const response = toArticleResponse(r);
+        // If imageurl is a storage path (not a full URL), generate a signed URL at read-time
+        if (r.imageurl && !r.imageurl.startsWith("http")) {
+          const { data } = await supabase.storage.from("article").createSignedUrl(r.imageurl, 3600);
+          if (data?.signedUrl) {
+            response.imageUrl = data.signedUrl;
+            response.image = { src: data.signedUrl, alt: `${r.title} image` };
+          }
+        }
+        return response;
+      }),
+    );
+
+    return NextResponse.json(articles);
   } catch (err) {
     console.error("GET /api/career-dev-articles failed:", err);
     return NextResponse.json({ error: "GET failed", message: String(err) }, { status: 500 });
