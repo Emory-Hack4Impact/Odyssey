@@ -1,4 +1,3 @@
-// shared UI model used by cards, filters, and side panel
 export interface DirectoryEmployee {
   id: string;
   email: string;
@@ -6,26 +5,24 @@ export interface DirectoryEmployee {
   lastName: string;
   position: string;
   department: string;
-  role: string;
+  jobTitle: string;
   location: string;
   bio: string;
   mobile: string;
   workNumber: string;
   birthday: string;
   avatarUrl: string;
-  online: boolean;
-  away: boolean;
 }
 
 export interface DirectoryFilters {
   department: string;
-  role: string;
+  jobTitle: string;
   location: string;
 }
 
 export interface DirectoryFilterOptions {
   departments: string[];
-  roles: string[];
+  jobTitles: string[];
   locations: string[];
 }
 
