@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import CalendarMini from "./MiniCalender";
+import CalendarMini from "./MiniCalendar";
 import MediaCard from "./MediaCard";
 import ArticleModal from "./ArticleModal";
 import ArticleDetailsModal from "./ArticleDetailsModal";

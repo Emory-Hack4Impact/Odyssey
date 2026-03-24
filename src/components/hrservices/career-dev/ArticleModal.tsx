@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { type CareerDevArticleUI } from "./CareerDev";
@@ -5,7 +7,6 @@ import { type CareerDevArticleUI } from "./CareerDev";
 async function uploadArticleImage(articleId: string, image: File): Promise<string | null> {
   const supabase = createClient();
 
-  // Get current user
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -14,13 +15,11 @@ async function uploadArticleImage(articleId: string, image: File): Promise<strin
     throw new Error("Please log in to upload images.");
   }
 
-  // Generate unique path for the image
   const ext = image.name.split(".").pop()?.toLowerCase() ?? "png";
   const timestamp = Date.now();
   const randomId = crypto.randomUUID();
   const path = `admin/assets/${articleId}/${timestamp}-${randomId}.${ext}`;
 
-  // Upload to storage
   const { error: uploadError } = await supabase.storage
     .from("article")
     .upload(path, image, { contentType: image.type, upsert: false });
@@ -29,27 +28,18 @@ async function uploadArticleImage(articleId: string, image: File): Promise<strin
     throw new Error(`Image upload failed: ${uploadError.message}`);
   }
 
-  // Generate a signed URL (valid for 1 hour, adjust as needed)
-  const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-    .from("article")
-    .createSignedUrl(path, 60); // 60 = 1 minute
-
-  if (signedUrlError || !signedUrlData?.signedUrl) {
-    throw new Error(`Failed to generate signed URL: ${signedUrlError?.message}`);
-  }
-
-  // Update article with signed URL
+  // Store the storage path, not a signed URL. The API generates signed URLs at read-time.
   const imageUpdateRes = await fetch("/api/career-dev-articles", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id: articleId, imageUrl: signedUrlData.signedUrl }),
+    body: JSON.stringify({ id: articleId, imageUrl: path }),
   });
 
   if (!imageUpdateRes.ok) {
     throw new Error("Failed to save image URL to article.");
   }
 
-  return signedUrlData.signedUrl;
+  return path;
 }
 
 const EMPTY_FORM = {
