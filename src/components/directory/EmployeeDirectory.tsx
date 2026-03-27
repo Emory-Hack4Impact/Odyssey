@@ -7,6 +7,7 @@ import type { DirectoryEmployee, DirectoryFilterOptions, DirectoryFilters } from
 
 interface EmployeeDirectoryProps {
   id: string;
+  isAdmin: boolean;
 }
 
 interface DirectoryApiEmployee {
@@ -29,7 +30,7 @@ interface DirectoryApiResponse {
   employees: DirectoryApiEmployee[];
 }
 
-export const EmployeeDirectory = ({ id }: EmployeeDirectoryProps) => {
+export const EmployeeDirectory = ({ id, isAdmin }: EmployeeDirectoryProps) => {
   const [employees, setEmployees] = useState<DirectoryEmployee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -145,6 +146,7 @@ export const EmployeeDirectory = ({ id }: EmployeeDirectoryProps) => {
         <div className="flex-1 min-[1088px]:max-w-96">
           <SidePanel
             currentUserId={id}
+            isAdmin={isAdmin}
             selectedEmployee={selectedEmployee}
             onSaveEmployee={handleEmployeeSave}
             search={search}

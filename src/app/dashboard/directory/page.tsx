@@ -18,5 +18,5 @@ export default async function EmployeeDirectoryPage() {
   // Get userId, username and role and pass as props
   const userId = user?.id ?? user?.user_metadata?.id ?? "0";
 
-  return <EmployeeDirectory id={userId} />;
+  return <EmployeeDirectory id={userId} isAdmin={data.is_admin ?? false} />;
 }

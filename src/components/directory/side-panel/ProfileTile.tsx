@@ -7,12 +7,14 @@ import { getEmployeeName } from "../types";
 
 type ProfileTileProps = {
   currentUserId: string;
+  isAdmin: boolean;
   selectedEmployee: DirectoryEmployee | null;
   onSaveEmployee: (employee: DirectoryEmployee) => void;
 };
 
 export default function ProfileTile({
   currentUserId,
+  isAdmin,
   selectedEmployee,
   onSaveEmployee,
 }: ProfileTileProps) {
@@ -25,6 +27,7 @@ export default function ProfileTile({
   }, [selectedEmployee]);
 
   const isCurrentUser = selectedEmployee?.id === currentUserId;
+  const canEdit = isCurrentUser || isAdmin;
 
   const initials = useMemo(() => {
     if (!selectedEmployee) return "?";
@@ -75,11 +78,16 @@ export default function ProfileTile({
     <div className="card border border-base-content/5 bg-base-100 shadow-xl min-[1088px]:w-96">
       <div className="card-body gap-6 p-6">
         <div className="flex items-start justify-between">
-          <p className="text-xs font-semibold tracking-wide text-base-content/60 uppercase">
-            Profile Panel
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-semibold tracking-wide text-base-content/60 uppercase">
+              Profile Panel
+            </p>
+            {isAdmin && !isCurrentUser && (
+              <span className="badge badge-sm font-semibold badge-warning">Admin</span>
+            )}
+          </div>
 
-          {isCurrentUser ? (
+          {canEdit ? (
             <div className="flex gap-2">
               {!isEditing ? (
                 <button className="btn btn-sm btn-neutral" onClick={() => setIsEditing(true)}>
@@ -125,7 +133,7 @@ export default function ProfileTile({
           </div>
         </div>
 
-        {isEditing && isCurrentUser ? (
+        {isEditing && canEdit ? (
           <label className="form-control">
             <span className="mb-1 text-xs font-semibold tracking-wide text-base-content/60 uppercase">
               Profile Picture
@@ -146,7 +154,7 @@ export default function ProfileTile({
             </span>
             <input
               value={draft.firstName}
-              disabled={!isEditing || !isCurrentUser}
+              disabled={!isEditing || !canEdit}
               onChange={(event) => setDraft({ ...draft, firstName: event.target.value })}
               className="input-bordered input w-full"
             />
@@ -158,7 +166,7 @@ export default function ProfileTile({
             </span>
             <input
               value={draft.lastName}
-              disabled={!isEditing || !isCurrentUser}
+              disabled={!isEditing || !canEdit}
               onChange={(event) => setDraft({ ...draft, lastName: event.target.value })}
               className="input-bordered input w-full"
             />
@@ -170,7 +178,7 @@ export default function ProfileTile({
             </span>
             <input
               value={draft.position}
-              disabled={!isEditing || !isCurrentUser}
+              disabled={!isEditing || !canEdit}
               onChange={(event) => setDraft({ ...draft, position: event.target.value })}
               className="input-bordered input w-full"
             />
@@ -182,7 +190,7 @@ export default function ProfileTile({
             </span>
             <input
               value={draft.department}
-              disabled={!isEditing || !isCurrentUser}
+              disabled={!isEditing || !canEdit}
               onChange={(event) => setDraft({ ...draft, department: event.target.value })}
               className="input-bordered input w-full"
             />
@@ -194,7 +202,7 @@ export default function ProfileTile({
             </span>
             <input
               value={draft.location}
-              disabled={!isEditing || !isCurrentUser}
+              disabled={!isEditing || !canEdit}
               onChange={(event) => setDraft({ ...draft, location: event.target.value })}
               className="input-bordered input w-full"
             />
@@ -206,7 +214,7 @@ export default function ProfileTile({
             </span>
             <textarea
               value={draft.bio}
-              disabled={!isEditing || !isCurrentUser}
+              disabled={!isEditing || !canEdit}
               onChange={(event) => setDraft({ ...draft, bio: event.target.value })}
               className="textarea-bordered textarea min-h-24 w-full"
             />
@@ -222,7 +230,7 @@ export default function ProfileTile({
             </span>
             <input
               value={draft.workNumber}
-              disabled={!isEditing || !isCurrentUser}
+              disabled={!isEditing || !canEdit}
               onChange={(event) => setDraft({ ...draft, workNumber: event.target.value })}
               className="input-bordered input w-full"
             />
@@ -234,7 +242,7 @@ export default function ProfileTile({
             </span>
             <input
               value={draft.mobile}
-              disabled={!isEditing || !isCurrentUser}
+              disabled={!isEditing || !canEdit}
               onChange={(event) => setDraft({ ...draft, mobile: event.target.value })}
               className="input-bordered input w-full"
             />
@@ -247,7 +255,7 @@ export default function ProfileTile({
             <input
               type="date"
               value={draft.birthday}
-              disabled={!isEditing || !isCurrentUser}
+              disabled={!isEditing || !canEdit}
               onChange={(event) => setDraft({ ...draft, birthday: event.target.value })}
               className="input-bordered input w-full"
             />
