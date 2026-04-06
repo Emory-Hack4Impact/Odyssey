@@ -6,9 +6,10 @@ import { verifyCode, updatePassword } from "@/app/api/auth/reset-password/action
 export default async function ResetPassword({
   searchParams,
 }: {
-  searchParams: { message: string; code: string };
+  searchParams: Promise<{ message?: string; code?: string }>;
 }) {
-  const session = await verifyCode(searchParams);
+  const params = await searchParams;
+  const session = await verifyCode(params);
 
   return (
     <div className="mx-auto mt-20 rounded-2xl bg-white p-8 shadow sm:max-w-md">
@@ -39,8 +40,8 @@ export default async function ResetPassword({
         >
           Reset Password
         </SubmitButton>
-        {searchParams?.message && (
-          <p className="mt-4 bg-base-300 p-4 text-center">{searchParams.message}</p>
+        {params.message && (
+          <p className="mt-4 bg-base-300 p-4 text-center">{params.message}</p>
         )}
       </form>
     </div>

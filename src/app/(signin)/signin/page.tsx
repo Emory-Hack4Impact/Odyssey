@@ -1,12 +1,16 @@
-"use client";
-
 import Link from "next/link";
 import { SubmitButton } from "@/components/SubmitButton";
 import signIn from "@/app/api/auth/signin/action";
 // usually we keep server actions scoped with the page/components using them but to me it makes
 // more sense to place them in `auth/` here
 
-export default function Signin({ searchParams }: { searchParams: { message: string } }) {
+export default async function Signin({
+  searchParams,
+}: {
+  searchParams: Promise<{ message?: string }>;
+}) {
+  const params = await searchParams;
+
   return (
     <div className="mx-auto mt-20 rounded-2xl bg-white p-8 shadow sm:max-w-md">
       <form className="text-foreground flex w-full flex-1 flex-col justify-center gap-2 animate-in">
@@ -42,9 +46,9 @@ export default function Signin({ searchParams }: { searchParams: { message: stri
         >
           Forgot password?
         </Link>
-        {searchParams?.message && (
+        {params.message && (
           <p className="bg-foreground/10 text-foreground mt-4 p-4 text-center">
-            {searchParams.message}
+            {params.message}
           </p>
         )}
       </form>
