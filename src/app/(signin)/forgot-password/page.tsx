@@ -29,9 +29,7 @@ export default async function ForgotPassword({
         >
           Send Email
         </SubmitButton>
-        {params.message && (
-          <p className="mt-4 bg-base-300 p-4 text-center">{params.message}</p>
-        )}
+        {params.message && <p className="mt-4 bg-base-300 p-4 text-center">{params.message}</p>}
       </form>
     </div>
   );

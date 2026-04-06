@@ -47,9 +47,7 @@ export default async function Signin({
           Forgot password?
         </Link>
         {params.message && (
-          <p className="bg-foreground/10 text-foreground mt-4 p-4 text-center">
-            {params.message}
-          </p>
+          <p className="bg-foreground/10 text-foreground mt-4 p-4 text-center">{params.message}</p>
         )}
       </form>
     </div>
