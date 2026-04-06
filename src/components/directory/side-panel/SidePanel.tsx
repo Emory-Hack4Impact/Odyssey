@@ -4,6 +4,7 @@ import type { DirectoryEmployee, DirectoryFilterOptions, DirectoryFilters } from
 
 export default function SidePanel({
   currentUserId,
+  isAdmin,
   selectedEmployee,
   onSaveEmployee,
   search,
@@ -13,6 +14,7 @@ export default function SidePanel({
   filterOptions,
 }: {
   currentUserId: string;
+  isAdmin: boolean;
   selectedEmployee: DirectoryEmployee | null;
   onSaveEmployee: (employee: DirectoryEmployee) => void;
   search: string;
@@ -32,6 +34,7 @@ export default function SidePanel({
       />
       <ProfileTile
         currentUserId={currentUserId}
+        isAdmin={isAdmin}
         selectedEmployee={selectedEmployee}
         onSaveEmployee={onSaveEmployee}
       />
