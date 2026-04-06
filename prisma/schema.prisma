@@ -24,9 +24,26 @@ model UserMetadata {
   employeeLastName  String?
   TimeOffRequests   TimeOffRequest[]
   Files             Files[]
+  Reports           Report[]
 
   evaluationsReceivedMetadata  EmployeeEvaluationMetadata[] @relation("ReviewedEmployeeMetadata")
   evaluationsSubmittedMetadata EmployeeEvaluationMetadata[] @relation("SubmitterMetadata")
+}
+
+model Report {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String
+  description String
+  userId      String?  @db.Uuid
+  pagePath    String
+  // metadata may include other info such as browser, pageUrl
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  user UserMetadata? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
 }
 
 enum FileTypes {
