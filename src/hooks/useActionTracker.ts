@@ -1,6 +1,6 @@
 import { useRef, useCallback } from "react";
 
-const MAX_TRAIL = 5;
+const MAX_TRAIL = 20;
 
 export type ActionType = "navigation" | "click" | "form" | "modal" | "filter" | "button";
 

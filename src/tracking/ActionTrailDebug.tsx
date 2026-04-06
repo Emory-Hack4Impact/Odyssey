@@ -17,6 +17,7 @@ const TYPE_COLORS: Record<ActionType | "default", string> = {
 export function ActionTrailDebug({ refreshInterval = 500 }: { refreshInterval?: number }) {
   const { getTrail, clearTrail } = useActionTrail();
   const [open, setOpen] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const [trail, setTrail] = useState<ActionEntry[]>([]);
 
   useEffect(() => {
@@ -25,6 +26,8 @@ export function ActionTrailDebug({ refreshInterval = 500 }: { refreshInterval?: 
     }, refreshInterval);
     return () => clearInterval(id);
   }, []);
+
+  const displayed = expanded ? trail : trail.slice(-5);
 
   return (
     <div
@@ -44,6 +47,7 @@ export function ActionTrailDebug({ refreshInterval = 500 }: { refreshInterval?: 
         border: "1px solid #1e293b",
       }}
     >
+      {/* header */}
       <div
         onClick={() => setOpen((o) => !o)}
         style={{
@@ -67,7 +71,7 @@ export function ActionTrailDebug({ refreshInterval = 500 }: { refreshInterval?: 
               color: "#94a3b8",
             }}
           >
-            {trail.length} / 5
+            {trail.length} / {expanded ? "20" : "5"}
           </span>
           <button
             style={{
@@ -91,50 +95,71 @@ export function ActionTrailDebug({ refreshInterval = 500 }: { refreshInterval?: 
         </div>
       </div>
 
+      {/* body */}
       {open && (
         <div style={{ padding: "6px 0" }}>
           {trail.length === 0 ? (
             <div style={{ padding: "10px 12px", color: "#475569" }}>No actions yet.</div>
           ) : (
-            [...trail].reverse().map((entry, i) => {
-              const color = TYPE_COLORS[entry.type] ?? TYPE_COLORS.default;
-              const time = new Date(entry.timestamp).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-              });
-              return (
-                <div
-                  key={i}
-                  style={{
-                    padding: "5px 12px",
-                    borderBottom: i < trail.length - 1 ? "1px solid #1e293b" : "none",
-                    opacity: i === 0 ? 1 : 0.6 + (trail.length - i) * 0.05,
-                  }}
-                >
+            <>
+              {[...displayed].reverse().map((entry, i) => {
+                const color = TYPE_COLORS[entry.type] ?? TYPE_COLORS.default;
+                const time = new Date(entry.timestamp).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                });
+                return (
                   <div
+                    key={i}
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginBottom: 2,
+                      padding: "5px 12px",
+                      borderBottom: i < displayed.length - 1 ? "1px solid #1e293b" : "none",
+                      opacity: i === 0 ? 1 : Math.max(0.4, 1 - i * 0.08),
                     }}
                   >
-                    <span
+                    <div
                       style={{
-                        color,
-                        fontWeight: "bold",
-                        textTransform: "uppercase",
-                        fontSize: 9,
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginBottom: 2,
                       }}
                     >
-                      {entry.type}
-                    </span>
-                    <span style={{ color: "#475569", fontSize: 9 }}>{time}</span>
+                      <span
+                        style={{
+                          color,
+                          fontWeight: "bold",
+                          textTransform: "uppercase",
+                          fontSize: 9,
+                        }}
+                      >
+                        {entry.type}
+                      </span>
+                      <span style={{ color: "#475569", fontSize: 9 }}>{time}</span>
+                    </div>
+                    <div style={{ color: "#cbd5e1" }}>{entry.description}</div>
                   </div>
-                  <div style={{ color: "#cbd5e1" }}>{entry.description}</div>
-                </div>
-              );
-            })
+                );
+              })}
+
+              {/* expand / collapse toggle */}
+              <div
+                onClick={() => setExpanded((e) => !e)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 4,
+                  padding: "5px 12px",
+                  borderTop: "1px solid #1e293b",
+                  color: "#475569",
+                  cursor: "pointer",
+                  fontSize: 10,
+                }}
+              >
+                <span>{expanded ? "▼ show less" : "▲ show more"}</span>
+              </div>
+            </>
           )}
         </div>
       )}
