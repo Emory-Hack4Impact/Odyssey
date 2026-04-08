@@ -6,7 +6,7 @@ import { verifyCode, updatePassword } from "@/app/api/auth/reset-password/action
 export default async function ResetPassword({
   searchParams,
 }: {
-  searchParams: { message: string; code: string };
+  searchParams: { message?: string; code?: string };
 }) {
   const session = await verifyCode(searchParams);
 
