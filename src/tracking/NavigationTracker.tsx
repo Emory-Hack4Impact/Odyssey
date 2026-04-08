@@ -19,7 +19,6 @@ export function NavigationTracker() {
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      console.log("click tracked", e.target);
       const target = e.target as HTMLElement;
       const meaningful = target.closest<HTMLElement>("button, a, [role='button'], [data-track]");
       const el = meaningful ?? target;
