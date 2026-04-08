@@ -1,5 +1,6 @@
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
+import { ActionTrailProvider, NavigationTracker, ActionTrailDebug } from "@/tracking";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -15,7 +16,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={GeistSans.className}>
       <body className="bg-background text-foreground flex h-screen flex-col justify-between">
-        {children}
+        <ActionTrailProvider>
+          <NavigationTracker />
+          {children}
+          <ActionTrailDebug />
+        </ActionTrailProvider>
       </body>
     </html>
   );
