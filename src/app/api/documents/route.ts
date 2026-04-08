@@ -7,7 +7,7 @@ import {
   DOCUMENTS_BUCKET,
 } from "./index";
 import { prisma } from "@/lib/prisma";
-import { deleteFileFromStorage, getUser } from "@/utils/supabase/server";
+import { deleteFileFromStorage, uploadFileToStorage, getUser } from "@/utils/supabase/server";
 import { FileTypes, type Prisma } from "@prisma/client";
 
 export const runtime = "nodejs";
@@ -269,8 +269,9 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// for now, PATCH function is only for:
-// 1) editing files
+// PATCH handles two cases:
+// 1) viewers-only update
+// 2) file reupload, optionally with new viewers
 export async function PATCH(req: Request) {
   try {
     const user = await getUser();
@@ -278,7 +279,99 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    let body: { fileId?: string; viewers?: unknown }; // untrusted input container from request, to be sanitized before DB updates
+    const ct = req.headers.get("content-type") ?? "";
+
+    if (ct.includes("multipart/form-data")) {
+      // --- file reupload path ---
+      const formData = await req.formData();
+      const fileId = (formData.get("fileId") as string | null)?.trim() ?? "";
+      const viewersRaw = formData.get("viewers") as string | null;
+      const uploadedFile = formData.get("file");
+
+      if (!fileId) {
+        return NextResponse.json({ error: "fileId is required" }, { status: 400 });
+      }
+
+      const existingRecord = await prisma.files.findUnique({ where: { id: fileId } });
+      if (
+        !existingRecord ||
+        existingRecord.type !== FileTypes.DOCUMENT ||
+        existingRecord.bucket !== DOCUMENTS_BUCKET
+      ) {
+        return NextResponse.json({ error: "File not found" }, { status: 404 });
+      }
+
+      if (existingRecord.userId !== user.id) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+
+      const viewers = parseJsonStringArray(viewersRaw, "viewers");
+      if (viewers instanceof NextResponse) return viewers;
+
+      const existingMetadata =
+        existingRecord.metadata &&
+        typeof existingRecord.metadata === "object" &&
+        !Array.isArray(existingRecord.metadata)
+          ? (existingRecord.metadata as Record<string, unknown>)
+          : {};
+
+      let newPath = existingRecord.path;
+      let newFileName =
+        typeof existingMetadata.fileName === "string"
+          ? existingMetadata.fileName
+          : (existingRecord.path.split("/").pop() ?? "document");
+
+      if (uploadedFile instanceof File) {
+        const safeFileName = uploadedFile.name.replace(/\s+/g, "_");
+        const timestamp = Date.now();
+        const storagePath = `${existingRecord.userId}/${timestamp}-${safeFileName}`;
+        const fileBody = await uploadedFile.arrayBuffer();
+        const contentType = uploadedFile.type || undefined;
+
+        const { path: storedPath } = await uploadFileToStorage(
+          DOCUMENTS_BUCKET,
+          storagePath,
+          fileBody,
+          contentType,
+        );
+
+        // Delete old storage object
+        try {
+          await deleteFileFromStorage(DOCUMENTS_BUCKET, existingRecord.path);
+        } catch (cleanupErr) {
+          console.error("Failed to delete old storage object during reupload", cleanupErr);
+        }
+
+        newPath = storedPath;
+        newFileName = uploadedFile.name;
+      }
+
+      const sanitizedViewers = Array.from(
+        new Set(viewers.map((v) => v.trim()).filter((v) => v.length > 0)),
+      );
+
+      await prisma.files.update({
+        where: { id: fileId },
+        data: {
+          path: newPath,
+          metadata: {
+            ...existingMetadata,
+            fileName: newFileName,
+            viewers: sanitizedViewers,
+          },
+        },
+      });
+
+      return NextResponse.json({
+        fileId,
+        fileName: newFileName,
+        viewers: sanitizedViewers,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
+    // --- viewers-only path ---
+    let body: { fileId?: string; viewers?: unknown };
     try {
       body = (await req.json()) as { fileId?: string; viewers?: unknown };
     } catch {
@@ -300,7 +393,7 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
 
-    const isOwner = file.userId === user.id; // check whether is owner
+    const isOwner = file.userId === user.id;
     if (!isOwner) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -319,7 +412,6 @@ export async function PATCH(req: Request) {
         ? (file.metadata as Record<string, unknown>)
         : {};
 
-    // update DB
     await prisma.files.update({
       where: { id: fileId },
       data: {
@@ -337,7 +429,7 @@ export async function PATCH(req: Request) {
     });
   } catch (err) {
     console.error("/api/documents PATCH error", err);
-    return internalServerError("Failed to update document viewers");
+    return internalServerError("Failed to update document");
   }
 }
 
