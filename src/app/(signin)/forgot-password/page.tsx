@@ -3,13 +3,11 @@ import resetPassword from "@/app/api/auth/forgot-password/action";
 // usually we keep server actions scoped with the page/components using them but to me it makes
 // more sense to place them in `auth/` here
 
-export default async function ForgotPassword({
+export default function ForgotPassword({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string; redirectUrl?: string }>;
+  searchParams: { message?: string; redirectUrl?: string };
 }) {
-  const params = await searchParams;
-
   return (
     <div className="mx-auto mt-20 rounded-2xl bg-white p-8 shadow sm:max-w-md">
       <form className="text-foreground flex w-full flex-1 flex-col justify-center gap-2 animate-in">
@@ -29,7 +27,9 @@ export default async function ForgotPassword({
         >
           Send Email
         </SubmitButton>
-        {params.message && <p className="mt-4 bg-base-300 p-4 text-center">{params.message}</p>}
+        {searchParams?.message && (
+          <p className="mt-4 bg-base-300 p-4 text-center">{searchParams.message}</p>
+        )}
       </form>
     </div>
   );

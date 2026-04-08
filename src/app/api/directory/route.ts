@@ -94,12 +94,14 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    const isAdmin = requester?.is_admin === true;
+
     const updated = await prisma.userMetadata.update({
       where: { id: body.id },
       data: {
         employeeFirstName: body.firstName,
         employeeLastName: body.lastName,
-        position: body.position,
+        ...(isAdmin ? { position: body.position } : {}),
         department: body.department,
         jobTitle: body.jobTitle,
         location: body.location,

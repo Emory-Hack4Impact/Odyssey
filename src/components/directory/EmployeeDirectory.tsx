@@ -3,27 +3,16 @@
 import SidePanel from "./side-panel/SidePanel";
 import ResultsGrid from "./results-grid/ResultsGrid";
 import { useMemo, useState, useEffect } from "react";
-import type { DirectoryEmployee, DirectoryFilterOptions, DirectoryFilters } from "./types";
+import type {
+  DirectoryEmployee,
+  DirectoryApiEmployee,
+  DirectoryFilterOptions,
+  DirectoryFilters,
+} from "./types";
 
 interface EmployeeDirectoryProps {
   id: string;
   isAdmin: boolean;
-}
-
-interface DirectoryApiEmployee {
-  id: string;
-  email: string;
-  department: string;
-  jobTitle: string;
-  bio: string;
-  mobile: string;
-  workNumber: string;
-  birthday: string;
-  avatarUrl: string;
-  location: string;
-  position: string;
-  employeeFirstName: string;
-  employeeLastName: string;
 }
 
 interface DirectoryApiResponse {

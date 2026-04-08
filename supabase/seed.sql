@@ -23,15 +23,6 @@ SET row_security = off;
 --
 
 
-INSERT INTO storage.buckets
-    (id, name)
-values
-    ('avatars', 'avatars'),
-    ('files', 'files'),
-    ('article', 'article');
-
-
-
 --
 -- Data for Name: users; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
 --
@@ -152,7 +143,8 @@ INSERT INTO "auth"."identities" ("provider_id", "user_id", "identity_data", "pro
 
 INSERT INTO "storage"."buckets" ("id", "name", "owner", "created_at", "updated_at", "public", "avif_autodetection", "file_size_limit", "allowed_mime_types", "owner_id", "type") VALUES
 	('avatars', 'avatars', NULL, '2026-03-20 01:39:04.301975+00', '2026-03-20 01:39:04.301975+00', false, false, NULL, NULL, NULL, 'STANDARD'),
-	('files', 'files', NULL, '2026-03-20 01:39:04.301975+00', '2026-03-20 01:39:04.301975+00', false, false, NULL, NULL, NULL, 'STANDARD');
+	('files', 'files', NULL, '2026-03-20 01:39:04.301975+00', '2026-03-20 01:39:04.301975+00', false, false, NULL, NULL, NULL, 'STANDARD'),
+	('article', 'article', NULL, '2026-03-20 01:39:04.301975+00', '2026-03-20 01:39:04.301975+00', false, false, NULL, NULL, NULL, 'STANDARD');
 
 
 --

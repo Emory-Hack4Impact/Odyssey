@@ -20,19 +20,19 @@ export function createServiceRoleClient() {
 }
 
 export function createClient() {
+  const cookieStore = cookies();
+
   // Create a server's supabase client with newly configured cookie,
   // which could be used to maintain user's session
   return createServerClient(supabaseUrl!, supabaseAnonKey!, {
     cookies: {
-      async getAll() {
-        const cookieStore = await cookies();
+      getAll() {
         return cookieStore.getAll();
       },
-      async setAll(
+      setAll(
         cookiesToSet: Array<{ name: string; value: string; options?: Record<string, unknown> }>,
       ) {
         try {
-          const cookieStore = await cookies();
           cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
         } catch {
           // The `setAll` method was called from a Server Component.

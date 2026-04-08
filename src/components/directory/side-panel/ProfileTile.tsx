@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import type { DirectoryEmployee } from "../types";
+import type { DirectoryEmployee, DirectoryApiEmployee } from "../types";
 import { getEmployeeName } from "../types";
 
 type ProfileTileProps = {
@@ -11,22 +11,6 @@ type ProfileTileProps = {
   selectedEmployee: DirectoryEmployee | null;
   onSaveEmployee: (employee: DirectoryEmployee) => void;
 };
-
-interface DirectoryApiEmployee {
-  id: string;
-  email: string;
-  department: string;
-  jobTitle: string;
-  bio: string;
-  mobile: string;
-  workNumber: string;
-  birthday: string;
-  avatarUrl: string;
-  location: string;
-  position: string;
-  employeeFirstName: string;
-  employeeLastName: string;
-}
 
 export default function ProfileTile({
   currentUserId,
