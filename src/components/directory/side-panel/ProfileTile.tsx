@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import type { DirectoryEmployee } from "../types";
+import type { DirectoryEmployee, DirectoryApiEmployee } from "../types";
 import { getEmployeeName } from "../types";
 
 type ProfileTileProps = {
@@ -20,10 +20,13 @@ export default function ProfileTile({
 }: ProfileTileProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState<DirectoryEmployee | null>(selectedEmployee);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     setIsEditing(false);
     setDraft(selectedEmployee);
+    setSaveError(null);
   }, [selectedEmployee]);
 
   const isCurrentUser = selectedEmployee?.id === currentUserId;
@@ -48,9 +51,50 @@ export default function ProfileTile({
     );
   }
 
-  const handleSave = () => {
-    onSaveEmployee(draft);
-    setIsEditing(false);
+  const handleSave = async () => {
+    if (!draft) return;
+
+    try {
+      setIsSaving(true);
+      setSaveError(null);
+
+      const res = await fetch("/api/directory", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(draft),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to save employee profile");
+      }
+
+      const updated: DirectoryApiEmployee = await res.json();
+
+      onSaveEmployee({
+        id: updated.id,
+        email: updated.email ?? "",
+        firstName: updated.employeeFirstName ?? "",
+        lastName: updated.employeeLastName ?? "",
+        position: updated.position ?? "",
+        department: updated.department ?? "",
+        jobTitle: updated.jobTitle ?? "",
+        location: updated.location ?? "",
+        bio: updated.bio ?? "",
+        mobile: updated.mobile ?? "",
+        workNumber: updated.workNumber ?? "",
+        birthday: updated.birthday ?? "",
+        avatarUrl: updated.avatarUrl ?? "",
+      });
+
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Failed to save employee:", error);
+      setSaveError("Failed to save employee profile");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -95,11 +139,15 @@ export default function ProfileTile({
                 </button>
               ) : (
                 <>
-                  <button className="btn btn-sm" onClick={handleCancel}>
+                  <button className="btn btn-sm" onClick={handleCancel} disabled={isSaving}>
                     Cancel
                   </button>
-                  <button className="btn btn-sm btn-neutral" onClick={handleSave}>
-                    Save
+                  <button
+                    className="btn btn-sm btn-neutral"
+                    onClick={handleSave}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? "Saving..." : "Save"}
                   </button>
                 </>
               )}
@@ -147,6 +195,7 @@ export default function ProfileTile({
           </label>
         ) : null}
 
+        {saveError ? <p className="text-sm text-error">{saveError}</p> : null}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="form-control">
             <span className="mb-1 text-xs font-semibold tracking-wide text-base-content/60 uppercase">

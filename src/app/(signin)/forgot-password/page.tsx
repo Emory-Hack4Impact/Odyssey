@@ -6,7 +6,7 @@ import resetPassword from "@/app/api/auth/forgot-password/action";
 export default function ForgotPassword({
   searchParams,
 }: {
-  searchParams: { message: string; redirectUrl: string };
+  searchParams: { message?: string; redirectUrl?: string };
 }) {
   return (
     <div className="mx-auto mt-20 rounded-2xl bg-white p-8 shadow sm:max-w-md">

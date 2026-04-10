@@ -440,8 +440,9 @@ function DocumentGrid({
               <div className="font-medium">{doc.name}</div>
               <div className="text-xs text-base-content/60">{formatPath(doc)}</div>
             </div>
-            <div className="mt-auto flex flex-wrap gap-2 pt-2">
-              {doc.viewers.slice(0, 3).map((viewer, i) => (
+            <div className="mt-auto flex max-h-20 flex-wrap gap-2 overflow-y-auto pt-2">
+              {doc.viewers.map((viewer, i) => (
+                // make viewers scrollable
                 <span key={i} className="badge badge-outline badge-sm">
                   {viewerLable(viewer)}
                 </span>
@@ -973,29 +974,45 @@ export default function AdminDocuments() {
     if (!editingDoc) return;
 
     try {
-      // call PATCH
       setIsSaving(true);
       setSaveError(null);
-      const res = await fetch("/api/documents", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileId: editingDoc.id,
-          viewers: editRecipients,
-        }),
-      });
+
+      let res: Response;
+
+      if (replacementFile) {
+        // file reupload
+        const formData = new FormData();
+        formData.append("fileId", editingDoc.id);
+        formData.append("file", replacementFile);
+        formData.append("viewers", JSON.stringify(editRecipients));
+        res = await fetch("/api/documents", {
+          method: "PATCH",
+          body: formData,
+        });
+      } else {
+        // viewers-only update
+        res = await fetch("/api/documents", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileId: editingDoc.id,
+            viewers: editRecipients,
+          }),
+        });
+      }
 
       // parse payload from server
       const data = (await res.json()) as {
         fileId?: string;
+        fileName?: string;
         viewers?: string[];
         updatedAt?: string;
         error?: string;
       };
 
       if (!res.ok) {
-        console.error("Failed to save viewer changes", data.error ?? data);
-        setSaveError(data.error ?? "Failed to save viewer changes");
+        console.error("Failed to save document changes", data.error ?? data);
+        setSaveError(data.error ?? "Failed to save document changes");
         return;
       }
 
@@ -1013,6 +1030,7 @@ export default function AdminDocuments() {
           doc.id === data.fileId
             ? {
                 ...doc,
+                ...(data.fileName ? { name: data.fileName } : {}),
                 viewers: data.viewers!,
                 updatedAt: data.updatedAt ?? new Date().toISOString(),
               }
@@ -1020,10 +1038,9 @@ export default function AdminDocuments() {
         ),
       );
 
-      // close only after success
       closeEditModal();
     } catch (err) {
-      console.error("Unexpected error while saving viewer changes", err);
+      console.error("Unexpected error while saving document changes", err);
       setSaveError("Unexpected error while saving changes");
     } finally {
       setIsSaving(false);
