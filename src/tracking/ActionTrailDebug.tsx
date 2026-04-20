@@ -15,7 +15,7 @@ const TYPE_COLORS: Record<ActionType | "default", string> = {
 };
 
 export function ActionTrailDebug({ refreshInterval = 500 }: { refreshInterval?: number }) {
-  if (process.env.NODE_ENV === "production") return null;
+  const isProduction = process.env.NODE_ENV === "production";
 
   const { getTrail, clearTrail } = useActionTrail();
   const [open, setOpen] = useState(true);
@@ -30,6 +30,8 @@ export function ActionTrailDebug({ refreshInterval = 500 }: { refreshInterval?: 
   }, [getTrail, refreshInterval]);
 
   const displayed = expanded ? trail : trail.slice(-5);
+
+  if (isProduction) return null;
 
   return (
     <div
