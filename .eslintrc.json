@@ -4,6 +4,7 @@
     "project": true
   },
   "plugins": ["@typescript-eslint"],
+  "ignorePatterns": ["scripts/**"],
   "extends": [
     "next",
     "next/core-web-vitals",
