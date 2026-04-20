@@ -294,8 +294,7 @@ export async function PATCH(req: Request) {
 
       const existingRecord = await prisma.files.findUnique({ where: { id: fileId } });
       if (
-        !existingRecord ||
-        existingRecord.type !== FileTypes.DOCUMENT ||
+        existingRecord?.type !== FileTypes.DOCUMENT ||
         existingRecord.bucket !== DOCUMENTS_BUCKET
       ) {
         return NextResponse.json({ error: "File not found" }, { status: 404 });
@@ -462,7 +461,7 @@ export async function DELETE(req: Request) {
     }
 
     const file = await prisma.files.findUnique({ where: { id: fileId } });
-    if (!file || file.type !== FileTypes.DOCUMENT || file.bucket !== DOCUMENTS_BUCKET) {
+    if (file?.type !== FileTypes.DOCUMENT || file.bucket !== DOCUMENTS_BUCKET) {
       return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
 
