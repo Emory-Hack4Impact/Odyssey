@@ -145,7 +145,7 @@ export async function getSignedUrlForFileId(
     where: { id: fileId },
   });
 
-  if (!file || file.type !== FileTypes.DOCUMENT || file.bucket !== DOCUMENTS_BUCKET) {
+  if (file?.type !== FileTypes.DOCUMENT || file.bucket !== DOCUMENTS_BUCKET) {
     throw new DocumentAccessError("File not found", 404);
   }
   // check permission for viewing
